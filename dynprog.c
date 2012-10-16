@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <strings.h> // for ffs
 struct _bid {
 	unsigned int value;
 	unsigned int comb;
@@ -29,20 +29,11 @@ struct _bid {
 /*                    1         2        4       8        16*/
 #define MAX 8
 char * assets[3] = {"apple","mapple","potato"};
-/*		      0 1 2 3 4 5 6 7 8			*/
-unsigned int bids[MAX] {0,2,3,6,2,3,5,7}; 
-unsigned int oset[MAX] {0,1,2,3,4,5,6,7};
+/*		         0 1 2 3 4 5 6 7 8			*/
+unsigned int bids[MAX] ={0,2,2,2,2,2,2,2}; 
+unsigned int oset[MAX] = {0,1,2,3,4,5,6,7};
 unsigned int f[MAX] = {0};
 unsigned int O[MAX] = {0};
-
-int[] set_singleton_bid(register int[] _bids) {
-	register unsigned int i;
-	register unsigned int _f[MAX];
-	for(i =1; i< MAX; i*=2) {
-		_f[i] = _bids[i]
-	}
-	return _f;
-}
   
 inline unsigned int intersect(unsigned int seta, unsigned int setb) {
      return (seta & setb);
@@ -61,26 +52,59 @@ inline unsigned int cardinality(unsigned int seta) {
      return __builtin_popcount(seta);
 }
 
-/*
+/*Reminder of sets
  *f[]
  *O[]
- *	
+ *bids[]	
  */
 
+void printfo() {
+     unsigned int i;
+     printf("i\t");
+     for(i =1; i < MAX; i++) 
+	  printf("%u\t",i);
+     printf("\n");
+     printf("f\t");
+     for(i =1; i < MAX; i++) 
+	  printf("%u\t",f[i]);
+     printf("\n");
+//     printf("o\t");
+     //   for(i =1; i < MAX; i++) 
+//	  printf("%u\t",O[i]);
+     //   printf("\n");
+}
+
  int main(void) {
-	 /*1.*/
-	 f = set_singleton_bid(bids);
-	 O = set_singleton_bid(oset);
-	 /*2.*/
-	 register unsigned int i;
-	 for(i = 2; i <MAX; i++) {
+      register unsigned int i;
+      /*1.*/
+      set_singleton_bid(bids,f);
+      set_singleton_bid(oset,O);
+      printfo();
+      /*2.*/
+      //register unsigned int i;
+      for(i = 2; i <MAX; i++) {
+	   unsigned int c;
+	   for(c = 1; c < MAX; c++) {
+		if(cardinality(c) == i && bids[c] > 0) {
+		     printf("hit card %u \n",i);
+		     unsigned int tmpset = c & (~c + 1);
+		     f[c] = f[setdiff(c,tmpset)] + f[tmpset];//a
+		     if(f[c] >= bids[c])//b
+			  O[c];//net to set
+		     else {//c
+			  f[c] = bids[c];
+			  O[c] = c;
+		     }
+		     printfo();
+		}
+	   }
+      }
 
 
+      printfo();
 
-
-	 }
-	 return 0;
-	 unsigned int i;
+      return 0;
+      /*Testing facility*/
 	 for(i = 1; i < 8; i++) {
 		 
 		 unsigned     int z = intersect(i,i-1);
