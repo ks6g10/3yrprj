@@ -30,10 +30,10 @@ struct _bid {
 #define MAX 8
 char * assets[3] = {"apple","mapple","potato"};
 /*		         0 1 2 3 4 5 6 7 8			*/
-unsigned int bids[MAX] ={0,2,2,2,2,2,2,2}; 
+unsigned int bids[MAX] ={0,7,5,2,2,2,2,2}; 
 unsigned int oset[MAX] = {0,1,2,3,4,5,6,7};
 unsigned int f[MAX] = {0};
-unsigned int O[MAX] = {0};
+unsigned int O[MAX][2] = {0};
   
 inline unsigned int intersect(unsigned int seta, unsigned int setb) {
      return (seta & setb);
@@ -57,6 +57,34 @@ inline unsigned int cardinality(unsigned int seta) {
  *O[]
  *bids[]	
  */
+
+struct _bnode{
+	void * ptr0;
+	void * ptr1;
+} typedef node;
+
+struct _bleaf {
+	unsigned int value;
+	union{
+		void * ptr0;
+		void * ptr1;
+	}
+} typedef leaf;
+
+
+/*Bids are arranged like following: bid[n][0] is the set config bid[n][1] is the value*/
+node * parse_bids(int nitems, int nbids, int bids[][]) {
+	node * root = malloc(sizeof(node));
+	int i,b;
+	int tmp =0;
+	for(b = 0; b < nbids;b++) {
+		tmp = bids[b][0];
+		for(i=0;i<nitems;i++) {
+			
+
+		}
+	}
+}
 
 void printfo() {
      unsigned int i;
@@ -89,11 +117,13 @@ void printfo() {
 		     printf("hit card %u \n",i);
 		     unsigned int tmpset = c & (~c + 1);
 		     f[c] = f[setdiff(c,tmpset)] + f[tmpset];//a
-		     if(f[c] >= bids[c])//b
-			  O[c];//net to set
+		     if(f[c] >= bids[c]) {//b
+			     O[c][0] = setdiff(c,tmpset);//net to set
+			     O[c][1] = tmpset;
+		     }
 		     else {//c
 			  f[c] = bids[c];
-			  O[c] = c;
+			  O[c][0] = c;
 		     }
 		     printfo();
 		}
