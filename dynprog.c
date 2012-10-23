@@ -24,16 +24,31 @@ struct _bid {
  *1111 4 15
  *10000  
  *
+ *        111  
+ *        9
+ *        /|\
+ *    110 101 011
+ *     10   6   6  
+ *     |\ / \ /|      
+ *    100 010 001
+ *     4   3   20
+ *
+ *  
+ * 
+ *
+ *
  */
 
 /*                    1         2        4       8        16*/
 #define MAX 8
 char * assets[3] = {"apple","mapple","potato"};
-/*		         0 1 2 3 4 5 6 7 8			*/
-unsigned int bids[MAX] ={0,7,5,2,2,2,2,2}; 
-unsigned int oset[MAX] = {0,1,2,3,4,5,6,7};
+/*		           0 1 2 3 4 5 6 7 8			*/
+//unsigned int bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
+//unsigned int bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
+unsigned int bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
+unsigned int wopt[MAX] = {0};
 unsigned int f[MAX] = {0};
-unsigned int O[MAX][2] = {0};
+unsigned int O[MAX] = {0};
   
 inline unsigned int intersect(unsigned int seta, unsigned int setb) {
      return (seta & setb);
@@ -59,31 +74,40 @@ inline unsigned int cardinality(unsigned int seta) {
  */
 
 struct _bnode{
-	void * ptr0;
-	void * ptr1;
+     void * ptr[2];// = {NULL};
+     unsigned int value;
 } typedef node;
 
-struct _bleaf {
-	unsigned int value;
-	union{
-		void * ptr0;
-		void * ptr1;
-	}
-} typedef leaf;
+
 
 
 /*Bids are arranged like following: bid[n][0] is the set config bid[n][1] is the value*/
-node * parse_bids(int nitems, int nbids, int bids[][]) {
-	node * root = malloc(sizeof(node));
-	int i,b;
-	int tmp =0;
-	for(b = 0; b < nbids;b++) {
-		tmp = bids[b][0];
-		for(i=0;i<nitems;i++) {
-			
-
-		}
-	}
+node * parse_bids(int nitems, int nbids, int ** bids ) {
+     node * root = malloc(sizeof(node));
+     int i,b;
+     int tmp =0;
+     node * curr;
+     // go through all bids
+     for(b = 0; b < nbids;b++) {
+	  //always start from root
+	  curr = root;
+	  tmp = bids[b][0];
+	  //go through all bits in config
+	  for(i=0;i<nitems;i++) {
+	       /* if the bit i is 1*/
+	       int bit = (1 & (tmp>> i));
+	       if(curr->ptr[bit] == NULL) {
+		    curr->ptr[bit] = malloc(sizeof(node));
+	       }
+	       curr = curr->ptr[bit];
+	       //  continue if there is more bits to parse
+	       if(i < nitems-1)
+		    continue;
+	       //else set the value
+	       curr->value = bids[b][1];
+	       break;
+	  }
+     }
 }
 
 void printfo() {
@@ -96,18 +120,88 @@ void printfo() {
      for(i =1; i < MAX; i++) 
 	  printf("%u\t",f[i]);
      printf("\n");
-//     printf("o\t");
-     //   for(i =1; i < MAX; i++) 
-//	  printf("%u\t",O[i]);
-     //   printf("\n");
+     printf("o\t");
+     for(i =1; i < MAX; i++) 
+	  printf("%u\t",O[i]);
+     printf("\n");
 }
 
- int main(void) {
+inline void set_singleton_bid() {
+  register unsigned int i;
+  for(i =1; i< MAX; i*=2) {
+       f[i] = bids[i];
+       if(bids[i] > 0)
+	    O[i] = i;
+  }
+}
+
+unsigned int max(unsigned conf) {
+     register unsigned int card = cardinality(conf)/2;
+     unsigned int i;
+     unsigned int max = 0;
+     unsigned int set = 0;
+     unsigned int tmp = 0;
+     for(i=1;i<MAX;i++) {
+	  if(cardinality(i) > card)
+	       continue;
+	  if(i != (i&conf))
+	       continue;
+	  tmp = f[setdiff(conf,i)] + f[i];
+	  if(max < tmp) {
+	       max = tmp;
+	       set = i;
+	  }
+     }
+     f[conf] = max;
+     return set;
+}
+
+struct _bleaf {
+     void * ptr[2];// = {NULL};
+     union{
+	  void * ptr0;// = NULL;
+	  void * ptr1;// = NULL;
+     };
+     unsigned int value;
+} typedef leaf;
+
+struct _stack {
+	unsigned int conf;
+	struct _stack * next;
+} typedef stack;
+
+void parse_wopt(void) {
+     unsigned int c;
+     //wopt at start contain MAX at wopt[0] which is the combination that goes in bids[wopt[n]]
+     stack * root = malloc(sizeof(stack));
+     root->conf = MAX-1;
+     stack * curr = root;
+     while(curr != NULL) {
+	     unsigned int conf = curr->conf;
+	     if(conf != O[conf]) {
+		     unsigned int diff = setdiff(conf,O[conf]);
+		     curr->conf = O[conf];
+		     stack * tmp = malloc(sizeof(stack));
+		     tmp->conf = diff;
+		     tmp->next = curr;
+		     root = tmp;
+		     curr = root;
+		     continue;
+	     }
+	     curr = curr->next;
+     }
+     curr = root;
+     while(curr != NULL) {
+	     printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
+	     curr = curr->next;
+     }
+}
+
+int main(void) {
       register unsigned int i;
       /*1.*/
-      set_singleton_bid(bids,f);
-      set_singleton_bid(oset,O);
-      printfo();
+      set_singleton_bid();
+       printfo();
       /*2.*/
       //register unsigned int i;
       for(i = 2; i <MAX; i++) {
@@ -115,23 +209,21 @@ void printfo() {
 	   for(c = 1; c < MAX; c++) {
 		if(cardinality(c) == i && bids[c] > 0) {
 		     printf("hit card %u \n",i);
-		     unsigned int tmpset = c & (~c + 1);
-		     f[c] = f[setdiff(c,tmpset)] + f[tmpset];//a
+		     unsigned int tmpset = max(c);
 		     if(f[c] >= bids[c]) {//b
-			     O[c][0] = setdiff(c,tmpset);//net to set
-			     O[c][1] = tmpset;
+			     O[c] = tmpset;//net to set
 		     }
 		     else {//c
 			  f[c] = bids[c];
-			  O[c][0] = c;
+			  O[c] = c;
 		     }
 		     printfo();
 		}
 	   }
       }
 
-
-      printfo();
+      parse_wopt();
+      //printfo();
 
       return 0;
       /*Testing facility*/
