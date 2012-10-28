@@ -68,10 +68,9 @@ dint bids[MAX];
 // dint bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
 //dint bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
 // dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
-
- dint wopt[MAX] = {0};
- dint f[MAX] = {0};
- dint O[MAX] = {0};
+dint wopt[MAX] = {0};
+dint f[MAX] = {0};
+dint O[MAX] = {0};
   
 inline  dint intersect( dint seta,  dint setb) {
      return (seta & setb);
@@ -121,7 +120,6 @@ void gen_rand_bids(void) {
  *O[]
  *bids[]	
  */
-
 inline void printfo() {
 #if DEBUG
      dint i;
@@ -221,13 +219,14 @@ dint main(void) {
       gen_rand_bids();
       set_singleton_bid();
       printfo();
+
       /*2.*/
       for(i = 2; i <MAX; i++) {
 	       dint c;
 	      for(c = 1; c < MAX; c++) {
 		      if(cardinality(c) == i && bids[c] > 0) {
 			      //printf("hit card %u \n",i);
-			      dint tmpset = max(c);
+			       dint tmpset = max(c);
 			      if(f[c] >= bids[c]) {//b
 				      O[c] = tmpset;//net t	o set
 			      }
@@ -239,7 +238,6 @@ dint main(void) {
 		      }
 	      }
       }
-      	     	      	     
       parse_wopt();
       //printfo();
 
