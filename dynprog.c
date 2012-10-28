@@ -1,11 +1,29 @@
 #include <stdio.h>
 #include <strings.h> // for ffs
+#include <stdint.h>
+#include <math.h>
+#include <stdlib.h>
+
+/*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
+#define DEBUG 1
+/*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
+#define TEST 1
+#define ITEMS 2
+#define MAX (2 << (ITEMS-1))
+#if ITEMS < 8
+#define dint uint8_t
+#elif ITEMS < 16
+#define dint uint16_t
+#elif ITEMS < 32
+#define dint uint32_t
+#elif ITEMS > 32
+#define dint uint64_t
+#endif
+
 struct _bid {
-	unsigned int value;
-	unsigned int comb;
+	dint value;
+	 dint comb;
 } typedef bid;
-
-
 /*0000 0 0
  *0001 1 1 1
  *0010 1 2 2
@@ -24,32 +42,78 @@ struct _bid {
  *1111 4 15
  *10000  
  *
+ *        111  
+ *        9
+ *        /|\
+ *    110 101 011
+ *     10   6   6  
+ *     |\ / \ /|      
+ *    100 010 001
+ *     4   3   20
+ *
+ * [0,0,0,0,0,0] * [0000,0000,0000,0000,0000,0000,0000]
+ * [0,0,0,0,0,0] * [0000,0000,0000,0000,0000,0000,0000]
+ * [0,0,0,0,0,0] * [0000,0000,0000,0000,0000,0000,0000]
+ * [0,0,0,0,0,5] * [1111,0000,1101,0000,0111,0000,0101] > 
+ * [0,0,0,0,6,4] * [0000,1110,1100,0000,0000,0110,0100] > 7
+ * [0,0,0,3,2,1] * [1011,1010,1001,1000,0011,0010,0001] > 4
+ *
  */
 
 /*                    1         2        4       8        16*/
-#define MAX 8
+
 char * assets[3] = {"apple","mapple","potato"};
-/*		         0 1 2 3 4 5 6 7 8			*/
-unsigned int bids[MAX] ={0,7,5,2,2,2,2,2}; 
-unsigned int oset[MAX] = {0,1,2,3,4,5,6,7};
-unsigned int f[MAX] = {0};
-unsigned int O[MAX][2] = {0};
+/*		           0 1 2 3 4 5 6 7 8			*/
+dint bids[MAX];
+// dint bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
+//dint bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
+// dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
+
+ dint wopt[MAX] = {0};
+ dint f[MAX] = {0};
+ dint O[MAX] = {0};
   
-inline unsigned int intersect(unsigned int seta, unsigned int setb) {
+inline  dint intersect( dint seta,  dint setb) {
      return (seta & setb);
 }
 
-inline unsigned int _union(unsigned int seta, unsigned int setb) {
+inline  dint _union( dint seta,  dint setb) {
      return (seta | setb);
 }
 
-inline unsigned int setdiff(unsigned int seta, unsigned int setb) {
+inline  dint setdiff( dint seta,  dint setb) {
 
      return (seta & ~setb);
 }
 
-inline unsigned int cardinality(unsigned int seta) {
+inline  dint cardinality( dint seta) {
      return __builtin_popcount(seta);
+}
+
+void gen_rand_bids(void) {
+     register dint i = 0;
+#if TEST
+     for(i = 1; i < MAX;i++) {
+	  bids[i] = 1;
+     }
+#elif TEST = 0
+     for(i = 1; i < MAX;i++) {
+	  bids[i] = rand() % 10;
+     }
+#endif
+
+#if DEBUG
+     printf("i =\t");
+     for(i = 1; i < MAX;i++) {
+	  printf("%u\t",i);
+     }
+     printf("\n");
+     printf("val =\t");
+     for(i = 1; i < MAX;i++) {
+	  printf("%u\t",bids[i]);
+     }
+     printf("\n");
+#endif
 }
 
 /*Reminder of sets
@@ -58,90 +122,136 @@ inline unsigned int cardinality(unsigned int seta) {
  *bids[]	
  */
 
-struct _bnode{
-	void * ptr0;
-	void * ptr1;
-} typedef node;
+inline void printfo() {
+#if DEBUG
+     dint i;
+     printf("i\t");
+     for(i =1; i < MAX; i++) {
+	  printf("%u\t",i);
+     }
+     printf("\n");
+     printf("f[]\t");
+     for(i =1; i < MAX; i++) {
+	  printf("%u\t",f[i]);
+     }
+     printf("\n");
+     printf("O[]\t");
+     for(i =1; i < MAX; i++) {
+	  printf("%u\t",O[i]);
+     }
+     printf("\n");
+#endif
+}
+/*Sets all bids with one element in it, |n| = 1*/
+inline void set_singleton_bid() {
+     register  dint i;
+     for(i =1; i< MAX; i*=2) {
+	  f[i] = bids[i];
+	  if(bids[i] > 0)
+	       O[i] = i;
+     }
+}
+
+dint max(dint conf) {
+     register  dint card = cardinality(conf)/2;
+      dint i;
+      dint max = 0;
+      dint set = 0;
+      dint tmp = 0;
+     for(i=1;i<MAX;i++) {
+	  if(cardinality(i) > card)
+	       continue;
+	  if(i != (i&conf))
+	       continue;
+	  tmp = f[setdiff(conf,i)] + f[i];
+	  if(max < tmp) {
+	       max = tmp;
+	       set = i;
+	  }
+     }
+     f[conf] = max;
+     return set;
+}
 
 struct _bleaf {
-	unsigned int value;
-	union{
-		void * ptr0;
-		void * ptr1;
-	}
+     void * ptr[2];// = {NULL};
+     union{
+	  void * ptr0;// = NULL;
+	  void * ptr1;// = NULL;
+     };
+      dint value;
 } typedef leaf;
 
+struct _stack {
+	 dint conf;
+	struct _stack * next;
+} typedef stack;
 
-/*Bids are arranged like following: bid[n][0] is the set config bid[n][1] is the value*/
-node * parse_bids(int nitems, int nbids, int bids[][]) {
-	node * root = malloc(sizeof(node));
-	int i,b;
-	int tmp =0;
-	for(b = 0; b < nbids;b++) {
-		tmp = bids[b][0];
-		for(i=0;i<nitems;i++) {
-			
-
-		}
-	}
+void parse_wopt(void) {
+     //wopt at start contain MAX at wopt[0] which is the combination that goes in bids[wopt[n]]
+     stack * root = malloc(sizeof(stack));
+     //DO NOT REMOVE -1
+     root->conf = (MAX)-1;
+     stack * curr = root;
+     while(curr != NULL) {
+	      dint conf = curr->conf;
+	     if(conf != O[conf]) {
+		     dint diff = setdiff(conf,O[conf]);
+		     curr->conf = O[conf];
+		     stack * tmp = malloc(sizeof(stack));
+		     tmp->conf = diff;
+		     tmp->next = curr;
+		     root = tmp;
+		     curr = root;
+		     continue;
+	     }
+	     curr = curr->next;
+     }
+     curr = root;
+     while(curr != NULL) {
+	     printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
+	     curr = curr->next;
+     }
 }
 
-void printfo() {
-     unsigned int i;
-     printf("i\t");
-     for(i =1; i < MAX; i++) 
-	  printf("%u\t",i);
-     printf("\n");
-     printf("f\t");
-     for(i =1; i < MAX; i++) 
-	  printf("%u\t",f[i]);
-     printf("\n");
-//     printf("o\t");
-     //   for(i =1; i < MAX; i++) 
-//	  printf("%u\t",O[i]);
-     //   printf("\n");
-}
-
- int main(void) {
-      register unsigned int i;
+dint main(void) {
+      printf("max %d\n", MAX);
+      register dint i;
       /*1.*/
-      set_singleton_bid(bids,f);
-      set_singleton_bid(oset,O);
+      gen_rand_bids();
+      set_singleton_bid();
       printfo();
       /*2.*/
-      //register unsigned int i;
       for(i = 2; i <MAX; i++) {
-	   unsigned int c;
-	   for(c = 1; c < MAX; c++) {
-		if(cardinality(c) == i && bids[c] > 0) {
-		     printf("hit card %u \n",i);
-		     unsigned int tmpset = c & (~c + 1);
-		     f[c] = f[setdiff(c,tmpset)] + f[tmpset];//a
-		     if(f[c] >= bids[c]) {//b
-			     O[c][0] = setdiff(c,tmpset);//net to set
-			     O[c][1] = tmpset;
-		     }
-		     else {//c
-			  f[c] = bids[c];
-			  O[c][0] = c;
-		     }
-		     printfo();
-		}
-	   }
+	       dint c;
+	      for(c = 1; c < MAX; c++) {
+		      if(cardinality(c) == i && bids[c] > 0) {
+			      //printf("hit card %u \n",i);
+			      dint tmpset = max(c);
+			      if(f[c] >= bids[c]) {//b
+				      O[c] = tmpset;//net t	o set
+			      }
+			      else {//c	
+				      f[c] = bids[c];
+				      O[c] = c;
+			      }
+			      printfo();
+		      }
+	      }
       }
-
-
-      printfo();
+      	     	      	     
+      parse_wopt();
+      //printfo();
 
       return 0;
       /*Testing facility*/
 	 for(i = 1; i < 8; i++) {
 		 
-		 unsigned     int z = intersect(i,i-1);
-		 unsigned     int x = _union(i,i-1);
-		 unsigned     int f = setdiff(i,i-1);
-		 unsigned int t = cardinality(i);
-		 printf("i %d \tinter %u\t union %u\t diff %	u\t card %u\n",i,z,x,f,t);
+		 dint z = intersect(i,i-1);
+		 dint x = _union(i,i-1);
+		 dint f = setdiff(i,i-1);
+		 dint t = cardinality(i);
+		 printf("i %u \tinter %u\t union %u\t diff %u\t card %u\n",i,z,x,f,t);
 	 }
 	 return 0;
 } 
