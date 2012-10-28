@@ -5,10 +5,12 @@
 #include <stdlib.h>
 
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
-#define DEBUG 1
+#define DEBUG 0
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
 #define TEST 1
-#define ITEMS 2
+/*Defines from 0-Range the random will give out*/
+#define RANGE 20
+#define ITEMS 15
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -20,10 +22,6 @@
 #define dint uint64_t
 #endif
 
-struct _bid {
-	dint value;
-	 dint comb;
-} typedef bid;
 /*0000 0 0
  *0001 1 1 1
  *0010 1 2 2
@@ -95,9 +93,9 @@ void gen_rand_bids(void) {
      for(i = 1; i < MAX;i++) {
 	  bids[i] = 1;
      }
-#elif TEST = 0
+#else
      for(i = 1; i < MAX;i++) {
-	  bids[i] = rand() % 10;
+	  bids[i] = rand() % RANGE;
      }
 #endif
 
@@ -152,11 +150,19 @@ inline void set_singleton_bid() {
 
 dint max(dint conf) {
      register  dint card = cardinality(conf)/2;
-      dint i;
-      dint max = 0;
-      dint set = 0;
-      dint tmp = 0;
-     for(i=1;i<MAX;i++) {
+     register dint max = bids[conf];
+     register dint set = conf;
+     register dint tmp = 0;
+     register dint inc = 1;
+     register dint i = 1;
+      if(conf & 1 == 0)
+      {
+	      inc = 2;
+	      i = 2;
+      }
+     for(;i<MAX;i += inc) {
+	  if(i >= conf)
+		     break;
 	  if(cardinality(i) > card)
 	       continue;
 	  if(i != (i&conf))
@@ -170,15 +176,6 @@ dint max(dint conf) {
      f[conf] = max;
      return set;
 }
-
-struct _bleaf {
-     void * ptr[2];// = {NULL};
-     union{
-	  void * ptr0;// = NULL;
-	  void * ptr1;// = NULL;
-     };
-      dint value;
-} typedef leaf;
 
 struct _stack {
 	 dint conf;
