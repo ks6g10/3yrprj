@@ -13,4 +13,7 @@ A subset/member-set of A containing banana and apple, the integer representing w
 So the least significant digit of the member-set represent the first element in the array A.
 
 The reason behind this design choise is that 
- 
+
+Speed Graph
+
+ ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=0&zx=93h5htrgmj8j "Speed graph")
