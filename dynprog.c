@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include <strings.h> // for ffs
+#include <string.h> // for ffs
 #include <stdint.h>
 #include <math.h>
+#include <time.h>
 #include <stdlib.h>
 
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
@@ -10,7 +11,7 @@
 #define TEST 1
 /*Defines from 0-Range the random will give out*/
 #define RANGE 20
-#define ITEMS 15
+#define ITEMS 20
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -87,10 +88,10 @@ inline  dint cardinality( dint seta) {
      return __builtin_popcount(seta);
 }
 
-void gen_rand_bids(void) {
+void gen_rand_bids(dint MAXVAL) {
      register dint i = 0;
 #if TEST
-     for(i = 1; i < MAX;i++) {
+     for(i = 1; i < MAXVAL;i++) {
 	  bids[i] = 1;
      }
 #else
@@ -139,30 +140,31 @@ inline void printfo() {
 #endif
 }
 /*Sets all bids with one element in it, |n| = 1*/
-inline void set_singleton_bid() {
+inline void set_singleton_bid(dint MAXVAL) {
      register  dint i;
-     for(i =1; i< MAX; i*=2) {
+     for(i =1; i< MAXVAL; i*=2) {
 	  f[i] = bids[i];
 	  if(bids[i] > 0)
 	       O[i] = i;
      }
 }
 
-dint max(dint conf) {
+dint max(dint conf,dint MAXVAL) {
      register  dint card = cardinality(conf)/2;
      register dint max = bids[conf];
      register dint set = conf;
      register dint tmp = 0;
+     //If uneven number increment by 1
      register dint inc = 1;
      register dint i = 1;
-      if(conf & 1 == 0)
+     //If it is a even number, increment by 2
+     if(conf & 1 == 0)
       {
 	      inc = 2;
 	      i = 2;
       }
-     for(;i<MAX;i += inc) {
-	  if(i >= conf)
-		     break;
+      
+     for(;i<conf;i += inc) {
 	  if(cardinality(i) > card)
 	       continue;
 	  if(i != (i&conf))
@@ -182,11 +184,11 @@ struct _stack {
 	struct _stack * next;
 } typedef stack;
 
-void parse_wopt(void) {
+void parse_wopt(dint MAXVAL) {
      //wopt at start contain MAX at wopt[0] which is the combination that goes in bids[wopt[n]]
      stack * root = malloc(sizeof(stack));
      //DO NOT REMOVE -1
-     root->conf = (MAX)-1;
+     root->conf = (MAXVAL)-1;
      stack * curr = root;
      while(curr != NULL) {
 	      dint conf = curr->conf;
@@ -203,50 +205,81 @@ void parse_wopt(void) {
 	     curr = curr->next;
      }
      curr = root;
+     dint tmp = 0;
      while(curr != NULL) {
-	     printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
-	     curr = curr->next;
+	  printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
+	  tmp++;
+	  stack * tmp = curr;
+	  curr = curr->next;
+	  free(tmp);
      }
+     printf("n = %u",tmp);
 }
 
+void run_test(dint MAXVAL) {
+/*Setup the environment*/
+     gen_rand_bids(MAXVAL);
+     set_singleton_bid(MAXVAL);
+     printfo();
+     dint i, c;
+     /*2.*/
+     for(i = 2; i < MAXVAL; i++) {
+	  for(c = 1; c < MAXVAL; c++) {
+	       if(cardinality(c) == i && bids[c] > 0) {
+		    dint tmpset = max(c,MAXVAL);
+		    if(f[c] >= bids[c]) {//b
+			 O[c] = tmpset;//net t	o set
+		    }
+		    else {//c	
+			 f[c] = bids[c];
+			 O[c] = c;
+		    }
+		    printfo();
+	       }
+	  }
+     }
+     parse_wopt(MAXVAL);
+}
+
+
 dint main(void) {
-      printf("max %d\n", MAX);
-      register dint i;
-      /*1.*/
-      gen_rand_bids();
-      set_singleton_bid();
-      printfo();
+     /*Start n amount of assets*/
+     dint from = 10;
+     /*End amount of assets, inclusive*/
+     dint till = 19;
+     dint MAXVAL = (2 << (from-1));
+     if(till > ITEMS) {
+	  printf("More than maximum allowed\n");
+	  return;
+     }
 
-      /*2.*/
-      for(i = 2; i <MAX; i++) {
-	       dint c;
-	      for(c = 1; c < MAX; c++) {
-		      if(cardinality(c) == i && bids[c] > 0) {
-			      //printf("hit card %u \n",i);
-			       dint tmpset = max(c);
-			      if(f[c] >= bids[c]) {//b
-				      O[c] = tmpset;//net t	o set
-			      }
-			      else {//c	
-				      f[c] = bids[c];
-				      O[c] = c;
-			      }
-			      printfo();
-		      }
-	      }
-      }
-      parse_wopt();
-      //printfo();
+     time_t start,end,t;
+     
+     /*Run all tests*/
+     for(;from <= till;from++) {
+	  MAXVAL = (2 << (from-1));
+	  start=clock();//predefined  function in c
+	  run_test(MAXVAL);
+	  end=clock();
+	  t=(end-start)/CLOCKS_PER_SEC;
+	  printf("\nTime taken =%u for n= %u\n", (unsigned long) t,from);
+/*Reset the arrays*/
+	  memset(&f,'\0',sizeof(f));
+	  memset(&O,'\0',sizeof(O));
+     }
 
-      return 0;
-      /*Testing facility*/
-	 for(i = 1; i < 8; i++) {
-		 
-		 dint z = intersect(i,i-1);
-		 dint x = _union(i,i-1);
-		 dint f = setdiff(i,i-1);
-		 dint t = cardinality(i);
-		 printf("i %u \tinter %u\t union %u\t diff %u\t card %u\n",i,z,x,f,t);
-	 }
-	 return 0;
+     return 0;
 } 
+
+void old_test(void) {
+     /*Testing facility*/
+     dint i;
+     for(i = 1; i < 8; i++) {		 
+	  dint z = intersect(i,i-1);
+	  dint x = _union(i,i-1);
+	  dint f = setdiff(i,i-1);
+	  dint t = cardinality(i);
+	  printf("i %u \tinter %u\t union %u\t diff %u\t card %u\n",i,z,x,f,t);
+     }
+     return;
+}
