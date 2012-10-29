@@ -14,6 +14,7 @@ So the least significant digit of the member-set represent the first element in 
 
 The reason behind this design choise is that 
 
-Speed Graph
+Speed Graphs
 
- ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=0&zx=93h5htrgmj8j "Speed graph")
+ ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=3&zx=oxtentjg2o3d "Speed graph")
+ ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=2&zx=ixlgvmc8qvm7 "LOG10 Speed graph")
