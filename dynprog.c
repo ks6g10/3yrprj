@@ -139,6 +139,7 @@ inline void printfo() {
      printf("\n");
 #endif
 }
+
 /*Sets all bids with one element in it, |n| = 1*/
 inline void set_singleton_bid(dint MAXVAL) {
      register  dint i;
@@ -244,9 +245,9 @@ void run_test(dint MAXVAL) {
 
 dint main(void) {
      /*Start n amount of assets*/
-     dint from = 10;
+     dint from = 20;
      /*End amount of assets, inclusive*/
-     dint till = 19;
+     dint till = 20;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
@@ -262,7 +263,7 @@ dint main(void) {
 	  run_test(MAXVAL);
 	  end=clock();
 	  t=(end-start)/CLOCKS_PER_SEC;
-	  printf("\nTime taken =%u for n= %u\n", (unsigned long) t,from);
+	  printf("\nTime taken =%lu for n= %u\n", (unsigned long) t,from);
 /*Reset the arrays*/
 	  memset(&f,'\0',sizeof(f));
 	  memset(&O,'\0',sizeof(O));
