@@ -11,7 +11,7 @@
 #define TEST 1
 /*Defines from 0-Range the random will give out*/
 #define RANGE 20
-#define ITEMS 20
+#define ITEMS 25
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -256,6 +256,8 @@ void parse_wopt(dint MAXVAL) {
      printf("n = %u",tmp);
 }
 
+unsigned int bittable[33] = {0,1,3};
+
 void run_test(dint MAXVAL) {
 /*Setup the environment*/
      gen_rand_bids(MAXVAL);
@@ -264,19 +266,23 @@ void run_test(dint MAXVAL) {
      dint i, c;
      /*2.*/
      for(i = 2; i < MAXVAL; i++) {
-	  for(c = 1; c < MAXVAL; c++) {
-	       if(cardinality(c) == i && bids[c] > 0) {
-		    dint tmpset = max(c);
-		    if(f[c] >= bids[c]) {//b
-			 O[c] = tmpset;//net t	o set
-		    }
-		    else {//c	
-			 f[c] = bids[c];
-			 O[c] = c;
-		    }
-		    printfo();
-	       }
-	  }
+	     for(c = (1 << i) -1; c < MAXVAL;) {
+		     if(cardinality(c) == i && bids[c] > 0) {
+			     dint tmpset = max2(c);
+			     if(f[c] >= bids[c]) {//b	
+				     O[c] = tmpset;//net t	o set	
+			     }
+			     else {//c		
+				     f[c] = bids[c];
+				     O[c] = c;
+			     }
+			     printfo();
+		     }
+		     //bit hacks "Compute the lexicographically next bit permutation"
+		     dint t = c | (c-1);
+		     c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
+		     //end ref
+	     }
      }
      parse_wopt(MAXVAL);
 }
@@ -284,9 +290,9 @@ void run_test(dint MAXVAL) {
 
 dint main(void) {
      /*Start n amount of assets*/
-     dint from = 20;
+     dint from = 21;
      /*End amount of assets, inclusive*/
-     dint till = 20;
+     dint till = 25;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
