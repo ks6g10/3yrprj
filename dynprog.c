@@ -149,7 +149,46 @@ inline void set_singleton_bid(dint MAXVAL) {
      }
 }
 
-dint max(dint conf,dint MAXVAL) {
+
+/* conf a e.g. 1101
+ * (~a+i) & a gives a subset of a
+ *  i is a integer from 1 to |a| 
+ *
+ * ~1101 = 0010
+ * i = 0001
+ * (0010+0001)&1101 =
+ * 0011&1101 = 0001
+ *
+ *i = 0011
+ * (0010+0011)&1101
+ *(0101)&1101 = 0101
+ */
+
+/*n 15 t 9 n 16 t 42*/
+dint max2(dint conf) {
+     register  dint card = cardinality(conf)/2;
+     register dint combinations = 1 << (cardinality(conf)-1);
+     register dint max = bids[conf];
+     register dint set = conf;
+     register dint tmp = 0;
+     register dint subset;
+     register dint inverse = ~conf;
+     register dint i;
+     for(i = 1;i<combinations; i++) {
+	  subset = (inverse+i)&conf;
+	  if(cardinality(subset) > card)
+	       continue;
+	  tmp = f[setdiff(conf,subset)] + f[subset];
+	  if(max < tmp) {
+	       max = tmp;
+	       set = subset;
+	  }
+     }
+     f[conf] = max;
+     return set;
+}
+/*n 15 18 n 16 84*/
+dint max(dint conf) {
      register  dint card = cardinality(conf)/2;
      register dint max = bids[conf];
      register dint set = conf;
@@ -226,7 +265,7 @@ void run_test(dint MAXVAL) {
      for(i = 2; i < MAXVAL; i++) {
 	  for(c = 1; c < MAXVAL; c++) {
 	       if(cardinality(c) == i && bids[c] > 0) {
-		    dint tmpset = max(c,MAXVAL);
+		    dint tmpset = max(c);
 		    if(f[c] >= bids[c]) {//b
 			 O[c] = tmpset;//net t	o set
 		    }
@@ -244,9 +283,9 @@ void run_test(dint MAXVAL) {
 
 dint main(void) {
      /*Start n amount of assets*/
-     dint from = 10;
+     dint from = 15;
      /*End amount of assets, inclusive*/
-     dint till = 19;
+     dint till = 18;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
