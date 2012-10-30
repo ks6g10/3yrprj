@@ -16,5 +16,5 @@ The reason behind this design choise is that
 
 Speed Graphs
 
- ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=3&zx=oxtentjg2o3d "Speed graph")
+ ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=3&zx=b2bkwjbkhbyw "Speed graph")
  ![Alt text](https://docs.google.com/spreadsheet/oimg?key=0Au1A39JI-BwHdE1YRHFWVlpkXzZKWGxNS0tHMmRmVHc&oid=2&zx=ixlgvmc8qvm7 "LOG10 Speed graph")
