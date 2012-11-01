@@ -151,74 +151,6 @@ inline void set_singleton_bid(dint MAXVAL) {
 }
 
 
-/* conf a e.g. 1101
- * (~a+i) & a gives a subset of a
- *  i is a integer from 1 to |a| 
- *
- * ~1101 = 0010
- * i = 0001
- * (0010+0001)&1101 =
- * 0011&1101 = 0001
- *
- *i = 0011
- * (0010+0011)&1101
- *(0101)&1101 = 0101
- */
-
-/*n 15 t 9 n 16 t 42*/
-dint max2(dint conf) {
-     register  dint card = cardinality(conf)/2;
-     register dint combinations = 1 << (cardinality(conf)-1);
-     register dint max = bids[conf];
-     register dint set = conf;
-     register dint tmp = 0;
-     register dint subset;
-     register dint inverse = ~conf;
-     register dint i;
-     for(i = 1;i<combinations; i++) {
-	  subset = (inverse+i)&conf;
-	  if(cardinality(subset) > card)
-	       continue;
-	  tmp = f[setdiff(conf,subset)] + f[subset];
-	  if(max < tmp) {
-	       max = tmp;
-	       set = subset;
-	  }
-     }
-     f[conf] = max;
-     return set;
-}
-/*n 15 18 n 16 84*/
-dint max(dint conf) {
-     register  dint card = cardinality(conf)/2;
-     register dint max = bids[conf];
-     register dint set = conf;
-     register dint tmp = 0;
-     //If uneven number increment by 1
-     register dint inc = 1;
-     register dint i = 1;
-     //If it is a even number, increment by 2
-     if(conf & 1 == 0)
-      {
-	      inc = 2;
-	      i = 2;
-      }
-      
-     for(;i<conf;i += inc) {
-	  if(cardinality(i) > card)
-	       continue;
-	  if(i != (i&conf))
-	       continue;
-	  tmp = f[setdiff(conf,i)] + f[i];
-	  if(max < tmp) {
-	       max = tmp;
-	       set = i;
-	  }
-     }
-     f[conf] = max;
-     return set;
-}
-
 struct _stack {
 	 dint conf;
 	struct _stack * next;
@@ -231,7 +163,7 @@ void parse_wopt(dint MAXVAL) {
      root->conf = (MAXVAL)-1;
      stack * curr = root;
      while(curr != NULL) {
-	      dint conf = curr->conf;
+	     dint conf = curr->conf;
 	     if(conf != O[conf]) {
 		     dint diff = setdiff(conf,O[conf]);
 		     curr->conf = O[conf];
@@ -256,26 +188,55 @@ void parse_wopt(dint MAXVAL) {
      printf("n = %u",tmp);
 }
 
-unsigned int bittable[33] = {0,1,3};
+/* conf a e.g. 1101
+ * (~a+i) & a gives a subset of a
+ *  i is a integer from 1 to |a| 
+ *
+ * ~1101 = 0010
+ * i = 0001
+ * (0010+0001)&1101 =
+ * 0011&1101 = 0001
+ *
+ *i = 0011
+ * (0010+0011)&1101
+ *(0101)&1101 = 0101
+ */
 
-void run_test(dint MAXVAL) {
+/*n 15 t 9 n 16 t 42*/
+void max2(dint conf) {
+     register dint card = cardinality(conf)/2;
+     register dint combinations = 1 << (cardinality(conf)-1);
+     register dint max = bids[conf];
+     register dint set = conf;
+     register dint tmp = 0;
+     register dint subset;
+     register dint inverse = ~conf;
+     register dint i;
+     for(i = 1;i<combinations; i++) {
+	  subset = (inverse+i)&conf;
+	  if(cardinality(subset) > card)
+	       continue;
+	  tmp = f[setdiff(conf,subset)] + f[subset];
+	  if(max < tmp) {
+	       max = tmp;
+	       set = subset;
+	  }
+     }
+     f[conf] = max;
+     O[conf] = set;
+}
+
+void run_test(dint MAXVAL,dint items) {
 /*Setup the environment*/
      gen_rand_bids(MAXVAL);
      set_singleton_bid(MAXVAL);
      printfo();
      dint i, c;
      /*2.*/
-     for(i = 2; i < MAXVAL; i++) {
+     for(i = 2; i <= items; i++) {
 	     for(c = (1 << i) -1; c < MAXVAL;) {
 		     if(cardinality(c) == i && bids[c] > 0) {
-			     dint tmpset = max2(c);
-			     if(f[c] >= bids[c]) {//b	
-				     O[c] = tmpset;//net t	o set	
-			     }
-			     else {//c		
-				     f[c] = bids[c];
-				     O[c] = c;
-			     }
+			     max2(c);
 			     printfo();
 		     }
 		     //bit hacks "Compute the lexicographically next bit permutation"
@@ -284,11 +245,12 @@ void run_test(dint MAXVAL) {
 		     //end ref
 	     }
      }
+     printf("\n");
      parse_wopt(MAXVAL);
 }
 
 
-dint main(void) {
+int main(void) {
      /*Start n amount of assets*/
      dint from = 21;
      /*End amount of assets, inclusive*/
@@ -296,7 +258,7 @@ dint main(void) {
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
-	  return;
+	  return 1;
      }
 
      time_t start,end,t;
@@ -305,7 +267,7 @@ dint main(void) {
      for(;from <= till;from++) {
 	  MAXVAL = (2 << (from-1));
 	  start=clock();//predefined  function in c
-	  run_test(MAXVAL);
+	  run_test(MAXVAL,from);
 	  end=clock();
 	  t=(end-start)/CLOCKS_PER_SEC;
 	  printf("\nTime taken =%lu for n= %u\n", (unsigned long) t,from);
