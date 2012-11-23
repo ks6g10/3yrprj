@@ -10,8 +10,8 @@
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
 #define TEST 1
 /*Defines from 0-Range the random will give out*/
-#define RANGE 20
-#define ITEMS 25
+#define RANGE 24
+#define ITEMS 26
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -93,6 +93,7 @@ void gen_rand_bids(dint MAXVAL) {
 #if TEST
      for(i = 1; i < MAXVAL;i++) {
 	  bids[i] = 1;
+	  O[i] = i;
      }
 #else
      for(i = 1; i < MAX;i++) {
@@ -161,8 +162,9 @@ void parse_wopt(dint MAXVAL) {
      stack * root = malloc(sizeof(stack));
      //DO NOT REMOVE -1
      root->conf = (MAXVAL)-1;
+     root->next = NULL;
      stack * curr = root;
-     while(curr != NULL) {
+     while(curr) {
 	     dint conf = curr->conf;
 	     if(conf != O[conf]) {
 		     dint diff = setdiff(conf,O[conf]);
@@ -205,7 +207,7 @@ void parse_wopt(dint MAXVAL) {
 /*n 15 t 9 n 16 t 42*/
 void max2(dint conf) {
      register dint card = cardinality(conf)/2;
-     register dint combinations = 1 << (cardinality(conf)-1);
+     register dint combinations = (1 << cardinality(conf))-1;
      register dint max = bids[conf];
      register dint set = conf;
      register dint tmp = 0;
@@ -252,9 +254,9 @@ void run_test(dint MAXVAL,dint items) {
 
 int main(void) {
      /*Start n amount of assets*/
-     dint from = 21;
+     dint from = 10;
      /*End amount of assets, inclusive*/
-     dint till = 25;
+     dint till = 26;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
