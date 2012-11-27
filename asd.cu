@@ -12,7 +12,7 @@
 #define TRUE 1
 #define FALSE 0
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
-#define TEST 1
+#define TEST 0
 /*Defines from 0-Range the random will give out*/
 #define RANGE 10000
 #define ITEMS 25
@@ -94,9 +94,11 @@ void gen_rand_bids(dint MAXVAL) {
 #else
 	for(i = 1; i < MAXVAL;i++) {
 		bids[i] = rand() % RANGE;
+		O[i] = i;
 	}
 	for(i = 1; i < MAXVAL;i*=2) {
-		bids[i] = 1;//rand() % RANGE;
+		bids[i] = rand() % RANGE;
+
 	}
 #endif
 
@@ -297,7 +299,8 @@ __global__ void subsetcomp22(unsigned int * f, /*Bid value*/
 			     unsigned int cardmax, /*cardinality of max allowance*/
 			     unsigned int maxval,
 			     unsigned int count,
-			    	unsigned int offset)
+			    	unsigned int offset,
+			    	unsigned int defbid)
 {
 
 	__shared__ unsigned int share[BLOCKSIZE];
@@ -308,7 +311,7 @@ __global__ void subsetcomp22(unsigned int * f, /*Bid value*/
 	/*        blockIdx.x, */
 	/*        conf); */
 	unsigned int i = I+offset;
-	/*subset var, but also for indexing later on*/
+	/*subset var, but also for indexing later  on*/
 	unsigned int s = SUBSET(i);
 //	unsigned int s2 = SUBSET(i);
 
@@ -335,9 +338,11 @@ __global__ void subsetcomp22(unsigned int * f, /*Bid value*/
 	}
 
 	if(tid == 0) {
-		if(lock[count+1] < share[0]) {
+		if(defbid>share[0])
+			return;
+		if(lock[count] < share[0]) {
 			if(atomicMax(&(lock[count]),share[0]) < share[0]) {
-				lock[count+1] = share[0];
+				lock[count] = share[0];
 				O[_conf] = step[0];
 				f[_conf] =share[0];
 				
@@ -354,7 +359,7 @@ int run_test(dint MAXVAL,dint items) {
 /*Setup the environment*/
 	//dint perm[MAXVAL];
 	printfo();
-	unsigned int i, c,t,count =0;
+	register unsigned int i, c,t,count =0;
 //	f = bids;
  	unsigned int *dev_f,*dev_o;
 
@@ -366,55 +371,56 @@ int run_test(dint MAXVAL,dint items) {
 	/* 	c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); */
 	/* } */
 	
-	unsigned int * dev_lock;
+	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
 	unsigned int devcount = 1024;// count;
 	unsigned int count2 = 0;
-	unsigned int * cpy_lock =(unsigned int *)malloc((devcount+10)*sizeof(int));
-	for(i = 0; i< devcount+10; i++)
-		cpy_lock[i] = 0;
+
 	printf("count %u\n",devcount);
 	
-
+	cudaProfilerStart();
 	count = 0;
-	HANDLE_ERROR(cudaMalloc((void **)&dev_lock,(10+devcount)*sizeof(int)));
+	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
+	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
  	HANDLE_ERROR(cudaMalloc((void **)&dev_f, MAXVAL*sizeof(int)));
  	HANDLE_ERROR(cudaMalloc((void **)&dev_o, MAXVAL*sizeof(int)));
 
  	HANDLE_ERROR(cudaMemcpy(dev_f,bids,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
  	HANDLE_ERROR(cudaMemcpy(dev_o,O,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
 //	HANDLE_ERROR(cudaMemcpy(dev_lock,cpy_lock,(10+devcount)*sizeof(int),cudaMemcpyHostToDevice));
-	HANDLE_ERROR(cudaMemset(dev_lock,0,devcount*sizeof(int)));
+	HANDLE_ERROR(cudaMemset(dev_lock1,0,devcount*sizeof(int)));
+	HANDLE_ERROR(cudaMemset(dev_lock2,0,devcount*sizeof(int)));
 	/*2.*/
 //	printfo(MAXVAL); printf("before\n");
-
+	dev_ptr = dev_lock1;
 	double bsize = 0;
+	count2 = 0;
 	for(i = 2; i <= items; i++) {
 		//	count =0;
 		/*Generate all combinations of cardinality i*/
-		count2 = 0;// bsize = 0;
+		// bsize = 0;
 		//	c = (1 << i) -1;
 		//	printf("blocks %d\n",(COMBS(c)/BLOCKSIZE)+1);
 		for(c = (1 << i) -1; c <= MAXVAL;) {
 
 			double tmp = (double) COMBS(c);
 			
-			while( bsize <= 128 && tmp > bsize) {
+			while( bsize < 128 && tmp > bsize) {
 				bsize += 32;
 			}
 			int blocks =(int)  ceil((tmp/bsize));
-			int remainder = blocks - 65535;
+//			int remainder = blocks - 65535;
 	//		while( blocks > 65535 ) {
 //				bsize += 32;
 //				blocks =(int)  ceil((tmp/bsize));
 //			}
 			//double bsize = BLOCKSIZE;
-			if(remainder > 0) {
-				blocks =65535;
-				subsetcomp22<<<remainder,bsize>>>(dev_f,dev_o,dev_lock,c,i/2,tmp,count2,65535*bsize);
+//			if(remainder > 0) {
+//				blocks =65535;
+//				subsetcomp22<<<remainder,bsize>>>(dev_f,dev_o,dev_lock,c,i/2,tmp,count2,65535*bsize);
 			
-			}
+//			}
 
-			subsetcomp22<<<blocks,bsize>>>(dev_f,dev_o,dev_lock,c,i/2,tmp,count2,0);
+			subsetcomp22<<<blocks,bsize>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,0,bids[c]);
 		
 			t = c | (c-1);
 			c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1));
@@ -422,14 +428,17 @@ int run_test(dint MAXVAL,dint items) {
 			count2 +=2;	
 			if(count2 < devcount)
 				continue;
-			HANDLE_ERROR(cudaDeviceSynchronize());		
-			HANDLE_ERROR(cudaMemset(dev_lock,0,devcount*sizeof(int)));
-//			HANDLE_ERROR(cudaMemcpy(dev_lock,cpy_lock,(devcount)*sizeof(int),cudaMemcpyHostToDevice));
+			HANDLE_ERROR(cudaMemset(dev_ptr,0,devcount*sizeof(int)));
+
+			if(dev_ptr == dev_lock1)
+				dev_ptr = dev_lock2;
+			else
+				dev_ptr = dev_lock1;
 			count2 = 0;
 		}
 
 		HANDLE_ERROR(cudaDeviceSynchronize());
-		HANDLE_ERROR(cudaMemset(dev_lock,0,devcount*sizeof(int)));
+		//HANDLE_ERROR(cudaMemset(dev_lock,0,devcount*sizeof(int)));
 //		HANDLE_ERROR(cudaMemcpy(dev_lock,cpy_lock,(10+devcount)*sizeof(int),cudaMemcpyHostToDevice));
       
 		printfo();
@@ -440,14 +449,15 @@ int run_test(dint MAXVAL,dint items) {
 	//int i;
 	HANDLE_ERROR(cudaFree(dev_f));
 	HANDLE_ERROR(cudaFree(dev_o));
-	HANDLE_ERROR(cudaFree(dev_lock));
-
+	HANDLE_ERROR(cudaFree(dev_lock1));
+	HANDLE_ERROR(cudaFree(dev_lock2));
 
 	HANDLE_ERROR(cudaDeviceReset());
-	free(cpy_lock);
+	cudaProfilerStop();
+
 //	printfo(MAXVAL);
 	//printf("items %u F[%u] = %u\n",items,MAXVAL,f[MAXVAL-1]);
-	parse_wopt(MAXVAL);
+
 	return count;
 }
 
@@ -455,9 +465,9 @@ int run_test(dint MAXVAL,dint items) {
 
 int main(void) {
 	/*Start n amount of assets*/
-	dint from = 23;
+	dint from = 19;
 	/*End amount of assets , inclusive*/
-	dint till = 23;
+	dint till = 19;
 	dint MAXVAL = (2 << (from-1));
 
 
@@ -475,10 +485,11 @@ int main(void) {
 		  int count = run_test(MAXVAL,from);
 		  end=clock();
 		  t=(end-start)/CLOCKS_PER_SEC;
+		  parse_wopt(MAXVAL);
 		  printf("\nTime taken =%lu for n= %u with count %d average per count %lf\n", (unsigned long) t,from,count,(double)t/count);
 /*Reset the arrays*/
-		memset(&f,'\0',sizeof(f));
-		memset(&O,'\0',sizeof(O));
+//		memset(&f,'\0',sizeof(f));
+//		memset(&O,'\0',sizeof(O));
 	}
 	free(O);
 	free(f);
