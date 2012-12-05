@@ -269,12 +269,18 @@ void parse_wopt(dint MAXVAL) {
 	ispec += blockDim.x;					\
 	}
 
-
+#define COMP_SET(V1,S1,V2,S2) {			\
+	if(V1>V2) {				\
+	V2 = V1;				\
+	S2 = S1;				\
+	}					\
+	}
+  
 
 #define MAXBLOCKSIZE 256U
 #define NAGENTS 24 
 #define NSTREAMS 16 
-#define NPERBLOCK 10
+#define NPERBLOCK 8
 
 
 __global__ void subsetcomp22(
@@ -315,172 +321,101 @@ __global__ void subsetcomp22(
 	step[threadIdx.x] = share[threadIdx.x] = 0U;
 	if(ispec <= maxval) {
 
-		/* unsigned int tmp = ispec; */
-		/* tmp += ((maxval - ispec > NPERBLOCK) ? NPERBLOCK : maxval - ispec); */
 
-		/* unsigned int i; */
-		/* for(;ispec<tmp; ispec++) { */
-		/* 	step[i] = SUBSET(ispec); */
-		/* 	if(__popc(step1) <= cardmax) { */
-		/* 		vals[isp] */
-
-		/* 	} */
-		/* } */
 		SET_TEST_FETCH(step1,val11,val12);
- 		/* step1 = SUBSET(ispec); */
-		/* val11 = val12 = 0U; */
-		/* if(__popc(step1) <= cardmax) { */
-		/* 	val11 = f[setdiff(_conf,step1)]; */
-		/* 	val12 = f[step1];	 */
-		/* } */
-		/* ispec += blockDim.x; */
+
 		SET_TEST_FETCH(step2,val21,val22);
 		
-		/* step2 = SUBSET(ispec); */
-		/* val21 = val22 = 0U; */
-		/* if(__popc(step2) <= cardmax && ispec <= maxval) { */
-		/* 	val21 = f[setdiff(_conf,step2)]; */
-		/* 	val22 = f[step2];	 */
-		/* } */
-		/* ispec += blockDim.x; */
+
 		SET_TEST_FETCH(step3,val31,val32);
-		/* step3 = SUBSET(ispec); */
-		/* val31 = val32 = 0U; */
-		/* if(__popc(step3) <= cardmax && ispec <= maxval) { */
-		/* 	val31 = f[setdiff(_conf,step3)]; */
-		/* 	val32 = f[step3];	 */
-		/* } */
-		/* ispec += blockDim.x; */
+
 		SET_TEST_FETCH(step4,val41,val42);
-		/* step4 = SUBSET(ispec); */
-		/* val41 = val42 = 0U; */
-		/* if(__popc(step4) <= cardmax && ispec <= maxval) { */
-		/* 	val41 = f[setdiff(_conf,step4)]; */
-		/* 	val42 = f[step4];	 */
-		/* } */
-		/* ispec += blockDim.x; */
 
 		/*step5*/
 		SET_TEST_FETCH(step5,val51,val52);
-		/* step5 = SUBSET(ispec); */
-		/* val51 = val52 = 0U; */
-		/* if(__popc(step5) <= cardmax && ispec <= maxval) { */
-		/* 	val51 = f[setdiff(_conf,step5)]; */
-		/* 	val52 = f[step5];	 */
-		/* } */
-		/* ispec += blockDim.x; */
-
 
 		val11 += val12;
 		val21 += val22;
-		
 
-		if(val21 > val11) {
-			val11 = val21; 
-			step1 = step2;
-		}
+		COMP_SET(val21,step2,val11,step1);
+
+		/* if(val21 > val11) { */
+		/* 	val11 = val21;  */
+		/* 	step1 = step2; */
+		/* } */
 
 		/*pipelined fetch*/
 		SET_TEST_FETCH(step2,val21,val22);
-		/* val21 = val22 = 0U; */
-		/* step2 = SUBSET(ispec); */
-		/* if(__popc(step2) <= cardmax && ispec <= maxval) { */
-		/* 	val21 = f[setdiff(_conf,step2)]; */
-		/* 	val22 = f[step2];	 */
-		/* } */
-		/* ispec += blockDim.x; */
-		
 
 		val31 += val32;		
-		if(val31 > val11) {
-			val11 = val31;
-			step1 = step3;
-		}
+		COMP_SET(val31,step3,val11,step1);
+		/* if(val31 > val11) { */
+		/* 	val11 = val31; */
+		/* 	step1 = step3; */
+		/* } */
 
 		/*pipelined fetch*/
 		SET_TEST_FETCH(step3,val31,val32);
-		/* val31 = val32 = 0U; */
-		/* step3 = SUBSET(ispec); */
-		/* if(__popc(step3) <= cardmax && ispec <= maxval) { */
-		/* 	val31 = f[setdiff(_conf,step3)]; */
-		/* 	val32 = f[step3];	 */
-		/* } */
-		/* ispec += blockDim.x; */
 
 		val41 += val42;
-		if(val41 > val11) {
-			val11 = val41;
-			step1 = step4;
-		}
+		COMP_SET(val41,step4,val11,step1);
+		/* if(val41 > val11) { */
+		/* 	val11 = val41; */
+		/* 	step1 = step4; */
+		/* } */
 
 		/*pipelined fetch*/
 		SET_TEST_FETCH(step4,val41,val42);
-		/* val41 = val42 = 0U; */
-		/* step4 = SUBSET(ispec); */
-		/* if(__popc(step4) <= cardmax && ispec <= maxval) { */
-		/* 	val41 = f[setdiff(_conf,step4)]; */
-		/* 	val42 = f[step4];	 */
-		/* } */
-		/* ispec += blockDim.x; */
 
 		val51 += val52;
-		if(val51 > val11) {
-			val11 = val51;
-			step1 = step5;
-		}
+		COMP_SET(val51,step5,val11,step1);
+		/* if(val51 > val11) { */
+		/* 	val11 = val51; */
+		/* 	step1 = step5; */
+		/* } */
 
 		/*step5*/
 		SET_TEST_FETCH(step5,val51,val52);
-		/* step5 = SUBSET(ispec); */
-		/* val51 = val52 = 0U; */
-		/* if(__popc(step5) <= cardmax && ispec <= maxval) { */
-		/* 	val51 = f[setdiff(_conf,step5)]; */
-		/* 	val52 = f[step5];	 */
-		/* } */
-		/* ispec += blockDim.x; */
-
 
 		share[threadIdx.x] = val11;
 		step[threadIdx.x] = step1;
 
 		/*pipelined fetch*/
 		SET_TEST_FETCH(step1,val11,val12);
-		/* step1 = SUBSET(ispec); */
-		/* val11 = val12 = 0U; */
-		/* if(__popc(step1) <= cardmax && ispec <= maxval) { */
-		/* 	val11 = f[setdiff(_conf,step1)]; */
-		/* 	val12 = f[step1];	 */
-		/* } */
-//		ispec += blockDim.x;
 
 		val21 += val22;
 		val31 += val32;
-		if(val31 > val21) {
-			val21 = val31; 
-			step2 = step2;
-		}
+		COMP_SET(val31,step3,val21,step2);
+		/* if(val31 > val21) { */
+		/* 	val21 = val31;  */
+		/* 	step2 = step2; */
+		/* } */
 		val41 += val42;
-		if(val41 > val21) {
-			val21 = val41;
-			step2 = step4;
-		}
+		COMP_SET(val41,step4,val21,step2);
+		/* if(val41 > val21) { */
+		/* 	val21 = val41; */
+		/* 	step2 = step4; */
+		/* } */
 
 		val51 += val52;
-		if(val51 > val11) {
-			val11 = val51;
-			step1 = step5;
-		}
+		COMP_SET(val51,step5,val21,step2);
+		/* if(val51 > val21) { */
+		/* 	val21 = val51; */
+		/* 	step2 = step5; */
+		/* } */
 
 		val11 += val12;
-		if(val11 > val21) {
-			val21 = val11;
-			step2 = step1;
-		}
+		COMP_SET(val11,step1,val21,step2);
+		/* if(val11 > val21) { */
+		/* 	val21 = val11; */
+		/* 	step2 = step1; */
+		/* } */
+		COMP_SET(val21,step2,share[threadIdx.x],step[threadIdx.x]);
 
-		if(val21 > share[threadIdx.x]) {
-			share[threadIdx.x] = val21;
-			step[threadIdx.x] = step2;
-		}
+		/* if(val21 > share[threadIdx.x]) { */
+		/* 	share[threadIdx.x] = val21; */
+		/* 	step[threadIdx.x] = step2; */
+		/* } */
 
 	}
 	ispec = I;
