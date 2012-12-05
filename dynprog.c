@@ -11,7 +11,7 @@
 #define TEST 1
 /*Defines from 0-Range the random will give out*/
 #define RANGE 24
-#define ITEMS 26
+#define ITEMS 27
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -233,7 +233,7 @@ void run_test(dint MAXVAL,dint items) {
      gen_rand_bids(MAXVAL);
      set_singleton_bid(MAXVAL);
      printfo();
-     dint i, c;
+    register dint i, c;
      /*2.*/
      for(i = 2; i <= items; i++) {
 	     for(c = (1 << i) -1; c < MAXVAL;) {
@@ -242,7 +242,7 @@ void run_test(dint MAXVAL,dint items) {
 			     printfo();
 		     }
 		     //bit hacks "Compute the lexicographically next bit permutation"
-		     dint t = c | (c-1);
+		    register dint t = c | (c-1);
 		     c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
 		     //end ref
 	     }
@@ -254,9 +254,9 @@ void run_test(dint MAXVAL,dint items) {
 
 int main(void) {
      /*Start n amount of assets*/
-     dint from = 10;
+     dint from = 20;
      /*End amount of assets, inclusive*/
-     dint till = 26;
+     dint till = 27;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
