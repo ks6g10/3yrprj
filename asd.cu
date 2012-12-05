@@ -259,14 +259,24 @@ void parse_wopt(dint MAXVAL) {
  *
  */ 
 
+#define SET_TEST_FETCH(STEP,S1,S2) {				\
+	S1 = S2 = 0U;						\
+	STEP = SUBSET(ispec);					\
+	if(__popc(STEP) <= cardmax && ispec <= maxval) {	\
+	S1 = f[setdiff(_conf,STEP)];				\
+	S2 = f[STEP];						\
+	}							\
+	ispec += blockDim.x;					\
+	}
+
+
+
 #define MAXBLOCKSIZE 256U
-#define NAGENTS 23
+#define NAGENTS 24 
 #define NSTREAMS 16 
-#if NAGENTS > 2
-#define NPERBLOCK 8
-#else
-#define NPERBLOCK 4
-#endif
+#define NPERBLOCK 10
+
+
 __global__ void subsetcomp22(
 		 	     unsigned int * __restrict__ f, /*Bid value*/
 			     unsigned int * __restrict__ O, /*The move array*/
@@ -280,8 +290,9 @@ __global__ void subsetcomp22(
 {
 
 	__shared__ unsigned int share[MAXBLOCKSIZE];
-	__shared__ unsigned int step[MAXBLOCKSIZE];
-		/* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%u\n", */
+	__shared__ unsigned int step[MAXBLOCKSIZE];     
+
+    		/* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%u\n", */
 	/*        threadIdx.x, */
 	/*        blockDim.x, */
 	/*        blockIdx.x, */
@@ -297,6 +308,7 @@ __global__ void subsetcomp22(
 //	unsigned int tid = threadIdx.x;
 
 	unsigned int val11,val12,step1,val21,val22,step2,val31,val32,step3,val41,val42,step4;
+	unsigned int val51,val52,step5;
 	/* unsigned int vals[NPERBLOCK][2]; */
 	/* unsigned int step[NPERBLOCK]; */
 	
@@ -314,119 +326,162 @@ __global__ void subsetcomp22(
 
 		/* 	} */
 		/* } */
+		SET_TEST_FETCH(step1,val11,val12);
+ 		/* step1 = SUBSET(ispec); */
+		/* val11 = val12 = 0U; */
+		/* if(__popc(step1) <= cardmax) { */
+		/* 	val11 = f[setdiff(_conf,step1)]; */
+		/* 	val12 = f[step1];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+		SET_TEST_FETCH(step2,val21,val22);
+		
+		/* step2 = SUBSET(ispec); */
+		/* val21 = val22 = 0U; */
+		/* if(__popc(step2) <= cardmax && ispec <= maxval) { */
+		/* 	val21 = f[setdiff(_conf,step2)]; */
+		/* 	val22 = f[step2];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+		SET_TEST_FETCH(step3,val31,val32);
+		/* step3 = SUBSET(ispec); */
+		/* val31 = val32 = 0U; */
+		/* if(__popc(step3) <= cardmax && ispec <= maxval) { */
+		/* 	val31 = f[setdiff(_conf,step3)]; */
+		/* 	val32 = f[step3];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+		SET_TEST_FETCH(step4,val41,val42);
+		/* step4 = SUBSET(ispec); */
+		/* val41 = val42 = 0U; */
+		/* if(__popc(step4) <= cardmax && ispec <= maxval) { */
+		/* 	val41 = f[setdiff(_conf,step4)]; */
+		/* 	val42 = f[step4];	 */
+		/* } */
+		/* ispec += blockDim.x; */
 
- 		step1 = SUBSET(ispec);
-		val11 = val12 = 0U;
-		val41 = val42 = 0U;
-		val21 = val22 = 0U;
-		val31 = val32 = 0U;
-		if(__popc(step1) <= cardmax) {
-			val11 = f[setdiff(_conf,step1)];
-			val12 = f[step1];	
-		}
-		ispec += blockDim.x;
-		step2 = SUBSET(ispec);
-		if(__popc(step2) <= cardmax && ispec <= maxval) {
-			val21 = f[setdiff(_conf,step2)];
-			val22 = f[step2];	
-		}
-		ispec += blockDim.x;
-		step3 = SUBSET(ispec);
+		/*step5*/
+		SET_TEST_FETCH(step5,val51,val52);
+		/* step5 = SUBSET(ispec); */
+		/* val51 = val52 = 0U; */
+		/* if(__popc(step5) <= cardmax && ispec <= maxval) { */
+		/* 	val51 = f[setdiff(_conf,step5)]; */
+		/* 	val52 = f[step5];	 */
+		/* } */
+		/* ispec += blockDim.x; */
 
-		if(__popc(step3) <= cardmax && ispec <= maxval) {
-			val31 = f[setdiff(_conf,step3)];
-			val32 = f[step3];	
-		}
-		ispec += blockDim.x;
-		step4 = SUBSET(ispec);
 
-		if(__popc(step4) <= cardmax && ispec <= maxval) {
-			val41 = f[setdiff(_conf,step4)];
-			val42 = f[step4];	
-		}
-		ispec += blockDim.x;
 		val11 += val12;
 		val21 += val22;
-		val31 += val32;
-		val41 += val42;
+		
 
 		if(val21 > val11) {
 			val11 = val21; 
 			step1 = step2;
 		}
-		if(val41 > val31) {
-			val31 = val41;
-			step3 = step4;
-		}
 
+		/*pipelined fetch*/
+		SET_TEST_FETCH(step2,val21,val22);
+		/* val21 = val22 = 0U; */
+		/* step2 = SUBSET(ispec); */
+		/* if(__popc(step2) <= cardmax && ispec <= maxval) { */
+		/* 	val21 = f[setdiff(_conf,step2)]; */
+		/* 	val22 = f[step2];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+		
+
+		val31 += val32;		
 		if(val31 > val11) {
 			val11 = val31;
 			step1 = step3;
 		}
+
+		/*pipelined fetch*/
+		SET_TEST_FETCH(step3,val31,val32);
+		/* val31 = val32 = 0U; */
+		/* step3 = SUBSET(ispec); */
+		/* if(__popc(step3) <= cardmax && ispec <= maxval) { */
+		/* 	val31 = f[setdiff(_conf,step3)]; */
+		/* 	val32 = f[step3];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+
+		val41 += val42;
+		if(val41 > val11) {
+			val11 = val41;
+			step1 = step4;
+		}
+
+		/*pipelined fetch*/
+		SET_TEST_FETCH(step4,val41,val42);
+		/* val41 = val42 = 0U; */
+		/* step4 = SUBSET(ispec); */
+		/* if(__popc(step4) <= cardmax && ispec <= maxval) { */
+		/* 	val41 = f[setdiff(_conf,step4)]; */
+		/* 	val42 = f[step4];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+
+		val51 += val52;
+		if(val51 > val11) {
+			val11 = val51;
+			step1 = step5;
+		}
+
+		/*step5*/
+		SET_TEST_FETCH(step5,val51,val52);
+		/* step5 = SUBSET(ispec); */
+		/* val51 = val52 = 0U; */
+		/* if(__popc(step5) <= cardmax && ispec <= maxval) { */
+		/* 	val51 = f[setdiff(_conf,step5)]; */
+		/* 	val52 = f[step5];	 */
+		/* } */
+		/* ispec += blockDim.x; */
+
+
 		share[threadIdx.x] = val11;
 		step[threadIdx.x] = step1;
-		
-#if NPERBLOCK >= 8		
-		step1 = SUBSET(ispec);
-		val11 = val12 = 0U;
-		val41 = val42 = 0U;
-		val21 = val22 = 0U;
-		val31 = val32 = 0U;
-		if(__popc(step1) <= cardmax && ispec < maxval) {
-			val11 = f[setdiff(_conf,step1)];
-			val12 = f[step1];	
-		}
-		ispec += blockDim.x;
-		step2 = SUBSET(ispec);
 
-		if(__popc(step2) <= cardmax && ispec < maxval) {
-			val21 = f[setdiff(_conf,step2)];
-			val22 = f[step2];	
-		}
-		ispec += blockDim.x;
-		step3 = SUBSET(ispec);
-
-		if(__popc(step3) <= cardmax && ispec < maxval) {
-			val31 = f[setdiff(_conf,step3)];
-			val32 = f[step3];	
-		}
-		ispec += blockDim.x;
-		step4 = SUBSET(ispec);
-
-		if(__popc(step4) <= cardmax && ispec < maxval) {
-			val41 = f[setdiff(_conf,step4)];
-			val42 = f[step4];	
-		}
+		/*pipelined fetch*/
+		SET_TEST_FETCH(step1,val11,val12);
+		/* step1 = SUBSET(ispec); */
+		/* val11 = val12 = 0U; */
+		/* if(__popc(step1) <= cardmax && ispec <= maxval) { */
+		/* 	val11 = f[setdiff(_conf,step1)]; */
+		/* 	val12 = f[step1];	 */
+		/* } */
 //		ispec += blockDim.x;
-		
-		val11 += val12;
+
 		val21 += val22;
 		val31 += val32;
+		if(val31 > val21) {
+			val21 = val31; 
+			step2 = step2;
+		}
 		val41 += val42;
-
-		if(val21 > val11) {
-			val11 = val21; 
-			step1 = step2;
-		}
-		if(val41 > val31) {
-			val31 = val41;
-			step3 = step4;
+		if(val41 > val21) {
+			val21 = val41;
+			step2 = step4;
 		}
 
-		if(val31 > val11) {
-			val11 = val31;
-			step1 = step3;
+		val51 += val52;
+		if(val51 > val11) {
+			val11 = val51;
+			step1 = step5;
 		}
 
-		if(val11 > share[threadIdx.x]) {
-			share[threadIdx.x] = val11;
-			step[threadIdx.x] = step1;
+		val11 += val12;
+		if(val11 > val21) {
+			val21 = val11;
+			step2 = step1;
 		}
-#endif
-		/* if(__popc(s) <= cardmax ) { */
-		/* 	share[tid] = f[setdiff(_conf,s)] + f[s]; */
-		/* 	step[tid] = s; */
-		/* } */
+
+		if(val21 > share[threadIdx.x]) {
+			share[threadIdx.x] = val21;
+			step[threadIdx.x] = step2;
+		}
+
 	}
 	ispec = I;
        
@@ -434,7 +489,7 @@ __global__ void subsetcomp22(
 	__syncthreads();
 #pragma unroll
 	for (; val11>0U; val11>>=1U) {
-		if (threadIdx.x < val11 && (ispec < maxval)) {
+		if (threadIdx.x < val11 && (ispec <= maxval)) {
 			if(share[threadIdx.x] < share[threadIdx.x + val11]) {
 				step[threadIdx.x] = step[threadIdx.x+val11];
 				share[threadIdx.x] = share[threadIdx.x+val11];
@@ -444,13 +499,11 @@ __global__ void subsetcomp22(
 	}
 
 	if(threadIdx.x == 0U) {
-		//unsigned int tshare = share[0U];
 		val11 = share[0U];
 		if(defbid>val11)
 			return;
 		if(lock[count] < val11) {
 			if(atomicMax(&(lock[count]),val11) < val11) {
-				//lock[count] = val11;
 				O[_conf] = step[0U];
 				f[_conf] = val11;
 				
@@ -468,17 +521,13 @@ int run_test(dint MAXVAL,dint items) {
 	//dint perm[MAXVAL];
 	printfo();
 	register unsigned int i, c,t,count =0;
-//	f = bids;
  	unsigned int *dev_f,*dev_o;
 
 	i = items/2;
 	count = 0;
-	/* for(c = (1 << i) -1; c <= MAXVAL;) { */
-	/* 	count++; */
-	/* 	t = c | (c-1); */
-	/* 	c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); */
-	/* } */
+
 	HANDLE_ERROR(cudaDeviceReset());
+
 	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
 	const	unsigned int devcount = 1024;// count;
 	unsigned int streams = NSTREAMS;
@@ -487,10 +536,7 @@ int run_test(dint MAXVAL,dint items) {
 	cudaStream_t stream[streams];
 	for(int i = 0;i < streams; i++)
 		HANDLE_ERROR(cudaStreamCreate(&stream[i]));
-	//HANDLE_ERROR(cudaStreamCreate(&stream[1]));
 	printf("count %u\n",devcount);
-//	HANDLE_ERROR(cudaDeviceSetCacheConfig(cudaFuncCachePreferL1));
-//	cudaProfilerStart();
 	count = 0;
 	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
 	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
@@ -499,7 +545,7 @@ int run_test(dint MAXVAL,dint items) {
 
  	HANDLE_ERROR(cudaMemcpy(dev_f,bids,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
  	HANDLE_ERROR(cudaMemcpy(dev_o,O,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
-//	HANDLE_ERROR(cudaMemcpy(dev_lock,cpy_lock,(10+devcount)*sizeof(int),cudaMemcpyHostToDevice));
+
 	HANDLE_ERROR(cudaMemset(dev_lock1,0,devcount*sizeof(int)));
 	HANDLE_ERROR(cudaMemset(dev_lock2,0,devcount*sizeof(int)));
 	/*2.*/
@@ -508,11 +554,6 @@ int run_test(dint MAXVAL,dint items) {
 	double bsize = 0;
 	count2 = 0;
 	for(i = 2; i <= items; i++) {
-		//	count =0;
-		/*Generate all combinations of cardinality i*/
-		// bsize = 0;
-		//	c = (1 << i) -1;
-		//	printf("blocks %d\n",(COMBS(c)/BLOCKSIZE)+1);
 		for(c = (1 << i) -1; c <= MAXVAL;) {
 
 			double tmp = (double) COMBS(c)/NPERBLOCK;
@@ -556,9 +597,6 @@ int run_test(dint MAXVAL,dint items) {
 			HANDLE_ERROR(cudaStreamSynchronize(stream[i]));
 
 		HANDLE_ERROR(cudaDeviceSynchronize());
-		//HANDLE_ERROR(cudaMemset(dev_lock,0,devcount*sizeof(int)));
-//		HANDLE_ERROR(cudaMemcpy(dev_lock,cpy_lock,(10+devcount)*sizeof(int),cudaMemcpyHostToDevice));
-      
 		printfo();
 	}
 	for (int i = 0; i < streams; ++i)
@@ -574,11 +612,7 @@ int run_test(dint MAXVAL,dint items) {
 	HANDLE_ERROR(cudaFree(dev_lock2));
 
 	HANDLE_ERROR(cudaDeviceReset());
-//	cudaProfilerStop();
-
 //	printfo(MAXVAL);
-	//printf("items %u F[%u] = %u\n",items,MAXVAL,f[MAXVAL-1]);
-
 	return count;
 }
 
@@ -613,189 +647,3 @@ int main(void) {
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff///old stuff
-
-/* __global__ void setglobal(unsigned int * f, /\*Bid value*\/ */
-/* 			  unsigned int * O, /\*The move array*\/ */
-/* 			  unsigned int * tf, */
-/* 			  unsigned int * to, /\*The configuration*\/ */
-/* 			  unsigned int conf /\*cardinality of max allowance*\/ */
-/* 			  ) { */
-
-/* 	unsigned int tid = threadIdx.x; */
-/* //	while(to[threadIdx.x] == 0); */
-/* //	while(tf[threadIdx.x] == 0); */
-/* 	extern __shared__ unsigned int share[]; */
-/* 	extern __shared__ unsigned int step[]; */
-/* 	share[tid] = tf[tid]; */
-/* 	step[tid]  = to[tid]; */
-
-/* 	__syncthreads(); */
-/* 	for (unsigned int s=blockDim.x/2; s>0; s>>=1) { */
-/* 		if (tid < s) { */
-/* 			if(share[tid] < share[tid + s]) { */
-/* 				share[tid] = share[tid+s]; */
-/* 				step[tid] = step[tid+s]; */
-/* 			} */
-/* 		} */
-/* 		__syncthreads(); */
-/* 	} */
-
-/* 	if(tid == 0) { */
-/* 		f[conf] = share[0]; */
-/* 		O[conf] = step[0]; */
-
-/* 		__threadfence(); */
-/* 	} */
-	
-/* } */
-
-/* __global__ void subsetcomp2(unsigned int * f, /\*Bid value*\/ */
-/* 			   unsigned int * O, /\*The move array*\/ */
-/* 			   unsigned int cardset, /\*The configuration*\/ */
-/* 			    unsigned int cardmax, /\*cardinality of max allowance*\/ */
-/* 			    unsigned int bidperthread, /\*how many bids should be looked at per thread*\/ */
-/* 			    unsigned int maxval)  */
-/* /\*The maximum value it can take, e.g tid can not be greater than 129*\/ */
-/* { */
-/* 	__shared__ unsigned int _conf; */
-/* //	__shared__ unsigned int max[128]; */
-/* //	__shared__ unsigned int step[128]; */
-/* 	unsigned int i,tid; */
-/* 	unsigned int subset=0,sum = 0; */
-/* 	unsigned int tmpset = 0,tmpsum = 0; */
-/* 	/\*thread 0 sets up variables*\/ */
-/* 	if(threadIdx.x == 0) { */
-/* 		/\*set up first permutaion eg 0011 for cardset 2*\/ */
-/* 		_conf = (1 << cardset) -1; */
-		
-/* 		/\*generate the conf value*\/ */
-/* 		for(i=0;i<blockIdx.x;i++) { */
-/* 			tid = _conf | (_conf-1); */
-/* 			_conf = (tid + 1) | (((~tid & -~tid) - 1) >> (__ffs(_conf))); */
-/* 		} */
-/* 		/\*set the configuration value to shared memory*\/ */
-/* //		_conf = c; */
-/* 		/\*put it also in the global memory*\/ */
-
-/* 		/\*make sure that all blocks sees the change, could possibly discard it*\/ */
-/* 		__threadfence(); */
-/* 		O[_conf] = _conf; */
-/* 		/\* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%u\n", *\/ */
-/* 		/\*        threadIdx.x, *\/ */
-/* 		/\*        blockDim.x, *\/ */
-/* 		/\*        blockIdx.x, *\/ */
-/* 		/\*        _conf); *\/ */
-/* 	} */
-/* //	max[threadIdx.x] = 0; */
-/* //	step[threadIdx.x] = 0; */
-/* 	__syncthreads();		 */
-/* //	unsigned int comb = (1 << (__popc(_conf)-1)); */
-	
-/* 	tid = threadIdx.x;//\*2; */
-	
-/* 	for(i = 1; i<= bidperthread && tid < maxval;i++) { */
-/* 		tmpset = SUBSET(tid); */
-/* 		if(__popc(tmpset) <= cardmax) { */
-/* 			tmpsum = f[tmpset]+f[setdiff(_conf,tmpset)]; */
-/* 			if(sum < tmpsum) { */
-/* 				subset = tmpset; */
-/* 				sum = tmpsum; */
-				
-/* 			} */
-			
-/* 		} */
-/* 		tid += blockDim.x; */
-/* 		//	printf("subset %u sum %u\n",tmpset,f[tmpset]+f[setdiff(_conf,tmpset)]); */
-/* 	} */
-
-/* 	__syncthreads(); */
-
-/* //	unsigned int temp = 0; */
-
-/* 	for(i = 0; i < blockDim.x;i++) { */
-/* 		if(threadIdx.x == i) { */
-/* 			if(f[_conf] < sum) { */
-/* 				f[_conf] = sum; */
-/* 				O[_conf] = subset; */
-/* 			} */
-/* 		} */
-/* 		__syncthreads(); */
-/* 	} */
-/* } */
-/* __global__ void subsetcomp(unsigned int * f, /\*Bid value*\/ */
-/* 			   unsigned int * O, /\*The move array*\/ */
-/* 			   unsigned int conf, /\*The configuration*\/ */
-/* 			   unsigned int cardinality) /\*cardinality of max allowance*\/ */
-/* { */
-/* 	unsigned int max; */
-/* 	/\*tmp_max is a temporary max variable that is not subject to mutex lock*\/ */
-/* //	__shared__ unsigned int tmp_max; */
-/* 	__shared__ unsigned int tmpstore[192]; */
-/* 	/\* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%d\n", *\/ */
-/* 	/\*        threadIdx.x, *\/ */
-/* 	/\*        blockDim.x, *\/ */
-/* 	/\*        blockIdx.x, *\/ */
-/* 	/\*        I); *\/ */
-/* 	unsigned int subset = (~conf+(I+1))&conf; */
-/* 	if(__popc(subset) <= cardinality) */
-/* 		tmpstore[I] = f[setdiff(conf,subset)] + f[subset]; */
-/* 	__syncthreads(); */
-/* //	__threadfence(); */
-/* 	if(threadIdx.x == 0) { */
-/* 		unsigned int i = 0; */
-/* 		unsigned int c = 0; */
-/* 		for(;i < blockDim.x;i++) */
-/* 		{ */
-/* 			if(tmpstore[i] > max) { */
-/* 				max = tmpstore[i]; */
-/* 				c = i; */
-/* 			} */
-/* 		} */
-/* 		if(atomicMax(&f[conf],max) < max) { */
-/* 			subset = (~conf+((c+blockDim.x*blockIdx.x)+1))&conf; */
-/* 			atomicExch(&O[conf],subset); */
-/* 		} */
-/* 	} */
-/* } */
-/* __global__ void add(unsigned int * p, unsigned int * f, unsigned int * O) */
-/* { */
-/* 	int tid = blockIdx.x; */
-
-/* 	unsigned int conf = p[tid]; */
-/* 	unsigned int card = (unsigned int) __popc(conf)/2; */
-/* 	unsigned int combinations = 1 << (__popc(conf) -1); */
-/* 	unsigned int max = f[conf]; */
-/* 	unsigned int set = p[tid]; */
-
-/* 	unsigned int tmp = 0; */
-/* 	unsigned int subset; */
-/* 	unsigned int inverse = ~set; */
-/* 	unsigned int i; */
-/* 	if(max == 0) { */
-/* 		printf("hello"); */
-/* 		return; */
-/* 	} */
-/* /\**\/ */
-	
-/* 	for(i = 1;i<combinations; i++) { */
-/* 		subset = (inverse+i)&conf; */
-/* 		if(__popc(subset) > card) */
-/* 			continue; */
-/* 		tmp = f[setdiff(conf,subset)] + f[subset]; */
-/* 		if(max < tmp) { */
-/* 			max = tmp; */
-/* 			set = subset; */
-/* 		} */
-/* 	} */
-/* 	f[conf] = max; */
-/* 	O[conf] = set; */
-/* } */
