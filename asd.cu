@@ -12,7 +12,7 @@
 #define TRUE 1
 #define FALSE 0
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
-#define TEST 1
+#define TEST 0
 /*Defines from 0-Range the random will give out*/
 #define RANGE 10000
 #define ITEMS 25
@@ -52,7 +52,7 @@ dint * bids;
 // dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
 dint * f;
 dint * O;
- 
+
 struct _stack {
 	dint conf;
 	struct _stack * next;
@@ -85,9 +85,8 @@ void gen_rand_bids(dint MAXVAL) {
 		bids[i] = 1;
 		O[i] = i;
 	}
-//	bids[1] =0;
-//	bids[2] = 0;
-//	bids[32769] = 20;
+	bids[1] =0;
+	bids[2] = 0;
 #else
 	for(i = 1; i < MAXVAL;i++) {
 		bids[i] = rand() % RANGE;
@@ -296,9 +295,8 @@ __global__ void subsetcomp22(
 {
 
 	__shared__ unsigned int share[MAXBLOCKSIZE];
-	__shared__ unsigned int step[MAXBLOCKSIZE];     
-
-    		/* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%u\n", */
+	__shared__ unsigned int step[MAXBLOCKSIZE];
+		/* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%u\n", */
 	/*        threadIdx.x, */
 	/*        blockDim.x, */
 	/*        blockIdx.x, */
@@ -309,6 +307,7 @@ __global__ void subsetcomp22(
 //	unsigned int i = I+offset;
 	/*subset var, but also for indexing later  on*/
 //	unsigned int s;// = SUBSET(i);
+
 
 
 //	unsigned int tid = threadIdx.x;
@@ -507,6 +506,7 @@ int run_test(dint MAXVAL,dint items) {
 			if(remaindern > 0) {
 				blocks =65535;
 				subsetcomp22<<<remaindern,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,65535*bsize,bids[c]);
+			
 			}
 #endif
 			subsetcomp22<<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,0,bids[c]);
@@ -558,6 +558,7 @@ int main(void) {
 	dint from = NAGENTS;
 	/*End amount of assets , inclusive*/
 	dint MAXVAL = (2 << (from-1));
+
 
 	time_t start,end,t;
 	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));

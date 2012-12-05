@@ -205,6 +205,7 @@ void parse_wopt(dint MAXVAL) {
  */
 
 /*n 15 t 9 n 16 t 42*/
+dint no,yes;
 void max2(dint conf) {
      register dint card = cardinality(conf)/2;
      register dint combinations = (1 << cardinality(conf))-1;
@@ -214,10 +215,13 @@ void max2(dint conf) {
      register dint subset;
      register dint inverse = ~conf;
      register dint i;
-     for(i = 1;i<combinations; i++) {
+     for(i = 1;i<=combinations; i++) {
 	  subset = (inverse+i)&conf;
-	  if(cardinality(subset) > card)
-	       continue;
+	  if(cardinality(subset) > card) {
+		  no++;
+		  continue;
+	  }
+	  yes++;
 	  tmp = f[setdiff(conf,subset)] + f[subset];
 	  if(max < tmp) {
 	       max = tmp;
@@ -236,7 +240,7 @@ void run_test(dint MAXVAL,dint items) {
     register dint i, c;
      /*2.*/
      for(i = 2; i <= items; i++) {
-	     for(c = (1 << i) -1; c < MAXVAL;) {
+	     for(c = (1 << i) -1; c <= MAXVAL;) {
 		     if(cardinality(c) == i && bids[c] > 0) {
 			     max2(c);
 			     printfo();
@@ -248,7 +252,7 @@ void run_test(dint MAXVAL,dint items) {
 	     }
      }
      printf("\n");
-     parse_wopt(MAXVAL);
+     // parse_wopt(MAXVAL);
 }
 
 
@@ -267,12 +271,13 @@ int main(void) {
      
      /*Run all tests*/
      for(;from <= till;from++) {
+	     no = yes = 0;
 	  MAXVAL = (2 << (from-1));
 	  start=clock();//predefined  function in c
 	  run_test(MAXVAL,from);
 	  end=clock();
 	  t=(end-start)/CLOCKS_PER_SEC;
-	  printf("\nTime taken =%lu for n= %u\n", (unsigned long) t,from);
+	  printf("\nTime taken =%lu for n= %u yes %u no %u\n", (unsigned long) t,from,yes,no);
 /*Reset the arrays*/
 	  memset(&f,'\0',sizeof(f));
 	  memset(&O,'\0',sizeof(O));
