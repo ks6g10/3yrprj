@@ -9,10 +9,10 @@
 
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
 #define DEBUG 0
-#define TRUE 1
+#define TRUE 1 
 #define FALSE 0
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
-#define TEST 0
+#define TEST 1
 /*Defines from 0-Range the random will give out*/
 #define RANGE 10000
 #define ITEMS 25
@@ -33,7 +33,7 @@
 
 #define SUBSET(X)((~_conf+(X+1))&_conf)
 #define SETSUM(X)(f[setdiff(_conf,X)]+f[X])
-#define I (threadIdx.x + blockDim.x * blockIdx.x)
+
 
 static void HandleError( cudaError_t err, const char *file,int line ) {
 	if (err != cudaSuccess) {
@@ -52,7 +52,7 @@ dint * bids;
 // dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
 dint * f;
 dint * O;
-
+ 
 struct _stack {
 	dint conf;
 	struct _stack * next;
@@ -85,8 +85,9 @@ void gen_rand_bids(dint MAXVAL) {
 		bids[i] = 1;
 		O[i] = i;
 	}
-	bids[1] =0;
-	bids[2] = 0;
+//	bids[1] =0;
+//	bids[2] = 0;
+//	bids[32769] = 20;
 #else
 	for(i = 1; i < MAXVAL;i++) {
 		bids[i] = rand() % RANGE;
@@ -246,42 +247,33 @@ void parse_wopt(dint MAXVAL) {
 	printf("n = %u\n",tmp);
 }
 
-
-/*
- *
- * 1. gen all combinations of card n
- * 2. for each combination, generate all subset with condition |s| < |c|/2
- * 3. for each subset check if |s| < |c|/2 then compute the sum
- * 4. 
- *
- *
- *
- */ 
-
-#define SET_TEST_FETCH(STEP,S1,S2) {				\
-	S1 = S2 = 0U;						\
-	STEP = SUBSET(ispec);					\
-	if(__popc(STEP) <= cardmax && ispec <= maxval) {	\
-	S1 = f[setdiff(_conf,STEP)];				\
-	S2 = f[STEP];						\
-	}							\
-	ispec += blockDim.x;					\
+#define I (threadIdx.x + blockDim.x * blockIdx.x)
+#define SET_TEST_FETCH(STEP,S1,S2) {					\
+		S1 = S2 = 0U;						\
+		STEP = SUBSET(ispec);					\
+		if(__popc(STEP) <= cardmax && ispec <= maxval) {	\
+			S1 = f[setdiff(_conf,STEP)];			\
+			S2 = f[STEP];					\
+		}							\
+		ispec += inc;						\
 	}
 
+/* ispec += blockDim.x; change back if not working */
+
 #define COMP_SET(V1,S1,V2,S2) {			\
-	if(V1>V2) {				\
-	V2 = V1;				\
-	S2 = S1;				\
-	}					\
+		if(V1>V2) {			\
+			V2 = V1;		\
+			S2 = S1;		\
+		}				\
 	}
   
 
 #define MAXBLOCKSIZE 256U
-#define NAGENTS 24 
+#define NAGENTS 23
 #define NSTREAMS 16 
 #define NPERBLOCK 8
-
-
+#define HALFBLOCK 4
+ 
 __global__ void subsetcomp22(
 		 	     unsigned int * __restrict__ f, /*Bid value*/
 			     unsigned int * __restrict__ O, /*The move array*/
@@ -293,153 +285,67 @@ __global__ void subsetcomp22(
 			     unsigned int offset,
 			     unsigned int defbid)
 {
-
+/*these arrays are shared between all threads in the same block */
 	__shared__ unsigned int share[MAXBLOCKSIZE];
-	__shared__ unsigned int step[MAXBLOCKSIZE];
-		/* printf("threadid.x\t%d\tblockDim.x\t%d\tblockIdx.x\t%d\tI\t%u\n", */
-	/*        threadIdx.x, */
-	/*        blockDim.x, */
-	/*        blockIdx.x, */
-	/*        conf); */
-//	unsigned int i = I+offset;
-//	unsigned int ispec = (threadIdx.x*NPERBLOCK + blockDim.x * blockIdx.x) + offset;
-	unsigned int ispec = (threadIdx.x + blockDim.x * blockIdx.x) + offset;
-//	unsigned int i = I+offset;
-	/*subset var, but also for indexing later  on*/
-//	unsigned int s;// = SUBSET(i);
+	__shared__ unsigned int step[MAXBLOCKSIZE];     
 
-
-
-//	unsigned int tid = threadIdx.x;
-
-	unsigned int val11,val12,step1,val21,val22,step2,val31,val32,step3,val41,val42,step4;
-	unsigned int val51,val52,step5;
-	/* unsigned int vals[NPERBLOCK][2]; */
-	/* unsigned int step[NPERBLOCK]; */
-	
+	unsigned int inc = gridDim.x*blockDim.x; //corrected the increment
+	unsigned int ispec = I + offset;
+//	int val11;
+	int i;
+	unsigned int val1[HALFBLOCK];//the value for one of the subset sums
+	unsigned int val2[HALFBLOCK];//the value for the other subset sums
+	unsigned int stept[HALFBLOCK]; // the step array
 	step[threadIdx.x] = share[threadIdx.x] = 0U;
 	if(ispec <= maxval) {
 
+/*Local for the thread, check all its bid and pick the biggest*/
+#pragma unroll 4
+		for(i = 0; i < HALFBLOCK; i++) {				
+			SET_TEST_FETCH(stept[i],val1[i],val2[i]);
+		}
+#pragma unroll 4
+		for(i = 0; i < HALFBLOCK; i++) {		
+			val1[i] += val2[i];
+			COMP_SET(val1[i],stept[i],share[threadIdx.x],step[threadIdx.x]);			
+			SET_TEST_FETCH(stept[i],val1[i],val2[i]); // pipelined fetch
+		}
 
-		SET_TEST_FETCH(step1,val11,val12);
-
-		SET_TEST_FETCH(step2,val21,val22);
-		
-
-		SET_TEST_FETCH(step3,val31,val32);
-
-		SET_TEST_FETCH(step4,val41,val42);
-
-		/*step5*/
-		SET_TEST_FETCH(step5,val51,val52);
-
-		val11 += val12;
-		val21 += val22;
-
-		COMP_SET(val21,step2,val11,step1);
-
-		/* if(val21 > val11) { */
-		/* 	val11 = val21;  */
-		/* 	step1 = step2; */
-		/* } */
-
-		/*pipelined fetch*/
-		SET_TEST_FETCH(step2,val21,val22);
-
-		val31 += val32;		
-		COMP_SET(val31,step3,val11,step1);
-		/* if(val31 > val11) { */
-		/* 	val11 = val31; */
-		/* 	step1 = step3; */
-		/* } */
-
-		/*pipelined fetch*/
-		SET_TEST_FETCH(step3,val31,val32);
-
-		val41 += val42;
-		COMP_SET(val41,step4,val11,step1);
-		/* if(val41 > val11) { */
-		/* 	val11 = val41; */
-		/* 	step1 = step4; */
-		/* } */
-
-		/*pipelined fetch*/
-		SET_TEST_FETCH(step4,val41,val42);
-
-		val51 += val52;
-		COMP_SET(val51,step5,val11,step1);
-		/* if(val51 > val11) { */
-		/* 	val11 = val51; */
-		/* 	step1 = step5; */
-		/* } */
-
-		/*step5*/
-		SET_TEST_FETCH(step5,val51,val52);
-
-		share[threadIdx.x] = val11;
-		step[threadIdx.x] = step1;
-
-		/*pipelined fetch*/
-		SET_TEST_FETCH(step1,val11,val12);
-
-		val21 += val22;
-		val31 += val32;
-		COMP_SET(val31,step3,val21,step2);
-		/* if(val31 > val21) { */
-		/* 	val21 = val31;  */
-		/* 	step2 = step2; */
-		/* } */
-		val41 += val42;
-		COMP_SET(val41,step4,val21,step2);
-		/* if(val41 > val21) { */
-		/* 	val21 = val41; */
-		/* 	step2 = step4; */
-		/* } */
-
-		val51 += val52;
-		COMP_SET(val51,step5,val21,step2);
-		/* if(val51 > val21) { */
-		/* 	val21 = val51; */
-		/* 	step2 = step5; */
-		/* } */
-
-		val11 += val12;
-		COMP_SET(val11,step1,val21,step2);
-		/* if(val11 > val21) { */
-		/* 	val21 = val11; */
-		/* 	step2 = step1; */
-		/* } */
-		COMP_SET(val21,step2,share[threadIdx.x],step[threadIdx.x]);
-
-		/* if(val21 > share[threadIdx.x]) { */
-		/* 	share[threadIdx.x] = val21; */
-		/* 	step[threadIdx.x] = step2; */
-		/* } */
-
+#pragma unroll 4
+		for(i = 0; i < HALFBLOCK; i++) {		
+			val1[i] += val2[i];
+			COMP_SET(val1[i],stept[i],share[threadIdx.x],step[threadIdx.x]);
+			//	SET_TEST_FETCH(stept[i],val1[i],val2[i]);
+		}
 	}
+
 	ispec = I;
        
-	val11= blockDim.x >> 1U;
+	i= blockDim.x >> 1;
 	__syncthreads();
+/*do max reduction on the shared array for all threads inside the block*/
 #pragma unroll
-	for (; val11>0U; val11>>=1U) {
-		if (threadIdx.x < val11 && (ispec <= maxval)) {
-			if(share[threadIdx.x] < share[threadIdx.x + val11]) {
-				step[threadIdx.x] = step[threadIdx.x+val11];
-				share[threadIdx.x] = share[threadIdx.x+val11];
+	for (; i>0; i>>=1) {
+		if (threadIdx.x < i && (ispec <= maxval)) {
+			if(share[threadIdx.x] < share[threadIdx.x + i]) {
+				step[threadIdx.x] = step[threadIdx.x+i];
+				share[threadIdx.x] = share[threadIdx.x+i];
 			}
 		}
 		__syncthreads();
 	}
 
+/*thread 0 will attempt to set to global memory the agreed maximum value inside the block,
+* if it is greater than the original bid and the bid in the lock array
+*/
 	if(threadIdx.x == 0U) {
-		val11 = share[0U];
-		if(defbid>val11)
+		i = share[0U];
+		if(defbid => i)
 			return;
-		if(lock[count] < val11) {
-			if(atomicMax(&(lock[count]),val11) < val11) {
+		if(lock[count] < i) {
+			if(atomicMax(&(lock[count]),i) < i) {
 				O[_conf] = step[0U];
-				f[_conf] = val11;
+				f[_conf] = i; 
 				
 			} 
 		}
@@ -454,7 +360,7 @@ int run_test(dint MAXVAL,dint items) {
 /*Setup the environment*/
 	//dint perm[MAXVAL];
 	printfo();
-	register unsigned int i, c,t,count =0;
+	register unsigned int i, c,count =0;
  	unsigned int *dev_f,*dev_o;
 
 	i = items/2;
@@ -464,10 +370,10 @@ int run_test(dint MAXVAL,dint items) {
 
 	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
 	const	unsigned int devcount = 1024;// count;
-	unsigned int streams = NSTREAMS;
-	unsigned int count2 = 0;
-	unsigned int streamcount = 0;
-	cudaStream_t stream[streams];
+	register unsigned int streams = NSTREAMS;
+	register unsigned int count2 = 0;
+	register unsigned int streamcount = 0;
+	register cudaStream_t stream[streams];
 	for(int i = 0;i < streams; i++)
 		HANDLE_ERROR(cudaStreamCreate(&stream[i]));
 	printf("count %u\n",devcount);
@@ -485,9 +391,13 @@ int run_test(dint MAXVAL,dint items) {
 	/*2.*/
 //	printfo(MAXVAL); printf("before\n");
 	dev_ptr = dev_lock1;
-	double bsize = 0;
+	register unsigned int bsize = 0;
+	register int blocks;
+	int prev =0;
 	count2 = 0;
 	for(i = 2; i <= items; i++) {
+		time_t start,end,t;
+		start=clock();
 		for(c = (1 << i) -1; c <= MAXVAL;) {
 
 			double tmp = (double) COMBS(c)/NPERBLOCK;
@@ -495,22 +405,22 @@ int run_test(dint MAXVAL,dint items) {
 			while( bsize < MAXBLOCKSIZE && tmp > bsize) {
 				bsize += 32;
 			}
-			int blocks =(int)  ceil((tmp/bsize));
-#if __CUDA_ARCH__ < 300
-			int remaindern = blocks - 65535;
-			while( blocks > 65535 ) {
-				bsize += 32;
-				blocks =(int)  ceil((tmp/bsize));
-			}
-			//double bsize = BLOCKSIZE;
-			if(remaindern > 0) {
-				blocks =65535;
-				subsetcomp22<<<remaindern,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,65535*bsize,bids[c]);
-			
-			}
-#endif
+			blocks =(int)  ceil((tmp/bsize));
+/* #if __CUDA_ARCH__ < 300 */
+/* 			int remaindern = blocks - 65535; */
+/* 			while( blocks > 65535 ) { */
+/* 				bsize += 32; */
+/* 				blocks =(int)  ceil((tmp/bsize)); */
+/* 			} */
+/* 			printf("hello"); */
+/* 			//double bsize = BLOCKSIZE; */
+/* 			if(remaindern > 0) { */
+/* 				blocks =65535; */
+/* 				subsetcomp22<<<remaindern,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,65535*bsize,bids[c]); */
+/* 			} */
+/* #endif */
 			subsetcomp22<<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,0,bids[c]);
-		
+			//	printf("blocks %d block size %u stream count %d\n",blocks,bsize,streamcount);
 			t = c | (c-1);
 			c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1));
 			count++;
@@ -528,6 +438,10 @@ int run_test(dint MAXVAL,dint items) {
 				dev_ptr = dev_lock1;
 			count2 = 0;
 		}
+		end=clock();
+		t=(end-start)/CLOCKS_PER_SEC;
+		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu\n",i,blocks,bsize,count-prev,t);
+		prev =	count;
 		for (int i = 0; i < streams; ++i)
 			HANDLE_ERROR(cudaStreamSynchronize(stream[i]));
 
@@ -556,15 +470,13 @@ int run_test(dint MAXVAL,dint items) {
 int main(void) {
 	/*Start n amount of assets*/
 	dint from = NAGENTS;
-	/*End amount of assets , inclusive*/
 	dint MAXVAL = (2 << (from-1));
-
 
 	time_t start,end,t;
 	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
 	bids = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
 	f = bids;
-	/*Run all tests*/
+
 
 	MAXVAL = (2 << (from-1));
 	gen_rand_bids(MAXVAL);
@@ -576,7 +488,7 @@ int main(void) {
 	t=(end-start)/CLOCKS_PER_SEC;
 	parse_wopt(MAXVAL);
 	printf("\nTime taken =%lu for n= %u with count %d average per count %lf\n", (unsigned long) t,from,count,(double)t/count);
-/*Reset the arrays*/
+
 
 	free(O);
 	free(f);
