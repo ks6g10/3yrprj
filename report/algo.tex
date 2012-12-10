@@ -1,0 +1,109 @@
+\documentclass[a4paper, 12pt, notitlepage]{report}
+
+\usepackage{amsfonts} % if you want blackboard bold symbols e.g. for real numbers
+\usepackage{graphicx} % if you want to include jpeg or pdf pictures
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+
+
+\title{Combinatorial optimization of NP-hard problems using dynamic GPU programming} % change this
+\author{Kim Svensson} % change this
+\date{\today} % change this
+
+\begin{document}
+\maketitle
+\begin{center}
+
+Supervised by Dr.\ Sarvapali D. Ramchurn. % change this
+\end{center}
+\thispagestyle{empty}
+
+\thispagestyle{empty}
+\pagestyle{empty}
+%\begin{algorithm}
+%\caption{Calculate the }
+\textbf{Input}
+
+$f$\hfill The array which holds the bids
+
+$O$\hfill The step array that holds set configurations
+
+$ \Phi $ \hfill A reference to an maximum value bucket unique for each kernel
+
+$C$\hfill The set to do subset construction on
+
+$\Psi$\hfill The maximum subset construction index
+
+
+\textbf{Variables} 
+
+$\lambda$ \hfill How many bids should be evaluated per thread
+
+$\Upsilon$ \hfill A shared array containing threads maximum bid values
+
+$\Delta$ \hfill A shared array containing threads maximum bid subsets
+
+$\upsilon$ \hfill A local array containing one of the threads bid value
+
+$C'$ \hfill A local array containing one of the threads bid subsets
+
+$bid = blockIdx.x$ \hfill Which block the threads belong to
+
+$bdim = blockdim.x$ \hfill How many threads inside the block
+
+$tid = threadIdx.x$ \hfill The thread index inside the block
+
+$\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
+
+
+
+\newpage
+\pagebreak
+\textbf{Start of algorithm}
+\begin{algorithmic}[1]
+\STATE $\Delta _{tid} := \Upsilon _{tid} := 0$ \hfill Initilize values to zero
+\IF{$\psi \leq \Psi$} 
+\FOR {$i := 1$ to $\lambda$}
+\STATE $C'_{i} := (\neg C+\psi) \bigcap C$ \hfill Integer subset construction
+\IF{$ \vert C'_{i} \vert \leq \dfrac{\vert C\vert }{2} \wedge \psi \leq \Psi$}
+\STATE $\upsilon _{i} := f[C/C'_{i}]+f[C'_{i}]$
+\ENDIF 
+\STATE $\psi := \psi + 1$
+\IF {$\upsilon _{i} > \Upsilon _{tid}$}
+\STATE $\Upsilon _{tid} := \upsilon _{i}$
+\STATE $\Delta _{tid} := C'_{i}$
+\ENDIF
+\ENDFOR
+\ENDIF
+
+\STATE $syncthreads$ \hfill make sure all threads have finished
+\FOR {$i = bdim >> 1$ to $0$}
+\IF{$tid < i$}
+\IF{$\Upsilon _{tid} \leq \Upsilon _{tid+i}$}
+\STATE $\Delta _{tid} := \Delta _{tid+i}$
+\STATE $\Upsilon _{tid} := \Upsilon _{tid+i}$
+\ENDIF
+\ENDIF
+\STATE $syncthreads$ \hfill make sure all threads have finished
+\STATE $i := i >> 1$ \hfill bitshift i once to the right
+\ENDFOR
+\IF{$tid == 0$}
+\STATE\algorithmicif{$\Upsilon _0 == 0$} \algorithmicthen\ {$ exit$}
+\algorithmicend\ \algorithmicif \hfill exit if the bid is zero
+\STATE\algorithmicif{$f_C > \Upsilon _0$} \algorithmicthen\ {$ exit$} 
+\algorithmicend\ \algorithmicif \hfill exit if the bid is less than for C
+\IF{$(atomicMax(\Phi,\Upsilon _0) < \Upsilon _0$} 
+\STATE $O_C = \Delta _0$ \hfill Sets the current optimal step in global memory
+\STATE $f_C = \Upsilon _0$ \hfill Sets the current optimal value in global memory
+\STATE $threadfence$ \hfill make sure all threads see the changes
+\ENDIF
+
+\ENDIF
+\RETURN $O,f$
+\end{algorithmic}
+%\end{algorithm}
+
+\end{document}
