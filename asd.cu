@@ -46,12 +46,10 @@ static void HandleError( cudaError_t err, const char *file,int line ) {
 
 
 /*		           0 1 2 3 4 5 6 7 8			*/
-dint * bids;
+uint32_t * bids,* f, * O;
 // dint bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
 //dint bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
 // dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
-dint * f;
-dint * O;
  
 struct _stack {
 	dint conf;
@@ -77,14 +75,25 @@ struct _lockstruct {
 inline  dint cardinality( dint seta) {
 	return __builtin_popcount(seta);
 }
-
+int indexa =0;
 void gen_rand_bids(dint MAXVAL) {
 	register dint i = 0;
 #if TEST
 	for(i = 1; i < MAXVAL;i++) {
-		bids[i] = 1;
+		bids[i] = 0;
 		O[i] = i;
 	}
+//     unsigned int seed = (unsigned)time ( NULL );
+	//   srand(seed);
+	indexa++;
+	//indexa = rand() % MAXVAL;
+     bids[indexa] = 100;
+     printf("index %d \n",indexa);
+     if(indexa >= MAXVAL) {
+	     printf("No error\n");
+	     exit(0);
+     }
+	     
 //	bids[1] =0;
 //	bids[2] = 0;
 //	bids[32769] = 20;
@@ -184,8 +193,8 @@ void printfo(dint MAXVAL) {
 	}
 }
 
-void parse_wopt(dint MAXVAL) {
-	printf("parse maxval = %u\n",MAXVAL);
+int parse_wopt(dint MAXVAL) {
+	//printf("parse maxval = %u\n",MAXVAL);
 	//wopt at start contain MAX at wopt[0] which is the combination that goes in bids[wopt[n]]
 	stack * root =(stack *) malloc(sizeof(stack));
 	stack * sroot = NULL;
@@ -199,20 +208,20 @@ void parse_wopt(dint MAXVAL) {
 		dint conf = curr->conf;
 		if(conf == 0) {
 			printf("EXIT FAILURE\n");
-			return;
+			return 1;
 		}
 		/*if something is wrong*/
-		if(count > 40) {
-			fprintf(stderr,"Something went wrong at line %d in %s\n",__LINE__,__FILE__);
-			return;
-		}
-			printf("curr %u\t",curr->conf);
+			if(count > 40) {
+				fprintf(stderr,"Something went wrong at line %d in %s\n",__LINE__,__FILE__);
+				return 1;
+			}
+		printf("curr %u\t\n",curr->conf);
 		if(conf != O[conf]) {
 
 			dint diff = setdiff(conf,O[conf]);
 			curr->conf = O[conf];
 			stack * tmp = (stack *) malloc(sizeof(stack));
-			printf("diff %u\t O[conf] %u f %u\n",diff,O[conf],f[conf]);
+			printf("diff %u\t conf %u\t O[diff] %u\t O[conf] %u\t f %u\n",diff,conf,O[diff],O[conf],f[conf]);
 			tmp->conf = diff;
 			tmp->next = curr;
 			root = tmp;
@@ -235,16 +244,31 @@ void parse_wopt(dint MAXVAL) {
 		scurr->next = NULL;
 
 	}
+	printf("\n");
 	curr = sroot;
 	dint tmp = 0;
 	while(curr != NULL) {
-		printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
-		tmp++;
+		if(bids[curr->conf]) {
+			if(curr->conf != indexa) {
+				printf("something is wrong,wrong bid\n");
+			       
+				return 1;
+			}
+			printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
+			tmp++;
+		}
 		stack * tmp = curr;
 		curr = curr->next;
 		free(tmp);
 	}
+	if(tmp < 1) {
+		printf("something is wrong, no bids\n");
+			       
+		return 1;
+
+	}
 	printf("n = %u\n",tmp);
+	return 0;
 }
 
 #define I (threadIdx.x + blockDim.x * blockIdx.x)
@@ -269,56 +293,54 @@ void parse_wopt(dint MAXVAL) {
   
 
 #define MAXBLOCKSIZE 256U
-#define NAGENTS 23
+#define NAGENTS 21
 #define NSTREAMS 16 
 #define NPERBLOCK 8
-#define HALFBLOCK 4
- 
+#define HALFBLOCK 8
+   
 __global__ void subsetcomp22(
-		 	     unsigned int * __restrict__ f, /*Bid value*/
-			     unsigned int * __restrict__ O, /*The move array*/
-			     unsigned int * __restrict__ lock,
-			     unsigned int _conf, /*The configuration*/
-			     unsigned int cardmax, /*cardinality of max allowance*/
-			     unsigned int maxval,
-			     unsigned int count,
-			     unsigned int offset,
-			     unsigned int defbid)
+	/*0*/	uint32_t * __restrict__ f, /*Bid value*/ 
+	/*1*/	unsigned int * __restrict__ O, /*The move array*/
+	/*2*/	unsigned int * __restrict__ lock,
+	/*3*/	unsigned int _conf, /*The configuration*/
+	/*4*/	unsigned int cardmax, /*cardinality of max allowance*/
+	/*5*/	unsigned int maxval,
+	/*6*/	unsigned int count,
+	/*7*/	unsigned int offset,
+	/*8*/	unsigned int defbid)
 {
 /*these arrays are shared between all threads in the same block */
 	__shared__ unsigned int share[MAXBLOCKSIZE];
 	__shared__ unsigned int step[MAXBLOCKSIZE];     
-
-	unsigned int inc = gridDim.x*blockDim.x; //corrected the increment
-	unsigned int ispec = I + offset;
+	unsigned int inc;
+//	if(offset < NPERBLOCK)
+//		inc = offset;//gridDim.x*blockDim.x; //corrected the increment
+//	else
+	inc = 1;//NPERBLOCK;
+	unsigned int ispec = (threadIdx.x*NPERBLOCK + NPERBLOCK*blockDim.x * blockIdx.x);//I + offset;
 //	int val11;
 	int i;
-	unsigned int val1[HALFBLOCK];//the value for one of the subset sums
-	unsigned int val2[HALFBLOCK];//the value for the other subset sums
-	unsigned int stept[HALFBLOCK]; // the step array
-	step[threadIdx.x] = share[threadIdx.x] = 0U;
+	unsigned int val1[NPERBLOCK];//the value for one of the subset sums
+	unsigned int val2[NPERBLOCK];//the value for the other subset sums
+	unsigned int stept[NPERBLOCK]; // the step array
+	step[threadIdx.x] = _conf;
+	share[threadIdx.x] = 0;
 	if(ispec <= maxval) {
 
 /*Local for the thread, check all its bid and pick the biggest*/
-#pragma unroll 4
-		for(i = 0; i < HALFBLOCK; i++) {				
+//#pragma unroll
+		//	for(i = 0; i < NPERBLOCK; i++) {				
+			
+		//	}
+//#pragma unroll
+		for(i = 0; i < NPERBLOCK; i++) {		
 			SET_TEST_FETCH(stept[i],val1[i],val2[i]);
-		}
-#pragma unroll 4
-		for(i = 0; i < HALFBLOCK; i++) {		
 			val1[i] += val2[i];
 			COMP_SET(val1[i],stept[i],share[threadIdx.x],step[threadIdx.x]);			
-			SET_TEST_FETCH(stept[i],val1[i],val2[i]); // pipelined fetch
+			//		SET_TEST_FETCH(stept[i],val1[i],val2[i]); // pipelined fetch
 		}
 
-#pragma unroll 4
-		for(i = 0; i < HALFBLOCK; i++) {		
-			val1[i] += val2[i];
-			COMP_SET(val1[i],stept[i],share[threadIdx.x],step[threadIdx.x]);
-			//	SET_TEST_FETCH(stept[i],val1[i],val2[i]);
-		}
 	}
-
 	ispec = I;
        
 	i= blockDim.x >> 1;
@@ -327,7 +349,7 @@ __global__ void subsetcomp22(
 #pragma unroll
 	for (; i>0; i>>=1) {
 		if (threadIdx.x < i && (ispec <= maxval)) {
-			if(share[threadIdx.x] < share[threadIdx.x + i]) {
+			if(share[threadIdx.x] <= share[threadIdx.x + i]) {
 				step[threadIdx.x] = step[threadIdx.x+i];
 				share[threadIdx.x] = share[threadIdx.x+i];
 			}
@@ -338,15 +360,18 @@ __global__ void subsetcomp22(
 /*thread 0 will attempt to set to global memory the agreed maximum value inside the block,
 * if it is greater than the original bid and the bid in the lock array
 */
+
 	if(threadIdx.x == 0U) {
 		i = share[0U];
-		if(defbid => i)
+		if(i == 0)
+			return;
+		if(defbid >= i)
 			return;
 		if(lock[count] < i) {
 			if(atomicMax(&(lock[count]),i) < i) {
 				O[_conf] = step[0U];
 				f[_conf] = i; 
-				
+				__threadfence();
 			} 
 		}
 	}
@@ -376,7 +401,7 @@ int run_test(dint MAXVAL,dint items) {
 	register cudaStream_t stream[streams];
 	for(int i = 0;i < streams; i++)
 		HANDLE_ERROR(cudaStreamCreate(&stream[i]));
-	printf("count %u\n",devcount);
+//	printf("count %u\n",devcount);
 	count = 0;
 	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
 	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
@@ -391,21 +416,29 @@ int run_test(dint MAXVAL,dint items) {
 	/*2.*/
 //	printfo(MAXVAL); printf("before\n");
 	dev_ptr = dev_lock1;
-	register unsigned int bsize = 0;
+	register unsigned int bsize;
+	if(MAXBLOCKSIZE > 1)
+		bsize = 0;
+	else
+		bsize = 1;
 	register int blocks;
 	int prev =0;
 	count2 = 0;
 	for(i = 2; i <= items; i++) {
 		time_t start,end,t;
 		start=clock();
+		int tmp;
+		double threads;
 		for(c = (1 << i) -1; c <= MAXVAL;) {
 
-			double tmp = (double) COMBS(c)/NPERBLOCK;
 			
-			while( bsize < MAXBLOCKSIZE && tmp > bsize) {
+			tmp =  COMBS(c);///NPERBLOCK;
+			threads = ((double) tmp)/ NPERBLOCK;
+			threads = ceil(threads);
+			while( bsize < MAXBLOCKSIZE && threads > bsize) {
 				bsize += 32;
 			}
-			blocks =(int)  ceil((tmp/bsize));
+			blocks =(int)  ceil((threads/bsize));
 /* #if __CUDA_ARCH__ < 300 */
 /* 			int remaindern = blocks - 65535; */
 /* 			while( blocks > 65535 ) { */
@@ -419,7 +452,7 @@ int run_test(dint MAXVAL,dint items) {
 /* 				subsetcomp22<<<remaindern,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,65535*bsize,bids[c]); */
 /* 			} */
 /* #endif */
-			subsetcomp22<<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,0,bids[c]);
+			subsetcomp22<<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,i/2,tmp,count2,((unsigned int)threads),bids[c]);
 			//	printf("blocks %d block size %u stream count %d\n",blocks,bsize,streamcount);
 			t = c | (c-1);
 			c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1));
@@ -440,7 +473,7 @@ int run_test(dint MAXVAL,dint items) {
 		}
 		end=clock();
 		t=(end-start)/CLOCKS_PER_SEC;
-		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu\n",i,blocks,bsize,count-prev,t);
+		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu \t tmp %d\n",i,blocks,bsize,count-prev,t,tmp);
 		prev =	count;
 		for (int i = 0; i < streams; ++i)
 			HANDLE_ERROR(cudaStreamSynchronize(stream[i]));
@@ -471,23 +504,26 @@ int main(void) {
 	/*Start n amount of assets*/
 	dint from = NAGENTS;
 	dint MAXVAL = (2 << (from-1));
-
+	
 	time_t start,end,t;
 	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
 	bids = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
 	f = bids;
-
-
+	int ret_val =0;
+	int count;
+	while(ret_val == 0) {
+	
 	MAXVAL = (2 << (from-1));
 	gen_rand_bids(MAXVAL);
 	set_singleton_bid(MAXVAL);
 	printf("maxval %u from %u\n",MAXVAL,from);
 	start=clock();//predefined  function in c
-	int count = run_test(MAXVAL,from);
+	 count = run_test(MAXVAL,from);
 	end=clock();
 	t=(end-start)/CLOCKS_PER_SEC;
-	parse_wopt(MAXVAL);
+	ret_val= parse_wopt(MAXVAL);
 	printf("\nTime taken =%lu for n= %u with count %d average per count %lf\n", (unsigned long) t,from,count,(double)t/count);
+	}
 
 
 	free(O);
