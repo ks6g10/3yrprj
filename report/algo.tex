@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt, notitlepage]{report}
+\documentclass[a4paper, 12pt]{report}
 
 \usepackage{amsfonts} % if you want blackboard bold symbols e.g. for real numbers
 \usepackage{graphicx} % if you want to include jpeg or pdf pictures
@@ -7,18 +7,116 @@
 \usepackage{amssymb}
 \usepackage{algorithmic}
 \usepackage{algorithm}
+ %%% Time-stamp: <mainrep.tex 13:08, 25 May 2009 by P. Sunthar>
+
+%%% $Log:$
 
 
-\title{Combinatorial optimization of NP-hard problems using dynamic GPU programming} % change this
-\author{Kim Svensson} % change this
-\date{\today} % change this
+
+
+%%% Some commonly used packages (make sure your LaTeX installation
+%%% contains these packages, if not ask your senior to help installing
+%%% the packages)
+
+\usepackage[bookmarks,%
+            a4paper,%
+            breaklinks,%
+            backref=false,%
+            dvips,ps2pdf,%
+            pdfhighlight=/I,%
+            pdffitwindow=true,%
+            pdfstartview=Fit,%
+            pdfcenterwindow=true,%
+            linkbordercolor={1 0 1},%
+            %colorlinks,%
+            pdftitle=Progress report%
+            pdfauthor=Kim Svensson]%
+            {hyperref}
+
+
+
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{natbib}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\graphicspath{{expt/}}
+\usepackage{setspace}
+\usepackage{natbib}
+\usepackage{times}
+\usepackage[varg]{txfonts}
+
+%%% Macro definitions for Commonly used symbols
+\newcommand{\etas}{\ensuremath{\eta_{\mathrm{s}}}}
+\newcommand{\tdegree}{A project progress report submitted for the award of\\}
+\newcommand{\degree}{\tdegree CompSci MEng\\*}
+\newcommand{\texam}{Second examiner: }
+\newcommand{\exam}{\texam Dr. Sarvapali D. Ramchurn}
+\newcommand{\tsupervisor}{Project supervisor: }
+\newcommand{\supervisor}{\tsupervisor Dr.\ Sarvapali D. Ramchurn}
+\newcommand{\school}{Electronics and Computer Science \\*
+Faculty of Physical and Applied Sciences\\*
+University of Southampton\\*}
+
+
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
+
 
 \begin{document}
-\maketitle
-\begin{center}
 
-Supervised by Dr.\ Sarvapali D. Ramchurn. % change this
-\end{center}
+\author{Kim Svensson}
+\date{\today}
+\title{Combinatorial optimization of NP-hard problems using dynamic GPU programming}
+
+\makeatletter
+\begin{titlepage}
+\begin{changemargin}{-2cm}{-2cm}
+\begin{center}
+\LARGE\school %
+
+\LARGE
+\vfill
+\@author \\*
+\@date \\*
+\doublespacing
+\@title \\*
+\vfill
+\singlespacing
+\supervisor \\*
+\exam \\*
+\vfill
+\degree
+\end{center} 
+\end{changemargin}
+\end{titlepage}
+\makeatother
+
+\pagenumbering{arabic}
+\begin{abstract}
+Solving problems that have an exponential growth in time and space have always been a difficulty as the advancement in computing speed only allows for a small increase of the problem size. The advent of parallell computing using a GPU have enabled a speedup when it comes to problems which have some data and computation independant parts.
+The purpose of this project is to develop and evaluate dynamic programming algorithms suitable for parallell computation to find an optimal solution in the domain of complete coalition formation and combinatorial auctions. The heterogeneous algorithm is run using the Nvidia CUDA framework and preliminary result shows a substantial difference and is publishable results.
+
+\end{abstract}
+\chapter*{Background}
+
+Coalition structure generation is the consept of, given N agents, generate a coalition such that the outcome is optimal in regards to a given property. This however will be an extreme challenge as the number of possible partitions grows exponential, specifically $O(n^n)$~\cite{rahwan2008improved}.
+
+\chapter*{Literature search}
+
+
+\chapter*{Work}
+
+To this point I have implemented an algorithm called the Dynamic Programing (DP) algorithm by Rothkopf, M.H et al~\cite{rothkopf1998computationally} which is used to solve combinatorial auctions, but it can also be used for complete coalition formation. It was first implemented as a sequential algorithm to allow firstly for a baseline to compare execution speed by. But also to gain knowledge about the algorithm to allow easier transition towards a parallell version. The algorithm I have derived that run on the GPU consists of generating a disjoint subset from a given set, and then calculated the value the disjoint sets give.
+
 \thispagestyle{empty}
 
 \thispagestyle{empty}
@@ -58,52 +156,74 @@ $tid = threadIdx.x$ \hfill The thread index inside the block
 
 $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
 
-
-
-\newpage
-\pagebreak
 \textbf{Start of algorithm}
 \begin{algorithmic}[1]
 \STATE $\Delta _{tid} := \Upsilon _{tid} := 0$ \hfill Initilize values to zero
 \IF{$\psi \leq \Psi$} 
 \FOR {$i := 1$ to $\lambda$}
-\STATE $C'_{i} := (\neg C+\psi) \bigcap C$ \hfill Integer subset construction
+\STATE $C'_{i} := (\neg C+\psi) \bigcap C$ \label{lst:line:subset} \hfill Integer subset construction
 \IF{$ \vert C'_{i} \vert \leq \dfrac{\vert C\vert }{2} \wedge \psi \leq \Psi$}
-\STATE $\upsilon _{i} := f[C/C'_{i}]+f[C'_{i}]$
+\STATE $\upsilon _{i} := f[C/C'_{i}]+f[C'_{i}]$ \hfill Set the split subset coalition value
 \ENDIF 
-\STATE $\psi := \psi + 1$
-\IF {$\upsilon _{i} > \Upsilon _{tid}$}
-\STATE $\Upsilon _{tid} := \upsilon _{i}$
-\STATE $\Delta _{tid} := C'_{i}$
+
+\IF {$\upsilon _{i} > \Upsilon _{tid}$} 
+\STATE $\Upsilon _{tid} := \upsilon _{i}$  \hfill Set value if $\upsilon _{tid}$ is greatest so far
+\STATE $\Delta _{tid} := C'_{i}$ \hfill Set subset if $\upsilon _{tid}$ is greatest so far
 \ENDIF
+\STATE $\psi := \psi + 1$ \hfill Increment by one
 \ENDFOR
 \ENDIF
 
 \STATE $syncthreads$ \hfill make sure all threads have finished
-\FOR {$i = bdim >> 1$ to $0$}
-\IF{$tid < i$}
-\IF{$\Upsilon _{tid} \leq \Upsilon _{tid+i}$}
-\STATE $\Delta _{tid} := \Delta _{tid+i}$
+\FOR {$i := bdim >> 1$ to $0$} \label{lst:line:mid}
+\IF{$tid < i$} \label{lst:line:midmid}
+\IF{$\Upsilon _{tid} \leq \Upsilon _{tid+i}$} \label{lst:line:midmidmid}
+\STATE $\Delta _{tid} := \Delta _{tid+i}$ 
 \STATE $\Upsilon _{tid} := \Upsilon _{tid+i}$
 \ENDIF
 \ENDIF
 \STATE $syncthreads$ \hfill make sure all threads have finished
-\STATE $i := i >> 1$ \hfill bitshift i once to the right
-\ENDFOR
-\IF{$tid == 0$}
+\STATE $i := i >> 1$ \hfill bitshift i once to the right \label{lst:line:midlast}
+\ENDFOR \label{lst:line:midend}
+\IF{$tid == 0$} \label{lst:line:last}
 \STATE\algorithmicif{$\Upsilon _0 == 0$} \algorithmicthen\ {$ exit$}
 \algorithmicend\ \algorithmicif \hfill exit if the bid is zero
 \STATE\algorithmicif{$f_C > \Upsilon _0$} \algorithmicthen\ {$ exit$} 
 \algorithmicend\ \algorithmicif \hfill exit if the bid is less than for C
-\IF{$(atomicMax(\Phi,\Upsilon _0) < \Upsilon _0$} 
+\IF{$atomicMax(\Phi,\Upsilon _0) < \Upsilon _0$}  \label{lst:line:lastmid}
 \STATE $O_C = \Delta _0$ \hfill Sets the current optimal step in global memory
 \STATE $f_C = \Upsilon _0$ \hfill Sets the current optimal value in global memory
 \STATE $threadfence$ \hfill make sure all threads see the changes
-\ENDIF
+\ENDIF 
 
-\ENDIF
+\ENDIF \label{lst:line:lastend}
 \RETURN $O,f$
 \end{algorithmic}
 %\end{algorithm}
+Line~\ref{lst:line:subset} represent how the subset construction is made, it starts by taking the inverse of the integer $C$, add together the subset construction index $\psi$, and finally apply a bitwise AND with $C$ to get a garanteed subset of $C$. This implementation suffers though from generating subsets of greater cardinality needed, but testing have shown that the instruction overhead for generating these unwanted subsets only account for 18\% to 8\% overhead as shown by figure~\ref{overhead}.\\ 
 
+The code from~\ref{lst:line:mid} to~\ref{lst:line:midend} details how to do a reduction among all threads inside a block to find the maximum value from all of the subset constructions the threads have previously done. Where for each cycle of the loop, half of the threads will compare its value to a corresponding inactive thread and set its value and subset to whichever value is largest. Then it will reduce the number of active threads by half and continues until there is no more threads to be active. The loop will run $log(n)$ times where $n$ is the number of threads in the block.\\
+
+Lines~\ref{lst:line:last} to~\ref{lst:line:lastend} represent how each block of a kernel update their maximum value and subset to the global memory for all the consecutive kernels to see. Beginning at line~\ref{lst:line:last}, here only the thread with an id of zero will pass in order to reduce the memory bandwidth but also as there is only need for one thread to update the global memory. Line~\ref{lst:line:lastmid} ensures that only a bigger value can be set by first querying the bucket for this kernel, if it is bigger it can continue to set the global memory. The reason for the atomic function is due to that blocks from the same kernel can and will run concurrently, therefore it will cause race conditions.
+\newpage
+\subsection*{Result}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.7\linewidth]{loggraph.jpg}
+\caption{LOG10 runtime per N Agents\label{log}}
+\end{figure}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.7\linewidth]{subset.jpg}
+\caption{Percentage of generated subset of wrong cardinality\label{overhead}}
+\end{figure}
+\subsection*{Discussion}
+As it stands now, the algorithm that is running using the CUDA framework have an substantial performance increase as shown in figure~\ref{log}. As seen from the figure, the slope of line CPU and GPU is different, indicating an different growth rate for an increase of n, thus having a different time complexity. Empirical measurement show that for each increase in n, the runtime for the cpu increase by three. While the GPU bound algorithm starts its growth at 2 and the growth increases to 2.42 for 25 agents.
+
+Figure~\ref{overhead} is the evaluation of line~\ref{lst:line:subset} on how many susbsets generated that invalidates the condition $\vert C'_{i} \vert \leq \dfrac{\vert C\vert }{2}$ where $C'_i \subset C$. This is a measure that describe the instruction overhead for that particular part of the algorithm, and as it stands now with the algorithm being limited by memory latency due to random access, this instruction overhead can be considered negligible. This measure however does not take into account any duplicate subsets that are occasionally generated.
+\chapter*{Future work}
+As there is currently a selected number of algorithms that is regarded faster than the DP algorithm such as the IDP algorithm \citep{rahwan2008improved} that have shown a prommising efficiency. The next step would be to implement it both on the CPU and GPU. However as it is fairly simmilar to the DP algorithm, implementation may be trivial and further goals need to be determined. As the current work only works for a small number of agents, the next step would be to implement an algorithm to solve more realistic combinatoral auctions with an relative large number of agents and low number of coalition structures.
+
+\bibliographystyle{plain}
+\bibliography{ref}
 \end{document}
