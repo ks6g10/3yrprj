@@ -8,10 +8,10 @@
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
 #define DEBUG 0
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
-#define TEST 1
+#define TEST 0
 /*Defines from 0-Range the random will give out*/
 #define RANGE 24
-#define ITEMS 20
+#define ITEMS 27
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -23,22 +23,22 @@
 #define dint uint64_t
 #endif
 
-/*0000 0 0
- *0001 1 1 1
- *0010 1 2 2
- *0011 2 3 2
- *0100 1 4 4
- *0101 2 5 1
- *0110 2 6 3
- *0111 3 7
- *1000 1 8 8
- *1001 2 9 1
- *1010 2 10 2
- *1011 3 11
- *1100 2 12 
- *1101 3 13
- *1110 3 14
- *1111 4 15
+/*0000  0
+ *0001  1 1
+ *0010  2 2
+ *0011  3 2
+ *0100  4 4
+ *0101  5 1
+ *0110  6 3
+ *0111  7
+ *1000  8 8
+ *1001  9 1
+ *1010  10 2
+ *1011  11
+ *1100  12 
+ *1101  13
+ *1110  14
+ *1111  15
  *10000  
  *
  *        111  
@@ -139,7 +139,7 @@ inline void set_singleton_bid(dint MAXVAL) {
      register  dint i;
      for(i =1; i< MAXVAL; i*=2) {
 	  f[i] = bids[i];
-	  if(bids[i] > 0)
+	  //if(bids[i] > 0)
 	       O[i] = i;
      }
 }
@@ -207,19 +207,19 @@ int parse_wopt(dint MAXVAL) {
 	dint tmp = 0;
 	while(curr != NULL) {
 		if(bids[curr->conf]) {
-			if(curr->conf != indexa) {
-				printf("something is wrong index %d\n",indexa);
+			//	if(curr->conf != indexa) {
+			//		printf("something is wrong index %d\n",indexa);
 			       
-				return 1;
-			}
-			//	printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
+			//		return 1;
+			//	}
+				printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
 			tmp++;
 		}
 		stack * tmp = curr;
 		curr = curr->next;
 		free(tmp);
 	}
-	//printf("n = %u\n",tmp);
+	printf("n = %u\n",tmp);
 	return 0;
 }
 
@@ -240,27 +240,35 @@ int parse_wopt(dint MAXVAL) {
 
 /*n 15 t 9 n 16 t 42*/
 uint64_t no,yes;
-void max2(dint conf) {
+void max2(dint conf,dint idp) {
      register dint card = cardinality(conf)/2;
-     register dint combinations = (1 << cardinality(conf))-1;
+     register dint combinations = (1 << cardinality(conf)-1)-1;
      register dint max = bids[conf];
      register dint set = conf;
      register dint tmp = 0;
      register dint subset;
      register dint inverse = ~conf;
      register dint i;
+     O[conf] = set;
      for(i = 1;i<=combinations; i++) {
 	  subset = (inverse+i)&conf;
-	  if(cardinality(subset) > card) {
+	  register unsigned int setcard = cardinality(subset);
+
+	  //  if(setcard > card) {
 		  //  no++;
+	  //	  continue;
+	  //  }
+	   if(setcard < idp) {
 		  continue;
 	  }
 	  // yes++;
+	  
 	  tmp = f[setdiff(conf,subset)] + f[subset];
-	  if(max <= tmp) {
-	       max = tmp;
-	       set = subset;
+	  if(max < tmp) {
+		  max = tmp;
+		  set = subset;
 	  }
+	  
      }
      f[conf] = max;
      O[conf] = set;
@@ -281,23 +289,20 @@ void run_test(dint MAXVAL,dint items) {
 /*Setup the environment*/
 
      
-     //    printfo(MAXVAL);
-     //   printf("before\n");
+	     printfo(MAXVAL);
+	    printf("before\n");
     register dint i, c;
      /*2.*/
      for(i = 2; i <= items; i++) {
 	     for(c = (1 << i) -1; c <= MAXVAL;) {
-		     if(cardinality(c) == i) {
-			     max2(c);
-			  
-		     }
+		     max2(c,items-i);			  
 		     //bit hacks "Compute the lexicographically next bit permutation"
 		    register dint t = c | (c-1);
 		     c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
 		     //end ref
 	     }
      }
-     //   printfo(MAXVAL);
+               printfo(MAXVAL);
      //   printf("\n");
       
 }
@@ -305,9 +310,9 @@ void run_test(dint MAXVAL,dint items) {
 
 int main(void) {
      /*Start n amount of assets*/
-     dint from = 16;
+     dint from = 3;
      /*End amount of assets, inclusive*/
-     dint till = 18;
+     dint till = 25;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
@@ -322,14 +327,15 @@ int main(void) {
       while(ret_val == 0) {
 	     no = yes = 0;
 	  MAXVAL = (2 << (from-1));
-	  start=clock();//predefined  function in c
+	  
 	  if(gen_rand_bids(MAXVAL))
 		  break;
 	  set_singleton_bid(MAXVAL);
+	  start=clock();//predefined  function in c
 	  run_test(MAXVAL,from);
 	  end=clock();
 	  t=(end-start)/CLOCKS_PER_SEC;
-	  // printf("\nTime taken =%lu for n= %u yes %lu no %lu\n", (unsigned long) t,from,yes,no);
+	  printf("\nTime taken =%lu for n= %u yes %lu no %lu\n", (unsigned long) t,from,yes,no);
 /*Reset the arrays*/
 	  ret_val = parse_wopt(MAXVAL);
 	  memset(&f,'\0',sizeof(f));
