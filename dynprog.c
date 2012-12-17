@@ -8,7 +8,7 @@
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
 #define DEBUG 0
 /*Test sets all bids to one, which should give you n=|ITEMS| bids on output*/
-#define TEST 0
+#define TEST 1
 /*Defines from 0-Range the random will give out*/
 #define RANGE 24
 #define ITEMS 27
@@ -23,46 +23,6 @@
 #define dint uint64_t
 #endif
 
-/*0000  0
- *0001  1 1
- *0010  2 2
- *0011  3 2
- *0100  4 4
- *0101  5 1
- *0110  6 3
- *0111  7
- *1000  8 8
- *1001  9 1
- *1010  10 2
- *1011  11
- *1100  12 
- *1101  13
- *1110  14
- *1111  15
- *10000  
- *
- *        111  
- *        9
- *        /|\
- *    110 101 011
- *     10   6   6  
- *     |\ / \ /|      
- *    100 010 001
- *     4   3   20
- *
- * [0,0,0,0,0,0] * [0000,0000,0000,0000,0000,0000,0000]
- * [0,0,0,0,0,0] * [0000,0000,0000,0000,0000,0000,0000]
- * [0,0,0,0,0,0] * [0000,0000,0000,0000,0000,0000,0000]
- * [0,0,0,0,0,5] * [1111,0000,1101,0000,0111,0000,0101] > 
- * [0,0,0,0,6,4] * [0000,1110,1100,0000,0000,0110,0100] > 7
- * [0,0,0,3,2,1] * [1011,1010,1001,1000,0011,0010,0001] > 4
- *
- */
-
-/*                    1         2        4       8        16*/
-
-char * assets[3] = {"apple","mapple","potato"};
-/*		           0 1 2 3 4 5 6 7 8			*/
 dint bids[MAX];
 // dint bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
 //dint bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
@@ -71,14 +31,6 @@ dint wopt[MAX] = {0};
 dint f[MAX] = {0};
 dint O[MAX] = {0};
   
-inline  dint intersect( dint seta,  dint setb) {
-     return (seta & setb);
-}
-
-inline  dint _union( dint seta,  dint setb) {
-     return (seta | setb);
-}
-
 inline  dint setdiff( dint seta,  dint setb) {
 
      return (seta & ~setb);
@@ -92,7 +44,7 @@ int gen_rand_bids(dint MAXVAL) {
      register dint i = 0;
 #if TEST
      for(i = 1; i < MAXVAL;i++) {
-	  bids[i] = 0;
+	  bids[i] = 1;
 	  O[i] = i;
      }
      //unsigned int seed = (unsigned)time ( NULL );
@@ -111,19 +63,6 @@ int gen_rand_bids(dint MAXVAL) {
      for(i = 1; i < MAX;i++) {
 	  bids[i] = rand() % RANGE;
      }
-#endif
-
-#if DEBUG
-     printf("i =\t");
-     for(i = 1; i < MAX;i++) {
-	  printf("%u\t",i);
-     }
-     printf("\n");
-     printf("val =\t");
-     for(i = 1; i < MAX;i++) {
-	  printf("%u\t",bids[i]);
-     }
-     printf("\n");
 #endif
 }
 
@@ -205,13 +144,14 @@ int parse_wopt(dint MAXVAL) {
 //	printf("\n");
 	curr = sroot;
 	dint tmp = 0;
+	unsigned int bool = 0;
 	while(curr != NULL) {
 		if(bids[curr->conf]) {
-			//	if(curr->conf != indexa) {
-			//		printf("something is wrong index %d\n",indexa);
-			       
-			//		return 1;
-			//	}
+				if(curr->conf == indexa) {
+					//printf("something is wrong index %d\n",indexa);
+					
+					return 0;
+				}
 				printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
 			tmp++;
 		}
@@ -220,25 +160,9 @@ int parse_wopt(dint MAXVAL) {
 		free(tmp);
 	}
 	printf("n = %u\n",tmp);
-	return 0;
+	return 1;
 }
 
-
-/* conf a e.g. 1101
- * (~a+i) & a gives a subset of a
- *  i is a integer from 1 to |a| 
- *
- * ~1101 = 0010
- * i = 0001
- * (0010+0001)&1101 =
- * 0011&1101 = 0001
- *
- *i = 0011
- * (0010+0011)&1101
- *(0101)&1101 = 0101
- */
-
-/*n 15 t 9 n 16 t 42*/
 uint64_t no,yes;
 void max2(dint conf,dint idp) {
      register dint card = cardinality(conf)/2;
@@ -252,22 +176,31 @@ void max2(dint conf,dint idp) {
      O[conf] = set;
      for(i = 1;i<=combinations; i++) {
 	  subset = (inverse+i)&conf;
-	  register unsigned int setcard = cardinality(subset);
-
-	  //  if(setcard > card) {
-		  //  no++;
-	  //	  continue;
-	  //  }
-	   if(setcard < idp) {
-		  continue;
-	  }
-	  // yes++;
+	  /* register unsigned int setcard = cardinality(subset); */
 	  
+	  /* register unsigned int tmpset = setdiff(conf,subset); */
+	  /* register unsigned int setcard2 = cardinality(tmpset); */
+	  /* if(setcard2 < setcard) { */
+	  /* 	  setcard = setcard2; */
+	  /* } */
+		  
+	  /* //  if(setcard > card) { */
+	  /* //	    no++; */
+	  /* //	  continue;11 */
+	  /* //  } */
+	  /*  if(setcard < idp) { */
+	  /* 	  continue; */
+	  /* } */
+	  // yes++;
+//	  if(setcard >= idp) {
 	  tmp = f[setdiff(conf,subset)] + f[subset];
 	  if(max < tmp) {
 		  max = tmp;
 		  set = subset;
 	  }
+//	  } else {
+//		  printf("heloo\n");
+//	  }
 	  
      }
      f[conf] = max;
@@ -286,36 +219,33 @@ void printfo(dint MAXVAL) {
 
 
 void run_test(dint MAXVAL,dint items) {
-/*Setup the environment*/
-
-     
-	     printfo(MAXVAL);
+//	     printfo(MAXVAL);
 	    printf("before\n");
-    register dint i, c;
-     /*2.*/
-     for(i = 2; i <= items; i++) {
-	     for(c = (1 << i) -1; c <= MAXVAL;) {
-		     max2(c,items-i);			  
-		     //bit hacks "Compute the lexicographically next bit permutation"
-		    register dint t = c | (c-1);
-		     c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
-		     //end ref
+	    register dint i, c;
+	    /*Select which cardinality we inspect*/
+	    for(i = 2; i <= items; i++) {
+		    /*Generate the set of cardinality i*/
+		    for(c = (1 << i) -1; c <= MAXVAL;) {
+			    max2(c,items-i);			  
+			    //bit hacks "Compute the lexicographically next bit permutation"
+			    register dint t = c | (c-1);
+			    c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
+			    //end ref
 	     }
      }
-               printfo(MAXVAL);
-     //   printf("\n");
+//               printfo(MAXVAL);
       
 }
 
 
 int main(void) {
      /*Start n amount of assets*/
-     dint from = 3;
+     dint from = 26;
      /*End amount of assets, inclusive*/
-     dint till = 25;
+     dint till = 26;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
-	  printf("More than maximum allowed\n");
+	  printf("More than maximum allowed, increase macro ITEMS\n");
 	  return 1;
      }
 
@@ -324,7 +254,8 @@ int main(void) {
      /*Run all tests*/
      for(;from <= till;from++) {
 	     printf("n = %u\n",from);
-      while(ret_val == 0) {
+	     indexa = 1;
+//      while(ret_val == 0) {
 	     no = yes = 0;
 	  MAXVAL = (2 << (from-1));
 	  
@@ -340,21 +271,8 @@ int main(void) {
 	  ret_val = parse_wopt(MAXVAL);
 	  memset(&f,'\0',sizeof(f));
 	  memset(&O,'\0',sizeof(O));
-     }
+//     }
      }
 
      return 0;
 } 
-
-void old_test(void) {
-     /*Testing facility*/
-     dint i;
-     for(i = 1; i < 8; i++) {		 
-	  dint z = intersect(i,i-1);
-	  dint x = _union(i,i-1);
-	  dint f = setdiff(i,i-1);
-	  dint t = cardinality(i);
-	  printf("i %u \tinter %u\t union %u\t diff %u\t card %u\n",i,z,x,f,t);
-     }
-     return;
-}
