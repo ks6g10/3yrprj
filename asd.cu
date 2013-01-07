@@ -29,7 +29,7 @@
 #define dint uint32_t
 #endif
 
-#define SUBSET(X)((~_conf+(X+1))&_conf)
+
 #define SETSUM(X)(f[setdiff(_conf,X)]+f[X])
 
 
@@ -76,7 +76,8 @@ unsigned int pascal[30][30] =
 
 
 /*		           0 1 2 3 4 5 6 7 8			*/
-uint32_t * bids,* f, * O;
+uint32_t  * O;
+unsigned short  * f, * bids;
 // dint bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
 //dint bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
 // dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
@@ -88,7 +89,7 @@ struct _stack {
 
 
 
-#define setdiff(seta,setb) (seta & ~setb)
+
 
 inline  dint cardinality( dint seta) {
 	return __builtin_popcount(seta);
@@ -162,6 +163,309 @@ void printfo(dint MAXVAL) {
 		printf("Bid[%d]\t%u\tF[%d]\t%u\tO[%d]\t%u\tbin\t%s\n",i,bids[i],i,f[i],i,O[i],btb(i));
 
 	}
+}
+
+#define SUBSET(X)((~_conf+(X+1))&_conf)
+
+#define setdiff(seta,setb) (seta & ~setb)
+
+#define I (threadIdx.x + blockDim.x * blockIdx.x)
+
+#define SET_TEST_FETCH(STEP,S1,S2) {					\
+									\
+		if( ispec < maxval) {					\
+			STEP = SUBSET(ispec);				\
+			ispec++;					\
+			S1 = f[(setdiff(_conf,STEP))];			\
+			S2 = f[(STEP)];					\
+		} else {						\
+			ispec++;					\
+			STEP = S1 = S2 = 0U;				\
+		}							\
+	}
+
+/* ispec += blockDim.x; change back if not working */
+
+#define COMP_SET(V1,S1,V2,S2) {			\
+		if(V1>V2) {			\
+			V2 = V1;		\
+			S2 = S1;		\
+		}				\
+	}
+  
+    
+#define MAXBLOCKSIZE 256
+#define MIN_BLOCKS_PER_MP 0 
+#define NAGENTS 23
+#define NSTREAMS 16 
+#define NPERBLOCK 8
+#define HALFBLOCK 8
+#define CONFPKERNEL 8
+
+#define PASCALSIZE 30
+
+static __constant__ unsigned int pascl[PASCALSIZE][PASCALSIZE];
+
+static __constant__ unsigned int cardindex[NAGENTS+1];
+
+__device__ unsigned int get_index(unsigned int set) {
+	const unsigned int card = __popc(set);
+	const unsigned int cardi = cardindex[card];
+	unsigned int sum = 0;
+	unsigned int tmp = set;
+	int i;
+#pragma unroll
+	for(i = 1;i<= card; i++) {
+		unsigned int fsb = __ffs(tmp) -1;
+		sum += pascl[fsb][i];
+		tmp &= ~(1 << fsb);
+	}
+	sum += cardi;
+	return sum;
+}
+
+__global__ void 
+__launch_bounds__( MAXBLOCKSIZE, MIN_BLOCKS_PER_MP )
+subsetcomp22(
+	/*0*/	unsigned short * __restrict__ f, /*Bid value*/ 
+	/*1*/	unsigned int * __restrict__ O, /*The move array*/
+	/*2*/	unsigned int * __restrict__ lock,
+	/*5*/	unsigned int maxval,
+	/*6*/	unsigned int _count1,
+	unsigned int conf1,
+	unsigned int lastval)//the value a permutation can not exceed.
+{
+/*these arrays are shared between all threads in the same block */
+	__shared__ unsigned short share[MAXBLOCKSIZE];
+	__shared__ unsigned int step[MAXBLOCKSIZE];   
+	__shared__ unsigned int sconf;
+	unsigned int ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
+	const unsigned int tid = threadIdx.x;
+	int i,x;
+	unsigned int _conf = conf1;
+	unsigned int count = _count1;
+	unsigned short defbid;
+	unsigned short max = 0;
+	unsigned int rstep = 0;
+	unsigned short val1[NPERBLOCK];//the value for one of the subset sums
+//	unsigned int val2[NPERBLOCK];//the value for the other subset sums
+	unsigned int stept[NPERBLOCK]; // the step array
+#pragma unroll 8 
+	for(x = 0;x<CONFPKERNEL;x++) {
+		if(_conf > lastval)  {
+			//printf("hello\n");
+			return;
+		}
+		if(ispec < maxval) {
+//			defbid = f[_conf]; // may impact performance
+/*Local for the thread, check all its bid and pick the biggest*/
+
+#pragma unroll 8
+			for(i = 0; i < NPERBLOCK; i++) {
+
+				if( ispec < maxval) {			
+					stept[i] = SUBSET(ispec);		
+
+					val1[i] = f[(setdiff(_conf,SUBSET(ispec)))]+	
+						f[stept[i]];			
+					ispec++;
+				} else {				
+					ispec++;			
+					val1[i] = 0U;		
+				}					
+
+
+
+//				SET_TEST_FETCH(stept[i],val1[i],val2[i]);	
+//				val1[i] += val2[i];
+			}
+#pragma unroll 8
+			for(i = 0; i < NPERBLOCK; i++) {		
+				
+				COMP_SET(val1[i],stept[i],max,rstep);			
+			}
+
+		}
+		step[threadIdx.x] = rstep;
+		share[threadIdx.x] = max;
+		i= blockDim.x >> 1;
+//	__syncthreads();
+/*do max reduction on the shared array for all threads inside the block*/
+#pragma unroll
+		for (; i>0; i>>=1) {
+			__syncthreads();
+			if (tid < i /* && (ispec <= maxval) */) {
+				if(share[tid] <= share[tid + i]) {
+					step[tid] = step[tid+i];
+					share[tid] = share[tid+i];
+				}
+			}
+		}
+
+/*thread 0 will attempt to set to global memory the agreed maximum value inside the block,
+ * if it is greater than the original bid and the bid in the lock array
+ */
+
+		if(tid == 0U) {
+			max = share[0U];
+			if(f[_conf] < max) {
+				//	if(lock[count] < max) {
+					if(atomicMax(&(lock[count]),max) < max) {
+						O[_conf] = step[0U];
+						f[_conf] = max; 
+						__threadfence();					
+					} 
+					//	}
+			}
+			unsigned int t = _conf | (_conf-1);
+			_conf = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf)));
+			sconf = _conf;
+		}
+		__syncthreads();
+		_conf = sconf;
+		max = 0;
+		rstep = 0;
+
+		count++;
+		ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
+	}
+}
+
+int gen_copy_base_index() {
+	unsigned int *tmpa =(unsigned int *) malloc(sizeof(unsigned int)*(NAGENTS+1));
+	if(tmpa == NULL) {
+		fprintf(stderr,"Can not allocate memory at line %s in %s\n",__LINE__,__FILE__);
+		exit(1);
+	}
+	int i;
+	int tmp = 0;
+	for(i = 1; i <= NAGENTS;i++) {
+		tmp += pascal[NAGENTS][i-1];
+		tmpa[i] = tmp;
+		//printf("tmp = %d for i %d\n",tmp,i);
+	       
+	}
+	HANDLE_ERROR(cudaMemcpyToSymbol(cardindex, tmpa, sizeof(unsigned int)*(NAGENTS+1), 0, cudaMemcpyHostToDevice));
+	HANDLE_ERROR(cudaMemcpyToSymbol(pascl, pascal, sizeof(unsigned int)*(PASCALSIZE*PASCALSIZE), 0, cudaMemcpyHostToDevice));
+	return 0;
+}
+
+#define COMBS(X) ((1 << cardinality(X)-1) - 1)
+
+int run_test(dint MAXVAL,dint items) {
+/*Setup the environment*/
+	//dint perm[MAXVAL];
+
+	register unsigned int i,c1,c2,count =0;
+ 	unsigned int *dev_o;
+	unsigned short *dev_f;
+
+	count = 0;
+
+	HANDLE_ERROR(cudaDeviceReset());
+//  	cudaDeviceSetCacheConfig( cudaFuncCachePreferL1 );
+	HANDLE_ERROR(cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeFourByte));
+	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
+	const	unsigned int devcount = 1024*CONFPKERNEL;// count;
+	register unsigned int streams = NSTREAMS;
+	register unsigned int lock_count = 0;
+	register unsigned int streamcount = 0;
+	register cudaStream_t stream[streams];
+	for(i = 0;i < streams; i++)
+		HANDLE_ERROR(cudaStreamCreate(&stream[i]));
+//	printf("count %u\n",devcount);
+	count = 0;
+	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
+	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
+ 	HANDLE_ERROR(cudaMalloc((void **)&dev_f, MAXVAL*sizeof(short)));
+ 	HANDLE_ERROR(cudaMalloc((void **)&dev_o, MAXVAL*sizeof(int)));
+
+ 	HANDLE_ERROR(cudaMemcpy(dev_f,bids,MAXVAL*sizeof(short),cudaMemcpyHostToDevice));
+ 	HANDLE_ERROR(cudaMemcpy(dev_o,O,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
+
+	HANDLE_ERROR(cudaMemset(dev_lock1,0,devcount*sizeof(int)));
+	HANDLE_ERROR(cudaMemset(dev_lock2,0,devcount*sizeof(int)));
+	gen_copy_base_index();
+	/*2.*/
+	//printfo(MAXVAL); printf("before\n");
+	dev_ptr = dev_lock1;
+	register unsigned int bsize = 0;
+	register int blocks;
+	int prev =0;
+	lock_count = 0;
+	time_t rstart,rend,rt;
+	rstart=clock();
+	for(i = 2; i <= items; i++) {
+		time_t start,end,t;
+		
+		start=clock();
+		int splittings;
+		double threads;
+		c1 = (1 << i) -1;
+		splittings =  COMBS(c1);///NPERBLOCK;
+		threads = ((double) splittings)/ NPERBLOCK;
+		threads = ceil(threads);
+		for(; c1 <= MAXVAL;) {
+			while( bsize < MAXBLOCKSIZE && threads > bsize) {
+				bsize += 32;
+			}
+			blocks =(int)  ceil((threads/bsize));
+	   
+			subsetcomp22<<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,splittings,lock_count,c1,MAXVAL);
+
+			for(int x = 0; x < CONFPKERNEL;x++) {
+				t = c1 | (c1-1);
+				c1 = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c1) + 1));
+			}
+			count++;
+			lock_count += CONFPKERNEL;	
+			streamcount++;
+			if(streamcount >= streams)
+				streamcount = 0;
+			if(lock_count < devcount)
+				continue;
+			HANDLE_ERROR(cudaMemset(dev_ptr,0,devcount*sizeof(int)));
+
+			if(dev_ptr == dev_lock1)
+				dev_ptr = dev_lock2;
+			else
+				dev_ptr = dev_lock1;
+			lock_count = 0;
+		}
+
+		for (int t = 0; t < streams; ++t) {
+			HANDLE_ERROR(cudaStreamSynchronize(stream[t]));
+		}
+
+		HANDLE_ERROR(cudaDeviceSynchronize());
+		
+
+		end=clock();
+		t=(end-start)/(CLOCKS_PER_SEC/1000);
+		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu \t splittings %d\n",i,blocks,bsize,count-prev,t,splittings);
+		prev =	count;
+
+	}
+	for (int i = 0; i < streams; ++i)
+	cudaStreamDestroy(stream[i]);
+
+	HANDLE_ERROR(cudaDeviceSynchronize());
+
+	rend=clock();
+	rt=(rend-rstart)/(CLOCKS_PER_SEC);
+	printf("real time %lu\n",rt);
+
+	HANDLE_ERROR(cudaMemcpy(f,dev_f,MAXVAL*sizeof(short),cudaMemcpyDeviceToHost));
+	HANDLE_ERROR(cudaMemcpy(O,dev_o,MAXVAL*sizeof(int),cudaMemcpyDeviceToHost));
+	//int i;
+	HANDLE_ERROR(cudaFree(dev_f));
+	HANDLE_ERROR(cudaFree(dev_o));
+	HANDLE_ERROR(cudaFree(dev_lock1));
+	HANDLE_ERROR(cudaFree(dev_lock2));
+
+	HANDLE_ERROR(cudaDeviceReset());
+//	printfo(MAXVAL);
+	return count;
 }
 
 int parse_wopt(dint MAXVAL) {
@@ -242,268 +546,6 @@ int parse_wopt(dint MAXVAL) {
 	return 0;
 }
 
-#define I (threadIdx.x + blockDim.x * blockIdx.x)
-#define SET_TEST_FETCH(STEP,S1,S2) {					\
-									\
-		STEP = SUBSET(ispec);					\
-		if( ispec < maxval) {					\
-			S1 = f[(setdiff(_conf,STEP))];			\
-			S2 = f[(STEP)];					\
-		} else {						\
-			S1 = S2 = 0U;					\
-		}							\
-		ispec++;						\
-	}
-
-/* ispec += blockDim.x; change back if not working */
-
-#define COMP_SET(V1,S1,V2,S2) {			\
-		if(V1>V2) {			\
-			V2 = V1;		\
-			S2 = S1;		\
-		}				\
-	}
-  
-    
-#define MAXBLOCKSIZE 256U
-#define NAGENTS 21  
-#define NSTREAMS 8 
-#define NPERBLOCK 8
-#define HALFBLOCK 8
-
-#define PASCALSIZE 30
-
-static __constant__ unsigned int pascl[PASCALSIZE][PASCALSIZE];
-
-static __constant__ unsigned int cardindex[NAGENTS+1];
-
-__device__ unsigned int get_index(unsigned int set) {
-	const unsigned int card = __popc(set);
-	const unsigned int cardi = cardindex[card];
-	unsigned int sum = 0;
-	unsigned int tmp = set;
-	int i;
-#pragma unroll
-	for(i = 1;i<= card; i++) {
-		unsigned int fsb = __ffs(tmp) -1;
-		sum += pascl[fsb][i];
-		tmp &= ~(1 << fsb);
-	}
-	sum += cardi;
-	return sum;
-}
-
-__global__ void subsetcomp22(
-	/*0*/	uint32_t * __restrict__ f, /*Bid value*/ 
-	/*1*/	unsigned int * __restrict__ O, /*The move array*/
-	/*2*/	unsigned int * __restrict__ lock,
-	/*3*/	unsigned int _conf, /*The configuration*/
-	/*5*/	unsigned int maxval,
-	/*6*/	unsigned int count,
-	/*8*/	unsigned int defbid)
-{
-/*these arrays are shared between all threads in the same block */
-	__shared__ unsigned int share[MAXBLOCKSIZE];
-	__shared__ unsigned int step[MAXBLOCKSIZE];     
-	unsigned int ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
-	const unsigned int tid = threadIdx.x;
-	int i;  
-	unsigned int max = 0;
-	unsigned int rstep = 0;
-	unsigned int val1[NPERBLOCK];//the value for one of the subset sums
-	unsigned int val2[NPERBLOCK];//the value for the other subset sums
-	unsigned int stept[NPERBLOCK]; // the step array
-	if(ispec < maxval) {
-
-/*Local for the thread, check all its bid and pick the biggest*/
-#pragma unroll 8
-		for(i = 0; i < NPERBLOCK; i++) {
-			SET_TEST_FETCH(stept[i],val1[i],val2[i]);	
-		}
-#pragma unroll 8
-		for(i = 0; i < NPERBLOCK; i++) {		
-			val1[i] += val2[i];
-			COMP_SET(val1[i],stept[i],max,rstep);			
-		}
-
-	}
-	step[threadIdx.x] = rstep;
-	share[threadIdx.x] = max;
-	i= blockDim.x >> 1;
-	__syncthreads();
-/*do max reduction on the shared array for all threads inside the block*/
-#pragma unroll
-	for (; i>0; i>>=1) {
-		if (tid < i /* && (ispec <= maxval) */) {
-			if(share[tid] <= share[tid + i]) {
-				step[tid] = step[tid+i];
-				share[tid] = share[tid+i];
-			}
-		}
-		__syncthreads();
-	}
-
-/*thread 0 will attempt to set to global memory the agreed maximum value inside the block,
-* if it is greater than the original bid and the bid in the lock array
-*/
-
-	if(tid == 0U) {
-		i = share[0U];
-		if(i == 0)
-			return;
-		if(defbid >= i)
-			return;
-		if(lock[count] < i) {
-			if(atomicMax(&(lock[count]),i) < i) {
-				O[_conf] = step[0U];
-				f[_conf] = i; 
-				__threadfence();
-				return;
-			} 
-		}
-	} else {
-		return;
-	}
-}
-
-int gen_copy_base_index() {
-	unsigned int *tmpa =(unsigned int *) malloc(sizeof(unsigned int)*(NAGENTS+1));
-	if(tmpa == NULL) {
-		fprintf(stderr,"Can not allocate memory at line %s in %s\n",__LINE__,__FILE__);
-		exit(1);
-	}
-	int i;
-	int tmp = 0;
-	for(i = 1; i <= NAGENTS;i++) {
-		tmp += pascal[NAGENTS][i-1];
-		tmpa[i] = tmp;
-		//printf("tmp = %d for i %d\n",tmp,i);
-	       
-	}
-	HANDLE_ERROR(cudaMemcpyToSymbol(cardindex, tmpa, sizeof(unsigned int)*(NAGENTS+1), 0, cudaMemcpyHostToDevice));
-	HANDLE_ERROR(cudaMemcpyToSymbol(pascl, pascal, sizeof(unsigned int)*(PASCALSIZE*PASCALSIZE), 0, cudaMemcpyHostToDevice));
-	return 0;
-}
-
-#define COMBS(X) ((1 << cardinality(X)-1) - 1)
-
-int run_test(dint MAXVAL,dint items) {
-/*Setup the environment*/
-	//dint perm[MAXVAL];
-
-	register unsigned int i, c,count =0;
- 	unsigned int *dev_f,*dev_o;
-
-	i = items/2;
-	count = 0;
-
-	HANDLE_ERROR(cudaDeviceReset());
-//  	cudaDeviceSetCacheConfig( cudaFuncCachePreferL1 );
-
-	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
-	const	unsigned int devcount = 1024;// count;
-	register unsigned int streams = NSTREAMS;
-	register unsigned int lock_count = 0;
-	register unsigned int streamcount = 0;
-	register cudaStream_t stream[streams];
-	for(int i = 0;i < streams; i++)
-		HANDLE_ERROR(cudaStreamCreate(&stream[i]));
-//	printf("count %u\n",devcount);
-	count = 0;
-	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
-	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
- 	HANDLE_ERROR(cudaMalloc((void **)&dev_f, MAXVAL*sizeof(int)));
- 	HANDLE_ERROR(cudaMalloc((void **)&dev_o, MAXVAL*sizeof(int)));
-
- 	HANDLE_ERROR(cudaMemcpy(dev_f,bids,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
- 	HANDLE_ERROR(cudaMemcpy(dev_o,O,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
-
-	HANDLE_ERROR(cudaMemset(dev_lock1,0,devcount*sizeof(int)));
-	HANDLE_ERROR(cudaMemset(dev_lock2,0,devcount*sizeof(int)));
-	gen_copy_base_index();
-	/*2.*/
-	//printfo(MAXVAL); printf("before\n");
-	dev_ptr = dev_lock1;
-	register unsigned int bsize = 0;
-	register int blocks;
-	int prev =0;
-	lock_count = 0;
-	time_t rstart,rend,rt;
-	rstart=clock();
-	for(i = 2; i <= items; i++) {
-		time_t start,end,t;
-		
-		start=clock();
-		int splittings;
-		double threads;
-		c = c = (1 << i) -1;
-		splittings =  COMBS(c);///NPERBLOCK;
-		threads = ((double) splittings)/ NPERBLOCK;
-		threads = ceil(threads);
-		for(; c <= MAXVAL;) {
-			while( bsize < MAXBLOCKSIZE && threads > bsize) {
-				bsize += 32;
-			}
-			blocks =(int)  ceil((threads/bsize));
-
-			subsetcomp22<<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,c,splittings,lock_count,bids[c]);
-
-			t = c | (c-1);
-			c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1));
-
-			count++;
-			lock_count++;	
-			streamcount++;
-			if(streamcount >= streams)
-				streamcount = 0;
-			if(lock_count < devcount)
-				continue;
-			HANDLE_ERROR(cudaMemset(dev_ptr,0,devcount*sizeof(int)));
-
-			if(dev_ptr == dev_lock1)
-				dev_ptr = dev_lock2;
-			else
-				dev_ptr = dev_lock1;
-			lock_count = 0;
-		}
-
-		for (int t = 0; t < streams; ++t) {
-			HANDLE_ERROR(cudaStreamSynchronize(stream[t]));
-		}
-
-		HANDLE_ERROR(cudaDeviceSynchronize());
-		
-
-		end=clock();
-		t=(end-start)/(CLOCKS_PER_SEC/1000);
-		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu \t splittings %d\n",i,blocks,bsize,count-prev,t,splittings);
-		prev =	count;
-
-	}
-	for (int i = 0; i < streams; ++i)
-	cudaStreamDestroy(stream[i]);
-
-	HANDLE_ERROR(cudaDeviceSynchronize());
-
-	rend=clock();
-	rt=(rend-rstart)/(CLOCKS_PER_SEC);
-	printf("real time %lu\n",rt);
-
-	HANDLE_ERROR(cudaMemcpy(f,dev_f,MAXVAL*sizeof(int),cudaMemcpyDeviceToHost));
-	HANDLE_ERROR(cudaMemcpy(O,dev_o,MAXVAL*sizeof(int),cudaMemcpyDeviceToHost));
-	//int i;
-	HANDLE_ERROR(cudaFree(dev_f));
-	HANDLE_ERROR(cudaFree(dev_o));
-	HANDLE_ERROR(cudaFree(dev_lock1));
-	HANDLE_ERROR(cudaFree(dev_lock2));
-
-	HANDLE_ERROR(cudaDeviceReset());
-//	printfo(MAXVAL);
-	return count;
-}
-
-
-
 int main(void) {
 	/*Start n amount of assets*/
 	dint from = NAGENTS;
@@ -511,11 +553,11 @@ int main(void) {
 	
 	time_t start,end,t;
 	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
-	bids = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
+	bids = (unsigned short * ) malloc(sizeof(short)*(2 << (from-1)));
 	f = bids;
-	int ret_val =0;
+	int ret_val =1;
 	int count;
-	while(ret_val == 0) {
+	while(ret_val == 1) {
 	
 	MAXVAL = (2 << (from-1));
 	gen_rand_bids(MAXVAL);

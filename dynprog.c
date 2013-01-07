@@ -11,7 +11,7 @@
 #define TEST 1
 /*Defines from 0-Range the random will give out*/
 #define RANGE 24
-#define ITEMS 27
+#define ITEMS 15
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -163,8 +163,37 @@ int parse_wopt(dint MAXVAL) {
 	return 1;
 }
 
+<<<<<<< HEAD
+=======
+void printfo(dint MAXVAL) {
+	int i;
+	printf("\n");
+	for(i = 1; i< MAXVAL; i++)
+	{
+		printf("Bid[%d]\t%u\tF[%d]\t%u\tO[%d]\t%u\t\n",i,bids[i],i,f[i],i,O[i]);
+
+	}
+}
+
+
+/* conf a e.g. 1101
+ * (~a+i) & a gives a subset of a
+ *  i is a integer from 1 to |a| 
+ *
+ * ~1101 = 0010
+ * i = 0001
+ * (0010+0001)&1101 =
+ * 0011&1101 = 0001
+ *
+ *i = 0011
+ * (0010+0011)&1101
+ *(0101)&1101 = 0101
+ */
+
+/*n 15 t 9 n 16 t 42*/
+>>>>>>> fb38d0e4780a1b38a824470f7522fc307e77546b
 uint64_t no,yes;
-void max2(dint conf,dint idp) {
+void max2(dint conf,dint idp, unsigned int doidp) {
      register dint card = cardinality(conf)/2;
      register dint combinations = (1 << cardinality(conf)-1)-1;
      register dint max = bids[conf];
@@ -174,8 +203,10 @@ void max2(dint conf,dint idp) {
      register dint inverse = ~conf;
      register dint i;
      O[conf] = set;
-     for(i = 1;i<=combinations; i++) {
+     if(doidp) {
+	          for(i = 1;i<=combinations; i++) {
 	  subset = (inverse+i)&conf;
+<<<<<<< HEAD
 	  /* register unsigned int setcard = cardinality(subset); */
 	  
 	  /* register unsigned int tmpset = setdiff(conf,subset); */
@@ -193,6 +224,48 @@ void max2(dint conf,dint idp) {
 	  /* } */
 	  // yes++;
 //	  if(setcard >= idp) {
+=======
+	  register unsigned int setcard = cardinality(subset);
+	  register unsigned int tmpset = setdiff(conf,subset);
+	  register unsigned int tmpcard = cardinality(tmpset);
+	  //  if(setcard > card) {
+		  //  no++;
+	  //	  continue;
+	  //  }
+	  if(setcard < tmpcard) {
+		  setcard = tmpcard;
+	  }
+
+	   if(setcard < idp) {
+		  continue;
+	  }
+	  // yes++;
+	  
+	   tmp = f[tmpset] + f[subset];
+	  if(max < tmp) {
+		  max = tmp;
+		  set = subset;
+	  }
+	  
+     }
+
+     }
+     else {
+     for(i = 1;i<=combinations; i++) {
+	  subset = (inverse+i)&conf;
+	  register unsigned int setcard = cardinality(subset);
+
+	  //  if(setcard > card) {
+		  //  no++;
+	  //	  continue;
+	  //  }
+
+//	   if(setcard < idp) {
+//		  continue;
+//	  }
+	  // yes++;
+	  
+>>>>>>> fb38d0e4780a1b38a824470f7522fc307e77546b
 	  tmp = f[setdiff(conf,subset)] + f[subset];
 	  if(max < tmp) {
 		  max = tmp;
@@ -203,24 +276,15 @@ void max2(dint conf,dint idp) {
 //	  }
 	  
      }
+     }
      f[conf] = max;
      O[conf] = set;
 }
 
-void printfo(dint MAXVAL) {
-	int i;
-	printf("\n");
-	for(i = 1; i< MAXVAL; i++)
-	{
-		printf("Bid[%d]\t%u\tF[%d]\t%u\tO[%d]\t%u\t\n",i,bids[i],i,f[i],i,O[i]);
-
-	}
-}
-
-
 void run_test(dint MAXVAL,dint items) {
 //	     printfo(MAXVAL);
 	    printf("before\n");
+<<<<<<< HEAD
 	    register dint i, c;
 	    /*Select which cardinality we inspect*/
 	    for(i = 2; i <= items; i++) {
@@ -231,6 +295,17 @@ void run_test(dint MAXVAL,dint items) {
 			    register dint t = c | (c-1);
 			    c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
 			    //end ref
+=======
+    register dint i, c;
+     /*2.*/
+     for(i = 2; i <= items; i++) {
+	     for(c = (1 << i) -1; c <= MAXVAL;) {
+		     max2(c,items-i,1);			  
+		     //bit hacks "Compute the lexicographically next bit permutation"
+		    register dint t = c | (c-1);
+		     c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
+		     //end ref
+>>>>>>> fb38d0e4780a1b38a824470f7522fc307e77546b
 	     }
      }
 //               printfo(MAXVAL);
@@ -240,9 +315,15 @@ void run_test(dint MAXVAL,dint items) {
 
 int main(void) {
      /*Start n amount of assets*/
+<<<<<<< HEAD
      dint from = 26;
      /*End amount of assets, inclusive*/
      dint till = 26;
+=======
+     dint from = 4;
+     /*End amount of assets, inclusive*/
+     dint till = 4;
+>>>>>>> fb38d0e4780a1b38a824470f7522fc307e77546b
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed, increase macro ITEMS\n");
@@ -252,6 +333,7 @@ int main(void) {
      time_t start,end,t;
      int ret_val = 0;
      /*Run all tests*/
+     int count = 0;
      for(;from <= till;from++) {
 	     printf("n = %u\n",from);
 	     indexa = 1;
@@ -271,7 +353,15 @@ int main(void) {
 	  ret_val = parse_wopt(MAXVAL);
 	  memset(&f,'\0',sizeof(f));
 	  memset(&O,'\0',sizeof(O));
+<<<<<<< HEAD
 //     }
+=======
+	  if(count++ > 100) {
+
+		  return 0;
+	  }
+     }
+>>>>>>> fb38d0e4780a1b38a824470f7522fc307e77546b
      }
 
      return 0;
