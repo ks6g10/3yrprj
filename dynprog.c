@@ -11,7 +11,7 @@
 #define TEST 0
 /*Defines from 0-Range the random will give out*/
 #define RANGE 24
-#define ITEMS 27
+#define ITEMS 15
 #define MAX (2 << (ITEMS-1))
 #if ITEMS < 8
 #define dint uint8_t
@@ -223,6 +223,16 @@ int parse_wopt(dint MAXVAL) {
 	return 0;
 }
 
+void printfo(dint MAXVAL) {
+	int i;
+	printf("\n");
+	for(i = 1; i< MAXVAL; i++)
+	{
+		printf("Bid[%d]\t%u\tF[%d]\t%u\tO[%d]\t%u\t\n",i,bids[i],i,f[i],i,O[i]);
+
+	}
+}
+
 
 /* conf a e.g. 1101
  * (~a+i) & a gives a subset of a
@@ -240,7 +250,7 @@ int parse_wopt(dint MAXVAL) {
 
 /*n 15 t 9 n 16 t 42*/
 uint64_t no,yes;
-void max2(dint conf,dint idp) {
+void max2(dint conf,dint idp, unsigned int doidp) {
      register dint card = cardinality(conf)/2;
      register dint combinations = (1 << cardinality(conf)-1)-1;
      register dint max = bids[conf];
@@ -250,6 +260,35 @@ void max2(dint conf,dint idp) {
      register dint inverse = ~conf;
      register dint i;
      O[conf] = set;
+     if(doidp) {
+	          for(i = 1;i<=combinations; i++) {
+	  subset = (inverse+i)&conf;
+	  register unsigned int setcard = cardinality(subset);
+	  register unsigned int tmpset = setdiff(conf,subset);
+	  register unsigned int tmpcard = cardinality(tmpset);
+	  //  if(setcard > card) {
+		  //  no++;
+	  //	  continue;
+	  //  }
+	  if(setcard < tmpcard) {
+		  setcard = tmpcard;
+	  }
+
+	   if(setcard < idp) {
+		  continue;
+	  }
+	  // yes++;
+	  
+	   tmp = f[tmpset] + f[subset];
+	  if(max < tmp) {
+		  max = tmp;
+		  set = subset;
+	  }
+	  
+     }
+
+     }
+     else {
      for(i = 1;i<=combinations; i++) {
 	  subset = (inverse+i)&conf;
 	  register unsigned int setcard = cardinality(subset);
@@ -258,9 +297,10 @@ void max2(dint conf,dint idp) {
 		  //  no++;
 	  //	  continue;
 	  //  }
-	   if(setcard < idp) {
-		  continue;
-	  }
+
+//	   if(setcard < idp) {
+//		  continue;
+//	  }
 	  // yes++;
 	  
 	  tmp = f[setdiff(conf,subset)] + f[subset];
@@ -270,20 +310,10 @@ void max2(dint conf,dint idp) {
 	  }
 	  
      }
+     }
      f[conf] = max;
      O[conf] = set;
 }
-
-void printfo(dint MAXVAL) {
-	int i;
-	printf("\n");
-	for(i = 1; i< MAXVAL; i++)
-	{
-		printf("Bid[%d]\t%u\tF[%d]\t%u\tO[%d]\t%u\t\n",i,bids[i],i,f[i],i,O[i]);
-
-	}
-}
-
 
 void run_test(dint MAXVAL,dint items) {
 /*Setup the environment*/
@@ -295,7 +325,7 @@ void run_test(dint MAXVAL,dint items) {
      /*2.*/
      for(i = 2; i <= items; i++) {
 	     for(c = (1 << i) -1; c <= MAXVAL;) {
-		     max2(c,items-i);			  
+		     max2(c,items-i,1);			  
 		     //bit hacks "Compute the lexicographically next bit permutation"
 		    register dint t = c | (c-1);
 		     c = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c) + 1)); 
@@ -310,9 +340,9 @@ void run_test(dint MAXVAL,dint items) {
 
 int main(void) {
      /*Start n amount of assets*/
-     dint from = 3;
+     dint from = 4;
      /*End amount of assets, inclusive*/
-     dint till = 25;
+     dint till = 4;
      dint MAXVAL = (2 << (from-1));
      if(till > ITEMS) {
 	  printf("More than maximum allowed\n");
@@ -322,6 +352,7 @@ int main(void) {
      time_t start,end,t;
      int ret_val = 0;
      /*Run all tests*/
+     int count = 0;
      for(;from <= till;from++) {
 	     printf("n = %u\n",from);
       while(ret_val == 0) {
@@ -340,6 +371,10 @@ int main(void) {
 	  ret_val = parse_wopt(MAXVAL);
 	  memset(&f,'\0',sizeof(f));
 	  memset(&O,'\0',sizeof(O));
+	  if(count++ > 100) {
+
+		  return 0;
+	  }
      }
      }
 
