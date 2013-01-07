@@ -1,5 +1,4 @@
 #include <stdio.h> 
-#include "asd.h"
 #include <string.h> // for ffs
 #include <stdint.h>
 #include <math.h>
@@ -7,7 +6,7 @@
 #include <stdlib.h>
 #include <cuda.h>
 #include <cuda_profiler_api.h>
-
+ 
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
 #define DEBUG 0
 #define TRUE 1 
@@ -28,7 +27,7 @@
 #undef dint
 #define dint uint32_t
 #endif
-
+ 
 
 #define SETSUM(X)(f[setdiff(_conf,X)]+f[X])
 
@@ -165,7 +164,7 @@ void printfo(dint MAXVAL) {
 	}
 }
 
-#define SUBSET(X)((~_conf+(X+1))&_conf)
+#define SUBSET(Y,X)((~Y+(X))&Y)
 
 #define setdiff(seta,setb) (seta & ~setb)
 
@@ -193,14 +192,57 @@ void printfo(dint MAXVAL) {
 		}				\
 	}
   
-    
+
+#define SET_VAL(I,X) (val1[I][X] = f[(setdiff(_conf[X],SUBSET(_conf[X],ispec)))] + f[SUBSET(_conf[X],ispec)])
+
+#define R_REDUCTION(I,X) {			\
+		if(val1[I][X] > max[X]) {	\
+			max[X] = val1[I][X];	\
+			rstep[X] = I;		\
+		}				\
+	}
+
+#define SET_RSTEP(X) {							\
+		ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x)+rstep[X]; \
+		rstep[X] = SUBSET(_conf[X],ispec);			\
+	}
+
+
+#define S_REDUCTION(X) {			\
+		if(share[tid][X] <= share[tid + i][X]) {		\
+			share[tid][X] = share[tid+i][X];		\
+		}							\
+	}
+
+#define TID0_SET(X) {							\
+		max[X] = share[0U][X];					\
+		if(f[_conf[X]] < max[X]) {				\
+			if(atomicMax(&(lock[count+X]),max[X]) < max[X]) { \
+				O[_conf[X]] = sstep[X];			\
+				f[_conf[X]] = max[X];			\
+				__threadfence();			\
+			}						\
+		}							\
+	}
+
+#define RESET_VALS(X) {				\
+		max[X] = 0;			\
+		rstep[X] =0;			\
+	}
+
+#define NEXT_PERM(X) {							\
+		_conf[X] = _conf[X-1];					\
+		t = _conf[X] | (_conf[X]-1);				\
+		_conf[X] = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf[X]))); \
+	}
+
 #define MAXBLOCKSIZE 256
-#define MIN_BLOCKS_PER_MP 0 
-#define NAGENTS 23
-#define NSTREAMS 16 
-#define NPERBLOCK 8
-#define HALFBLOCK 8
-#define CONFPKERNEL 8
+#define MIN_BLOCKS_PER_MP 8
+#define NAGENTS 24
+#define NSTREAMS 32
+#define NPERBLOCK 16
+#define CONFPKERNEL 16
+#define NPARALLELCONF 2
 
 #define PASCALSIZE 30
 
@@ -220,113 +262,236 @@ __device__ unsigned int get_index(unsigned int set) {
 		sum += pascl[fsb][i];
 		tmp &= ~(1 << fsb);
 	}
-	sum += cardi;
+	sum += cardi; 
 	return sum;
-}
+} 
 
-__global__ void 
+__global__ void  
 __launch_bounds__( MAXBLOCKSIZE, MIN_BLOCKS_PER_MP )
 subsetcomp22(
 	/*0*/	unsigned short * __restrict__ f, /*Bid value*/ 
 	/*1*/	unsigned int * __restrict__ O, /*The move array*/
-	/*2*/	unsigned int * __restrict__ lock,
+	/*2*/	unsigned int * __restrict__ lock, 
 	/*5*/	unsigned int maxval,
-	/*6*/	unsigned int _count1,
+	/*6*/	unsigned short _count1,  
 	unsigned int conf1,
 	unsigned int lastval)//the value a permutation can not exceed.
 {
+	
 /*these arrays are shared between all threads in the same block */
-	__shared__ unsigned short share[MAXBLOCKSIZE];
-	__shared__ unsigned int step[MAXBLOCKSIZE];   
+	__shared__ unsigned short share[MAXBLOCKSIZE][NPARALLELCONF];
+//	__shared__ unsigned int share2[MAXBLOCKSIZE];   
 	__shared__ unsigned int sconf;
+	__shared__ unsigned int sstep[NPARALLELCONF];
+//	__shared__ unsigned int sstep2;
 	unsigned int ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
 	const unsigned int tid = threadIdx.x;
 	int i,x;
-	unsigned int _conf = conf1;
+	unsigned int _conf[NPARALLELCONF];// = conf1;
+	_conf[0] = conf1;
+//	unsigned int _conf2;
 	unsigned int count = _count1;
-	unsigned short defbid;
-	unsigned short max = 0;
-	unsigned int rstep = 0;
-	unsigned short val1[NPERBLOCK];//the value for one of the subset sums
+	unsigned int defbid;
+	unsigned int max[NPARALLELCONF] = {0};
+	unsigned int rstep[NPARALLELCONF] = {0};
+//	unsigned int max2 = 0;
+//	unsigned int rstep2 = 0;
+	unsigned int val1[NPERBLOCK][NPARALLELCONF];//the value for one of the subset sums
 //	unsigned int val2[NPERBLOCK];//the value for the other subset sums
-	unsigned int stept[NPERBLOCK]; // the step array
-#pragma unroll 8 
-	for(x = 0;x<CONFPKERNEL;x++) {
-		if(_conf > lastval)  {
+//	unsigned int stept[NPERBLOCK]; // the step array
+#pragma unroll 
+	for(x = 0;x<(CONFPKERNEL/NPARALLELCONF);x++) {
+		if(_conf[0] > lastval)  {
 			//printf("hello\n");
 			return;
 		}
+		unsigned int t;
+		NEXT_PERM(1);
+#if (NPARALLELCONF > 2)
+		
+		NEXT_PERM(2);
+		NEXT_PERM(3);
+#endif		
+		/* _conf[1] = _conf[0]; */
+		/* unsigned int t = _conf[1] | (_conf[1]-1); */
+		/* _conf[1] = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf[1]))); */
+
 		if(ispec < maxval) {
 //			defbid = f[_conf]; // may impact performance
 /*Local for the thread, check all its bid and pick the biggest*/
 
-#pragma unroll 8
+#pragma unroll 
 			for(i = 0; i < NPERBLOCK; i++) {
-
-				if( ispec < maxval) {			
-					stept[i] = SUBSET(ispec);		
-
-					val1[i] = f[(setdiff(_conf,SUBSET(ispec)))]+	
-						f[stept[i]];			
-					ispec++;
-				} else {				
-					ispec++;			
-					val1[i] = 0U;		
-				}					
-
-
-
+				val1[i][0] = 0U;
+				val1[i][1] = 0U;
+#if (NPARALLELCONF > 2)
+				val1[i][2] = 0U;
+				val1[i][3] = 0U;
+#endif				
+				if( ispec < maxval) {	
+					SET_VAL(i,0);
+					if(_conf[1] <= lastval) {
+						SET_VAL(i,1);
+					}
+#if (NPARALLELCONF > 2)
+					if(_conf[2] <= lastval) {
+						SET_VAL(i,2);
+					}		
+					if(_conf[3] <= lastval) {
+						SET_VAL(i,3);
+					}
+#endif					
+				}
+				ispec++;
 //				SET_TEST_FETCH(stept[i],val1[i],val2[i]);	
 //				val1[i] += val2[i];
 			}
-#pragma unroll 8
-			for(i = 0; i < NPERBLOCK; i++) {		
-				
-				COMP_SET(val1[i],stept[i],max,rstep);			
+#pragma unroll 
+			for(i = 0; i < NPERBLOCK; i++) {
+				R_REDUCTION(i,0);
+				R_REDUCTION(i,1);
+#if (NPARALLELCONF > 2)
+				R_REDUCTION(i,2);
+				R_REDUCTION(i,3);
+#endif				
+				/* if(val1[i][0] > max[0]) { */
+				/* 	max[0] = val1[i][0]; */
+				/* 	rstep[0] = i; */
+				/* } */
+				/* if(val1[i][1] > max[1]) { */
+				/* 	max[1] = val1[i][1]; */
+				/* 	rstep[1] = i; */
+				/* } */
+//				COMP_SET(val1[i],stept[i],max,rstep);			
 			}
+			SET_RSTEP(0);
+			SET_RSTEP(1);
+#if (NPARALLELCONF > 2)
+			SET_RSTEP(2);
+			SET_RSTEP(3);
+#endif			
+			/* ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x)+rstep[0];//I + offset; */
+			/* rstep[0] = SUBSET(_conf[0],ispec); */
+			
+			/* ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x)+rstep[1];//I + offset; */
+			/* rstep[1] = SUBSET(_conf[1],ispec); */
+//			rstep2 = SUBSET(_conf2,ispec2);
 
 		}
-		step[threadIdx.x] = rstep;
-		share[threadIdx.x] = max;
+		/* unsigned int wstep; */
+		/* unsigned short wmax; */
+		/* for (int i=16; i>=1; i >>=1) { */
+		/* 	wmax = __shfl_xor(max, i, 32); */
+		/* 	wstep = __shfl_xor(rstep, i, 32); */
+		/* 	if(wmax > max) { */
+		/* 		max = wmax; */
+		/* 		rstep = wstep; */
+		/* 	} */
+		/* } */
+		/* if(laneId == 0) { */ 
+		/* 	//do stuff */
+		/* } */
+
+
+//		step[threadIdx.x] = rstep;
+		share[threadIdx.x][0] = max[0];
+		share[threadIdx.x][1] = max[1];
+#if (NPARALLELCONF > 2)
+		share[threadIdx.x][2] = max[2];
+		share[threadIdx.x][3] = max[3];
+#endif
 		i= blockDim.x >> 1;
 //	__syncthreads();
 /*do max reduction on the shared array for all threads inside the block*/
-#pragma unroll
+#pragma unroll 
 		for (; i>0; i>>=1) {
 			__syncthreads();
 			if (tid < i /* && (ispec <= maxval) */) {
-				if(share[tid] <= share[tid + i]) {
-					step[tid] = step[tid+i];
-					share[tid] = share[tid+i];
-				}
+				S_REDUCTION(0);
+				S_REDUCTION(1);
+#if (NPARALLELCONF > 2)
+				S_REDUCTION(2);
+				S_REDUCTION(3);
+#endif
+				/* if(share[tid][0] <= share[tid + i][0]) { */
+				/* 	// 	step[tid] = step[tid+i]; */
+				/* 	share[tid][0] = share[tid+i][0]; */
+				/* } */
+				/* if(share[tid][1] <= share[tid + i][1]) { */
+				/* 	// 	step[tid] = step[tid+i]; */
+				/* 	share[tid][1] = share[tid+i][1]; */
+				/* } */
+				
 			}
 		}
+
+		if(share[0][0] == max[0]) {//may introduce bank conflict
+			sstep[0] = rstep[0];
+		}
+		if(share[0][1] == max[1]) {//may introduce bank conflict
+			sstep[1] = rstep[1];
+		}
+#if (NPARALLELCONF > 2)
+		if(share[0][2] == max[2]) {//may introduce bank conflict
+			sstep[2] = rstep[2];
+		}
+		if(share[0][3] == max[3]) {//may introduce bank conflict
+			sstep[3] = rstep[3];
+		}
+#endif
 
 /*thread 0 will attempt to set to global memory the agreed maximum value inside the block,
  * if it is greater than the original bid and the bid in the lock array
  */
 
-		if(tid == 0U) {
-			max = share[0U];
-			if(f[_conf] < max) {
-				//	if(lock[count] < max) {
-					if(atomicMax(&(lock[count]),max) < max) {
-						O[_conf] = step[0U];
-						f[_conf] = max; 
-						__threadfence();					
-					} 
-					//	}
-			}
-			unsigned int t = _conf | (_conf-1);
-			_conf = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf)));
-			sconf = _conf;
+		if(tid == 0) {
+			TID0_SET(0);
+			TID0_SET(1);
+
+//			TID0_SET(2);
+//			TID0_SET(3);
+			/* max[0] = share[0U][0]; */
+			/* max[1] = share[0U][1]; */
+			/* if(f[_conf[0]] < max[0]) { */
+			/* 	//	if(lock[count] < max) { */
+			/* 		if(atomicMax(&(lock[count]),max[0]) < max[0]) { */
+			/* 			O[_conf[0]] = sstep[0];//step[0U]; */
+			/* 			f[_conf[0]] = max[0];  */
+			/* 			__threadfence();					 */
+			/* 		}  */
+			/* 		//	} */
+			/* } */
+			/* if(f[_conf[1]] < max[1]) { */
+			/* 	//	if(lock[count] < max) { */
+			/* 		if(atomicMax(&(lock[count+1]),max[1]) < max[1]) { */
+			/* 			O[_conf[1]] = sstep[1];//step[1U]; */
+			/* 			f[_conf[1]] = max[1];  */
+			/* 			__threadfence();					 */
+			/* 		}  */
+			/* 		//	} */
+			/* } */
+			
+		}
+		if(tid == 0) {
+			_conf[0] = _conf[NPARALLELCONF-1];
+			unsigned int t = _conf[0] | (_conf[0]-1);
+			_conf[0] = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf[0])));
+		 	sconf = _conf[0];
 		}
 		__syncthreads();
-		_conf = sconf;
-		max = 0;
-		rstep = 0;
+		_conf[0] = sconf;
+		RESET_VALS(0);
+		RESET_VALS(1);
+#if (NPARALLELCONF > 2)
+		RESET_VALS(2);
+		RESET_VALS(3);
+#endif		
+		/* max[0] = 0; */
+		/* rstep[0] = 0; */
+		/* max[1] = 0; */
+		/* rstep[1] = 0; */
 
-		count++;
+		count +=NPARALLELCONF;
 		ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
 	}
 }
@@ -361,14 +526,17 @@ int run_test(dint MAXVAL,dint items) {
 	unsigned short *dev_f;
 
 	count = 0;
-
+	
 	HANDLE_ERROR(cudaDeviceReset());
-//  	cudaDeviceSetCacheConfig( cudaFuncCachePreferL1 );
-	HANDLE_ERROR(cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeFourByte));
+	HANDLE_ERROR(cudaSetDeviceFlags(cudaDeviceScheduleYield));
+  	cudaDeviceSetCacheConfig( cudaFuncCachePreferL1 );
+	HANDLE_ERROR(cudaDeviceSetLimit(cudaLimitMallocHeapSize,0));
+
+	HANDLE_ERROR(cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte));
 	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
-	const	unsigned int devcount = 1024*CONFPKERNEL;// count;
+	const	unsigned int devcount = 2048*CONFPKERNEL;// count;
 	register unsigned int streams = NSTREAMS;
-	register unsigned int lock_count = 0;
+	register unsigned short lock_count = 0;
 	register unsigned int streamcount = 0;
 	register cudaStream_t stream[streams];
 	for(i = 0;i < streams; i++)
@@ -377,6 +545,7 @@ int run_test(dint MAXVAL,dint items) {
 	count = 0;
 	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
 	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
+	
  	HANDLE_ERROR(cudaMalloc((void **)&dev_f, MAXVAL*sizeof(short)));
  	HANDLE_ERROR(cudaMalloc((void **)&dev_o, MAXVAL*sizeof(int)));
 
@@ -555,9 +724,9 @@ int main(void) {
 	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
 	bids = (unsigned short * ) malloc(sizeof(short)*(2 << (from-1)));
 	f = bids;
-	int ret_val =1;
+	int ret_val =0;
 	int count;
-	while(ret_val == 1) {
+	while(ret_val == 0) {
 	
 	MAXVAL = (2 << (from-1));
 	gen_rand_bids(MAXVAL);
