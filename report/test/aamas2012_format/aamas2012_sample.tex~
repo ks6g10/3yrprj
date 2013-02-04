@@ -259,19 +259,19 @@ specifically available for denoting the structure of a
 proceedings paper, rather than with giving rigorous descriptions
 or explanations of such commands.
 
-\section{The {\secit DP} Algorithm}
-The fundamental output of the DP algorithm is two tables, $\Theta$ and $\Gamma$. 
-An entry in $\Gamma$ represent a value a coalition structure is given, 
-while $\Theta$ represent which coalition structure the entry in $\Gamma$ represent.
+\section{The {\secit DP} Algorithm} 
+The fundamental output of the DP algorithm is two tables, $O$ and $f$. 
+An entry in $f$ represent a value a coalition structure is given, 
+while $O$ represent which coalition structure the entry in $f$ represent.
 
 It does that by the bottom up principle where it starts with the smallest splittable 
 coalition structure of two agents, checks if any of the splittings is more beneficial to make.
-If so, updates $\Gamma$ and $\Theta$ with the new value and coalition structure. 
+If so, updates $f$ and $O$ with the new value and coalition structure. 
 It iterates over all the coalitions of same cardinality until it moves on the the 
 next coalition size.
 
 
-Given the set of all coalitions $C\subseteq A$, it will compute $\Theta$
+Given the set of all coalitions $C\subseteq A$, it will compute $O$
 
 
 \begin{algorithm}
