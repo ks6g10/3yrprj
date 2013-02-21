@@ -1,0 +1,32 @@
+\begin{thebibliography}{1}
+
+\bibitem{boyer2012solving}
+V.~Boyer, D.~El~Baz, and M.~Elkihel.
+\newblock Solving knapsack problems on gpu.
+\newblock {\em Computers \& Operations Research}, 39(1):42--47, 2012.
+
+\bibitem{rahwan:jennings:2008b}
+T.~Rahwan and N.~R. Jennings.
+\newblock Coalition structure generation: Dynamic programming meets anytime
+  optimization.
+\newblock In {\em AAAI}, pages 156--161, 2008.
+
+\bibitem{DBLP:conf/atal/RahwanJ08}
+T.~Rahwan and N.~R. Jennings.
+\newblock An improved dynamic programming algorithm for coalition structure
+  generation.
+\newblock In {\em AAMAS}, pages 1417--1420, 2008.
+
+\bibitem{eps265062}
+T.~Rahwan and N.~R. Jennings.
+\newblock An improved dynamic programming algorithm for coalition structure
+  generation.
+\newblock In {\em Proc 7th Int Conf on Autonomous Agents and Multi-Agent
+  Systems}, pages 1417--1420, 2008.
+
+\bibitem{DBLP:journals/ai/SandholmLAST99}
+T.~Sandholm, K.~Larson, M.~Andersson, O.~Shehory, and F.~Tohm{\'e}.
+\newblock Coalition structure generation with worst case guarantees.
+\newblock {\em Artif. Intell.}, 111(1-2):209--238, 1999.
+
+\end{thebibliography}
