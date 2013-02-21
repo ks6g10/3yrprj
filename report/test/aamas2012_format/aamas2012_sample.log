@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  20 FEB 2013 05:25
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  21 FEB 2013 18:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -793,7 +793,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 352--355
  []
 
 
-Underfull \hbox (badness 2359) in paragraph at lines 385--385
+Underfull \hbox (badness 2359) in paragraph at lines 383--383
 []\T1/lmr/bx/n/9 Algorithm 2 \T1/lmr/m/n/9 Enu-mer-a-tion of the op-ti-mal spli
 t-tings
  []
@@ -808,12 +808,13 @@ uc-
  []
 
 [2]
-Overfull \hbox (14.07402pt too wide) in paragraph at lines 513--523
+Overfull \hbox (14.07402pt too wide) in paragraph at lines 512--522
 \T1/lmr/m/n/9 coali-tion struc-ture, given the coali-tion struc-ture $\OML/lmm/
 m/it/9 C \OT1/lmr/m/n/9 = \OMS/lmsy/m/n/9 f\OML/lmm/m/it/9 f[]; f[]; f[]\OMS/lm
 sy/m/n/9 g$
  []
 
+[3]
 Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    date: 2013-02-19 02:53:09
 (epstopdf)                    size: 52390 bytes
@@ -822,75 +823,64 @@ Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    size: 16702 bytes
 (epstopdf)             Command: <repstopdf --outfile=reduction-eps-converted-to
 .pdf reduction.eps>
-(epstopdf)             \includegraphics on input line 573.
+(epstopdf)             \includegraphics on input line 614.
 Package epstopdf Info: Output file is already uptodate.
-<reduction-eps-converted-to.pdf, id=27, 812.03375pt x 288.07625pt>
+ <reduction-eps-converted-to.pdf, id=31, 812.03375pt x 288.07625pt>
 File: reduction-eps-converted-to.pdf Graphic file (type pdf)
 
 <use reduction-eps-converted-to.pdf>
-Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 573.
+Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 614.
 
 (pdftex.def)             Requested size: 504.0pt x 178.79443pt.
- [3]
+ [4]
 PGFPlots: reading {testdata2.dat}
 PGFPlots: reading {testdata2.dat}
 PGFPlots: reading {testdata2.dat}
 PGFPlots: reading {testdata2.dat}
+PGFPlots: reading {testdata3.dat}
+PGFPlots: reading {testdata3.dat}
+PGFPlots: reading {testdata3.dat}
+PGFPlots: reading {testdata3.dat}
 
-Overfull \hbox (5.48618pt too wide) in paragraph at lines 745--746
+Overfull \hbox (2.7595pt too wide) in paragraph at lines 915--916
 [][] 
  []
 
-PGFPlots: reading {testdata3.dat}
-PGFPlots: reading {testdata3.dat}
-PGFPlots: reading {testdata3.dat}
-PGFPlots: reading {testdata3.dat}
 
-Overfull \hbox (5.48618pt too wide) in paragraph at lines 804--805
-[][] 
- []
+Underfull \vbox (badness 1661) has occurred while \output is active []
 
-(./aamas2012_sample.bbl) [4 <./reduction-eps-converted-to.pdf>]
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 1187
-.
+ [5 <./reduction-eps-converted-to.pdf>] (./aamas2012_sample.bbl) [6
 
-(/usr/share/texmf-dist/tex/latex/lm/t1lmtt.fd
-File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-Overfull \hbox (12.19711pt too wide) in paragraph at lines 1185--1189
-\T1/lmr/m/n/9 just add the names and in-for-ma-tion in the \T1/lmtt/m/n/9 \addi
-tionalauthors
- []
-
-[5] (./aamas2012_sample.aux) ) 
+]
+(./aamas2012_sample.aux) ) 
 Here is how much of TeX's memory you used:
- 19185 strings out of 493488
- 443506 string characters out of 3146892
- 611457 words of memory out of 3000000
- 22033 multiletter control sequences out of 15000+200000
- 69684 words of font info for 64 fonts, out of 3000000 for 9000
+ 19166 strings out of 493488
+ 443233 string characters out of 3146892
+ 603882 words of memory out of 3000000
+ 22018 multiletter control sequences out of 15000+200000
+ 69365 words of font info for 63 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 68i,19n,120p,737b,2078s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ec.e
-nc}{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texmf-dist/fo
-nts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-rm.
-enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf-d
-ist/fonts/enc/dvips/lm/lm-mathsy.enc}</usr/share/texmf-dist/fonts/type1/public/
-lm/lmbx9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmex10.pfb></usr/shar
-e/texmf-dist/fonts/type1/public/lm/lmmi6.pfb></usr/share/texmf-dist/fonts/type1
-/public/lm/lmmi9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmr6.pfb></us
-r/share/texmf-dist/fonts/type1/public/lm/lmr9.pfb></usr/share/texmf-dist/fonts/
-type1/public/lm/lmri9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmsy6.pf
-b></usr/share/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/share/texmf-dist
-/fonts/type1/public/lm/lmtt9.pfb></usr/share/texmf-dist/fonts/type1/urw/helveti
-c/uhvb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/s
-hare/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/t
-ype1/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.
-pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on aamas2012_sample.pdf (5 pages, 268068 bytes).
+ 68i,19n,120p,737b,2082s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}{/
+usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf-dist/fo
+nts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathit.
+enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf-dist/
+fonts/enc/dvips/lm/lm-mathsy.enc}</usr/share/texmf-dist/fonts/type1/public/lm/l
+mbx9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmex10.pfb></usr/share/te
+xmf-dist/fonts/type1/public/lm/lmmi6.pfb></usr/share/texmf-dist/fonts/type1/pub
+lic/lm/lmmi9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmr6.pfb></usr/sh
+are/texmf-dist/fonts/type1/public/lm/lmr9.pfb></usr/share/texmf-dist/fonts/type
+1/public/lm/lmri9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></
+usr/share/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/share/texmf-dist/fon
+ts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helveti
+c/uhvr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/shar
+e/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/typ
+e1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pf
+b>
+Output written on aamas2012_sample.pdf (6 pages, 242265 bytes).
 PDF statistics:
- 104 PDF objects out of 1000 (max. 8388607)
- 77 compressed objects within 1 object stream
+ 101 PDF objects out of 1000 (max. 8388607)
+ 74 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  18 words of extra memory for PDF output out of 10000 (max. 10000000)
 

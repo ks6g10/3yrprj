@@ -328,7 +328,7 @@ Techniques of memory compression, utilizastion of reduntant operation and furthe
 \subsection{Coalition formation}
 
 
-\subsection{The {\secit DP} Algorithm} 
+\subsection{The {\secit DP} Algorithm} %done
 
 
 The DP algorithm as shown in algorithm \ref{DP} works by producing two output tables, $O$ and $f$, 
@@ -377,9 +377,7 @@ These final splittings are easily retrived as outlined in algorithm \ref{idpref}
 Essentialy, all coalitions in $C \in CS^*$ which value in $f$
 is not equal to the initial bid in $b$, find the first splitting that is equal to the value in $f$.
 The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
-numbers of evaluations carried out \cite{eps265062}.
-
-
+number of evaluations carried out in the previoius steps\cite{eps265062}.
 
 \begin{algorithm}
 \caption{Enumeration of the optimal splittings through re-evaluation of small amount of coalitions \label{idpref}}
@@ -400,7 +398,7 @@ $f:$ the final evaluated values gathered from evaluating splittings.
 
 
 
-\subsection{The CUDA Architecture}
+\subsection{The CUDA Architecture} %done
 Graphics Processing Units(GPU) from Nvidia and AMD is highly multithreaded, many-core architectures primarily aimed at 
 highly parallel image processing and rendering, however it have in the recent years moved towards supporting general purpose computing through 
 the OpenCL and Nvidia CUDA framework.
@@ -426,15 +424,17 @@ meaning possible concurent excecution of warps.
 The threads communicate with each other through writes to various types of memory outlined in table \ref{mem}.
 There are three types of thread writable memory in the architecture; registers and local memory are each threads
 coupled memory which is not volatile and may be shared with other threads inside the same warp as described in section \ref{reduction}. 
-Shared memory is by its name shared between all threads within the same block, as it may be written to by any thread within the block
+Shared memory is as its name tells shared between all threads within the same block, as it may be written to by any thread within the block
 it should be treated as volatile, thus syncronization inside the block have to be consider whilts dealing with shared memory.
 Finally, global memory is the only persistant memory which will persist between each kernel call, it may be manipulated by the host,
-but also by any thread, and is the only means of communication inbetween kernels, blocks, and the host.
+but also by any thread, and is the only means of communication inbetween kernels, blocks, and the host. It to should be considered voaltile.
 
-Regarding memory, certain access patterns must be followed in order maximise performance. 
-For global memory, it is important to note that each load request from memory will fetch in cach lines of size $32*wordsize$,
+Regarding access to the global memory, certain access patterns must be followed in order maximise performance. 
+For global memory, it is important to note that each load request from memory will fetch in cachelines of size $32*wordsize$,
 meaning cachelines of 32, 64, and 128 bytes each when pulling the primitives char, short and int respectively.
-As a result, if the memory reads within a warp is not coalesced within consecutive words, the effective bandwidth will drop immediately.
+The reason for this is the fact mentioned earlier, all 32 threads within the same warp issue the same instruction, 
+thus each warp fetches 32 entities of a specific word type.
+As a result, if the memory reads within a warp is not coalesced(grouped within the same cacheline) within consecutive words, the effective bandwidth will drop immediately.
 
 
 \begin{table}
@@ -448,7 +448,7 @@ Global&Kernel \& Host&Program&Slow\\
 \hline\end{tabular}
 \end{table}
 
-\subsection{Model and Cuda Implementation}
+\subsection{Data structure} %done
 How the data is represented and structured is important, 
 especially in bandwidth bound algorithms where the majority of time
 is spent fetching data from memory and the arithmetic overhead is low.
@@ -460,7 +460,7 @@ In order to minimize memory usage several technices were used.
 Representing a coalition structures members as an array of values,
 where each value represent a distinct agent may seem intinuative at first. 
 However, if the members are represented as bits set in a fixed sized integer, the memory
-requirement will be reduced substantialy as shown by previoius studies ??. 
+requirement will be reduced substantialy as shown by previoius studies.\cite{boyer2012solving}
 If solving for the complete coalition structure formation problem with n agents representing members as an array of values.
 There are \begin{math}\dbinom{n}{i}\end{math} coalition structures of size $i$, where
 $i$ entries have to be stored per coalition structure.
@@ -470,15 +470,11 @@ The total number of values needed to store just to represent the coalition struc
 Given the same constraints, representing the coalition structure as an fixed sized integer, it is only 
 needed to store one entry per coalition structure, totaling to \begin{math}2^n-1\end{math} data points.
 
-
-The coalition structure itself may be represented as an integer where the n'th 
-agent of the coalition structure is represented by setting the n'th bit in an binary integer. 
-Given four agents $A = {f_1,f_2,f_3,f_4}$, coalition $C = {f_1,f_3,f_4}$ would be represented
+To give an example, with four agents $A = {f_1,f_2,f_3,f_4}$, the coalition $C = {f_1,f_3,f_4}$ would be represented
 as $C = 1101$ in the binary system and $11$ in the decimal system. Therefore, if the coalition
 structure is represented as an integer it can implicitly be stored as an index 
-to its coalition value and most beneficial splitting.
-
-\subsubsection{Coalition Structure Splitting Collisions}
+to its coalition value, by enumerating it on runtime. That means the only
+memory constraint on the system is the store all the values for all the coalition structures.
 
 \subsubsection{Coalition Structure Splittings}
 
@@ -554,43 +550,90 @@ Thereafter nextSplit will be used to generate the next splitting.
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Collisions between Splittings of Coalitions}
+\begin{algorithm}
+\caption{Fetch using Collision detection \label{collision}}
+Input:
+Index:$\psi$ \hfill Which n'th splitting should be generated
+Index:$z$ \hfill The index in $\upsilon$ for the coalition structure that is evaluated 
+
+Variables:Value $\alpha $: \hfill Holds temporary values
+
+\begin{algorithmic}[1]
+    \STATE $C_{0} := initialSplit(\psi,CS_0)$ \label{lst:line:startcol}
+    \STATE $C_{1} := initialSplit(\psi,CS_1)$
+    \STATE $\upsilon_{0,z} := f(C_{0})$ \label{lst:line:fetch}
+    
+    \IF{$C_{1} = C_{0}$} \label{lst:line:firstif}
+      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z}$
+      \ELSE
+      \STATE $\upsilon_{0,z+1} := f(C_{1})$
+     \ENDIF \label{lst:line:firstifend}
+    \STATE $C_{0} := CS_0\backslash C_{0}$ \label{lst:line:startend}
+    \STATE $\alpha := f(C_{0})$
+    \STATE $C_{1} := CS_1\backslash C_{1}$
+    \IF{$C_{1} = C_{0}$}
+      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z+1}  + \alpha$
+    \ELSE
+      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z+1} + f(C_{1})$
+    \ENDIF
+    \STATE $\upsilon_{0,z} := \upsilon_{0,z}  + \alpha$ \label{lst:line:endend}
+\RETURN $\upsilon$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Collisions between Splittings of Coalitions} \label{sectionsplit}
 Given that each thread evaluate several splittings over numerous coalition structures in parallel, 
 it is bound that splittings on two coalition structures that overlap will have splittings that collide.
 A collision means that splittings of coalition structures contain at least one identical subset shared between them.
 \begin{displaymath}\forall S\subset C \wedge S' \subset C' : C \cap C' \neq \emptyset \Rightarrow \exists S \wedge S' : S = S'\end{displaymath}
-The number of splittings that overlap is dependant on how many common members the coalitions have in common.
-\begin{displaymath}2^{n-1}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
-Normaly, each splitting would be fetched from memory resulting in it being fetched several times.
-Instead, before fetching the values of the splitting, determin if any previoius coalitions
-contained that splitting and if so evaluate the coalition by re-using the previoiusly fetched value. 
-This will enable a cost effective way to reduce the relative random access to memory making the effective bandwidth higher.
+For all splittings of $C$ and $C'$ where the coalition structures intersect, there must excist at least one splitting shared between them.
 
-\subsubsection{Reduction} \label{reduction}
-\textbf{figure*} to enclose the figure and its caption.
+The number of splittings that collide is dependant on how many common members the coalitions have in common.
+\begin{displaymath}2^{n-1}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
+Specifically, the number of splittings incommon is how many splittings
+can be done all the members in common.
+Normaly, each splitting would be fetched from global memory resulting in it being fetched several times, 
+if it have not been evicted from the cache memory.
+
+By using collision detection as described in algorithm \ref{collision} the number of reduntant fetches may be reduced.
+It works by evaluating two or more coalitions at the same time, lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generates
+the intial splittings and fetches the value for the first splitting. It then trough lines \ref{lst:line:firstif} to \ref{lst:line:firstifend}
+checks wheater the splitting of the second splitting is equal to the first. 
+If so assign it the first splittings value, else fetch its own value from global memory. 
+Finally, the last lines does the same thing as above just that it does that on the pairwise disjoint subset, 
+and the first splittings next value is stored in an temporary variable. 
+The more splittings that are evaluated at the same time and checked against eachother, the less reduntant memory fetches are done.
+
+
+\subsubsection{Reduction} \label{reduction} %done
 \begin{figure*}
 \centering
 \includegraphics[width=\linewidth]{reduction}
 \caption{Outline of reduction across thread, warp, block and kernel \label{fig:reduction}}
 \end{figure*}
+
 As the evaluation of each coalition structure is to find the splitting 
 of the coalition structure which maximises the value of the coalition structure,
 it is simply needed to compare the values of all splittings with eachother to find the most valued one. 
+The reduction is done on four levels of scope as seen on lines \ref{lst:line:reductionstart} to \ref{lst:line:reductionend} in algorithm \ref{gpudp},
+as well as outlined in figure \ref{reduction}. 
 
-The reduction is done on four levels of scope as seen on lines ?? to ?? in algorithm ??. On thread level, 
-each thread evaluate a number of splittings to determine their most valued splitting,
-then all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting among the warp.
-This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between threads within the same warp,
-allowing for a substantial reduction in shared memory use. 
-On thread block level, the threads are split up into two groups, active and inactive threads. 
-The active threads will compare its value against a corresponding inactive thread, then half the number of active thread.
-Iterate until the maximum value have converged into one single thread holding the maximum value for the whole thread block.
-Finally, the single thread will attempt to update the global memory using atomic functions 
-given that the value of the coalition in table $f$  is less.
+On thread level, each thread evaluate a number of splittings to determine their most valued splitting. 
+On warp level, all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting among the warp.
+This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between any thread within the same warp.
+Using this technices allows for a substantial reduction in shared memory use, as all that is needed to be stored is one value per warp. 
+With each single value from each warp moved into shared memory, initially the total number of active threads will be equal to the number
+of warps inside the block divided by two. These thread will compare one warp value each with the respectiv value that is not being compared by
+another thread, half the number of threads and iterate over again. This is done until only one thread remains which will compare the last two values.
+Finally, the single thread that compared the last values, will try to update the value in global memory if it is larger using atomic functions.
 
-\subsection{Algorithm}
+\subsection{Algorithm} %not done nein
+The algorithm starts by initilising all the variables needed further on,
+as generating the next coalition structure works through a recurrance relation, 
+only the first thread will update the shared memory. Continuing, next step is to generete the shift array, 
+this can be done in parallel so a number of threads invoke the method initShift.
 \begin{algorithm}
-\caption{GPU implementation of the DP algorithm}
+\caption{GPU implementation of the DP algorithm\label{gpudp}}
 \textbf{Input}
 
 $f$\hfill The array which holds the bids
@@ -628,48 +671,51 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
 \IF{$tid = 0$}
   \STATE $conf_0 := C_0$
   \FOR {$i := 1$ to $confpkernel$}
-    \STATE $conf_i := nextCoalitoin(conf_{i-1})$
-  \ENDFOR
+    \STATE $conf_i := nextCoalition(conf_{i-1})$
+  \ENDFOR \hfill Checkpoint 1
 \ENDIF
 \IF{$tid < confpkernel$}
-  \STATE $initShift(conf_{tid})$
+  \STATE $initShift(conf_{tid})$ 
 \ENDIF
-
+\hfill Checkpoint 2
 \FOR{$x := 0$ to $confpkernel$}
   \STATE Set all values in $\upsilon$ to 0
 
   \IF{$\psi \geq \Psi$}
     \STATE goto postfetch
   \ENDIF
-
-  \FOR{$z:=0$ to $nparallelconf$}
+\hfill Checkpoint 3
+  \FOR{$z := 0$ to $nparallelconf$}
     \IF{$conf_{z+x} \geq maxval$}
       \STATE break
     \ENDIF
-    \STATE $C := initialSplit(\psi,conf_{z+x}$
-    \STATE $\upsilon_{0,z} := f(conf_{z+x}\backslash C)+f(C)$
-    \STATE $C := nextSplit(C)$
-    \STATE $\upsilon_{1,z} := f(conf_{z+x}\backslash C)+f(C)$
+    \STATE $C_z := initialSplit(\psi,conf_{z+x})$
+    \STATE $\upsilon_{0,z} := f(conf_{z+x}\backslash C_z)+f(C_z)$
+    \STATE $C_z := nextSplit(C_z)$
+    \STATE $\upsilon_{1,z} := f(conf_{z+x}\backslash C_z)+f(C_z)$
+    \STATE $z := z + 2$
   \ENDFOR
-
-  \FOR{$z:=0 to nparallelconf$}
+\hfill Checkpoint 4
+  \FOR{$z:=0 to nparallelconf$}\label{lst:line:reductionstart}
   
     \IF{$\upsilon_{1,z} > \upsilon_{0,z}$}
       \STATE $\upsilon_{0,z} := \upsilon_{1,z}$
     \ENDIF
     
     \STATE $warpReduction(\upsilon_{0,z})$
-    
+
     \IF{$tid \% 32 = 0$}
       \STATE $i := tid / 32$
       \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$
     \ENDIF
-    
+   \hfill Checkpoint 5
   \ENDFOR
   \STATE $blockReduction()$
+  \hfill Checkpoint 6
   \IF{$tid = 0$}
-  \STATE $atomicUpdate()$
+  \STATE $atomicUpdate()$\label{lst:line:reductionend}
   \ENDIF
+  \hfill Checkpoint 7
   \STATE $x := x + nparallelconf$
 \ENDFOR
 \end{algorithmic}
@@ -686,6 +732,7 @@ The way the data is structured and stored is identical between both implementati
 \section{Results}
 
 \begin{figure}[width=\linewidth]
+\caption{LOG Clock Cycles between checkpoints and relative time for each code segment, not sharing splittings\label{nosplitt}}
 \begin{tikzpicture}[align=left]
 \begin{axis} [
 %scale only axis, % The height and width argument only apply to the actual axis
@@ -693,8 +740,7 @@ The way the data is structured and stored is identical between both implementati
 %box plot width=4mm,
 %xticklabel={\pgfmathparse{\alglabels[\tick]}\pgfmathresult}],
 ymode=log,
-title={LOG Clock Cycles and relative time for each code segment},
-xlabel={Code segment},
+xlabel={Checkpoint},
 ylabel={LOG Clock Cycles},
 ylabel near ticks,
 ymax = 10e5,
@@ -745,6 +791,7 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
 \end{tikzpicture}
 \end{figure}
 \begin{figure}[width=\linewidth]
+\caption{LOG Clock Cycles between checkpoints and relative time for each code segment, shared splittings\label{splitt}}
 \begin{tikzpicture}[align=left]
 \begin{axis} [
 %scale only axis, % The height and width argument only apply to the actual axis
@@ -752,8 +799,7 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
 %box plot width=4mm,
 %xticklabel={\pgfmathparse{\alglabels[\tick]}\pgfmathresult}],
 ymode=log,
-title={LOG Clock Cycles and relative time for each code segment},
-xlabel={Code segment},
+xlabel={Checkpoint},
 ylabel={LOG Clock Cycles},
 ylabel near ticks,
 ymax = 10e5,
@@ -792,13 +838,13 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
     every axis y label/.style={at={(rel axis cs:1,1)},anchor= north east}
     ]
 \addplot[ mark = *,red, only marks] coordinates  
-{( 1, 16.56 )
- ( 2, 6.23 )
- ( 3, 0.66 )
- ( 4, 56.16 )
- ( 5, 9.21 )
- ( 6, 1.46 )
- ( 7, 9.72 )
+{( 1, 24.82 )
+ ( 2, 9.21 )
+ ( 3, 1.33 )
+ ( 4, 49.21 )
+ ( 5, 4.27 )
+ ( 6, 2.09 )
+ ( 7, 9.07 )
  }; 
 \end{axis}
 \end{tikzpicture}
@@ -807,13 +853,15 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
 
 
 \begin{figure}[width=\linewidth]
-\caption{hello}
+\caption{LOG elapsed time for N agents\label{time}}
 \begin{tikzpicture}[align=left]
 \begin{axis}[
   xmin = 20,
   xmax = 29,
   ymax = 10e5,
   grid,
+  xlabel={Agents},
+  ylabel={Log elapsed time},
   xtick={20,...,29},
   axis lines=right, 
   legend pos= north west,
@@ -867,11 +915,26 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
 \end{axis}
 \end{tikzpicture}
 \end{figure}
-\section{Discussion}
+\section{Discussion} %not done
+Figures \ref{nosplitt} and \ref{splitt} shows the difference between employing 
+shared splittings discussed in section \ref{sectionsplit}. 
+What it show are the number of logarithmic clock cycles elapsed between the 
+previoius checkpoint and the current one as outline in algorithm \ref{dpgpu}.
+What can first be noted is that checkpoint 4 is where the algorithm spends most of the time. 
+Checkpoint 4 denote the generation of splittings and fetching them.
+As mentioned earlier the algorithm is bandwidth bound and spending almost
+$60\%$ of the time fetching memory shows that. Another reason of the result
+is due to the not aligned random access making the effective bandwidth low.
+Knowing that and looking at figure \ref{splitt} showing the result of sharing splittings it can be concluded that whilst it still spends most 
+of the time fetching memory, henceforth improving the sharing of splittings make a significant impact on the overal performance.
 
+Figure \ref{time} shows the difference between the CPU and GPU algorithm.
+For every N agents the y axis shows the logarithmic elapsed time. The difference shown here between the implementations is substantial showing
+that solving the problem on the GPU is highly beneficial. For 29 agents it solves it in 2 hours while the CPU bound algorithm was etrapolated to show that it would take up to 83 hours to complete. This is an speed factor of over 40 which would grow over the amount of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
+The difference between the GPU implementations where one utilizes internal 
+sharing of splittings may also be noted to being $40\%$ faster than the variant without.
 \section{Conclusion}
-This paper show using the GPU to solve to Complete coalition structure formation problem is a viable option.
-However due to limitations of the hardware solving a problem 
+This paper show using the GPU to solve to Complete coalition structure formation problem is much viable option. Being so much faster it shows that
 % \subsection{Math Equations}
 % % You may want to display math equations in three distinct styles:
 % % inline, numbered or non-numbered display.  Each of
@@ -1154,52 +1217,52 @@ However due to limitations of the hardware solving a problem
 %
 %APPENDICES are optional
 %\balancecolumns
-\appendix
-%Appendix A
-\section{Headings in Appendices}
-The rules about hierarchical headings discussed above for
-the body of the article are different in the appendices.
-In the \textbf{appendix} environment, the command
-\textbf{section} is used to
-indicate the start of each Appendix, with alphabetic order
-designation (i.e. the first is A, the second B, etc.) and
-a title (if you include one).  So, if you need
-hierarchical structure
-\textit{within} an Appendix, start with \textbf{subsection} as the
-highest level. Here is an outline of the body of this
-document in Appendix-appropriate form:
-\subsection{Introduction}
-\subsection{The Body of the Paper}
-\subsubsection{Type Changes and  Special Characters}
-\subsubsection{Math Equations}
-\paragraph{Inline (In-text) Equations}
-\paragraph{Display Equations}
-\subsubsection{Citations}
-\subsubsection{Tables}
-\subsubsection{Figures}
-\subsubsection{Theorem-like Constructs}
-\subsubsection*{A Caveat for the \TeX\ Expert}
-\subsection{Conclusions}
-\subsection{Acknowledgments}
-\subsection{Additional Authors}
-This section is inserted by \LaTeX; you do not insert it.
-You just add the names and information in the
-\texttt{{\char'134}additionalauthors} command at the start
-of the document.
-\subsection{References}
-Generated by bibtex from your ~.bib file.  Run latex,
-then bibtex, then latex twice (to resolve references)
-to create the ~.bbl file.  Insert that ~.bbl file into
-the .tex source file and comment out
-the command \texttt{{\char'134}thebibliography}.
-% This next section command marks the start of
-% Appendix B, and does not continue the present hierarchy
-\section{More Help for the Hardy}
-The aamas2012 .cls file is based on the
-sig-alternate.cls file that is itself chock-full of succinct and
-helpful comments.  If you consider yourself a moderately experienced
-to expert user of \LaTeX, you may find reading it useful but please
-remember not to change it.
+% \appendix
+% %Appendix A
+% \section{Headings in Appendices}
+% The rules about hierarchical headings discussed above for
+% the body of the article are different in the appendices.
+% In the \textbf{appendix} environment, the command
+% \textbf{section} is used to
+% indicate the start of each Appendix, with alphabetic order
+% designation (i.e. the first is A, the second B, etc.) and
+% a title (if you include one).  So, if you need
+% hierarchical structure
+% \textit{within} an Appendix, start with \textbf{subsection} as the
+% highest level. Here is an outline of the body of this
+% document in Appendix-appropriate form:
+% \subsection{Introduction}
+% \subsection{The Body of the Paper}
+% \subsubsection{Type Changes and  Special Characters}
+% \subsubsection{Math Equations}
+% \paragraph{Inline (In-text) Equations}
+% \paragraph{Display Equations}
+% \subsubsection{Citations}
+% \subsubsection{Tables}
+% \subsubsection{Figures}
+% \subsubsection{Theorem-like Constructs}
+% \subsubsection*{A Caveat for the \TeX\ Expert}
+% \subsection{Conclusions}
+% \subsection{Acknowledgments}
+% \subsection{Additional Authors}
+% This section is inserted by \LaTeX; you do not insert it.
+% You just add the names and information in the
+% \texttt{{\char'134}additionalauthors} command at the start
+% of the document.
+% \subsection{References}
+% Generated by bibtex from your ~.bib file.  Run latex,
+% then bibtex, then latex twice (to resolve references)
+% to create the ~.bbl file.  Insert that ~.bbl file into
+% the .tex source file and comment out
+% the command \texttt{{\char'134}thebibliography}.
+% % This next section command marks the start of
+% % Appendix B, and does not continue the present hierarchy
+% \section{More Help for the Hardy}
+% The aamas2012 .cls file is based on the
+% sig-alternate.cls file that is itself chock-full of succinct and
+% helpful comments.  If you consider yourself a moderately experienced
+% to expert user of \LaTeX, you may find reading it useful but please
+% remember not to change it.
 %\balancecolumns % GM June 2007
 % That's all folks!
 \end{document}

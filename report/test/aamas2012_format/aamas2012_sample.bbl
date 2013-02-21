@@ -1,5 +1,10 @@
 \begin{thebibliography}{1}
 
+\bibitem{boyer2012solving}
+V.~Boyer, D.~El~Baz, and M.~Elkihel.
+\newblock Solving knapsack problems on gpu.
+\newblock {\em Computers \& Operations Research}, 39(1):42--47, 2012.
+
 \bibitem{eps265062}
 T.~Rahwan and N.~R. Jennings.
 \newblock An improved dynamic programming algorithm for coalition structure

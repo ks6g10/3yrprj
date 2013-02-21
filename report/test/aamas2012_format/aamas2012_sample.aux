@@ -8,6 +8,7 @@
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Dynamic Programming algorithm }}{\thepage }}
 \newlabel{lst:line:a}{{4}{\thepage }}
 \newlabel{lst:line:redo}{{10}{\thepage }}
+\citation{boyer2012solving}
 \newlabel{idpref}{{2}{\thepage }}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Enumeration of the optimal splittings through re-evaluation of small amount of coalitions }}{\thepage }}
 \newlabel{lst:line:redo2}{{2}{\thepage }}
@@ -18,41 +19,41 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Model and Cuda Implementation}{\thepage }}
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Splittings of $C = \{f_1,f_3,f_4\}$ Binary $C = 1101$ }}{\thepage }}
 \newlabel{split}{{2}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}Coalition Structure Splitting Collisions}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Coalition Structure Splittings}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}Coalition Structure Splittings}{\thepage }}
 \newlabel{initshift}{{3}{\thepage }}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces {\secit initShift} input $Coalition:C$ }}{\thepage }}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces {\secit nextSplit} input $Coalition:C$ $Splitting:S$}}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.3}Collisions between Splittings of Coalitions}{\thepage }}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces {\secit initialSplit} input $Count:n, Coalition:C$}}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.4}Reduction}{\thepage }}
-\newlabel{reduction}{{2.4.4}{\thepage }}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces initShift input $Coalition:C$ }}{\thepage }}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces  nextSplit input $Coalition:C$ $Splitting:S$}}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Collisions between Splittings of Coalitions}{\thepage }}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces initialSplit input $Count:n, Coalition:C$}}{\thepage }}
+\newlabel{collision}{{6}{\thepage }}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {6}{\ignorespaces Fetch using Collision detection }}{\thepage }}
+\newlabel{lst:line:startcol}{{1}{\thepage }}
+\newlabel{lst:line:fetch}{{3}{\thepage }}
+\newlabel{lst:line:firstif}{{4}{\thepage }}
+\newlabel{lst:line:firstifend}{{8}{\thepage }}
+\newlabel{lst:line:startend}{{9}{\thepage }}
+\newlabel{lst:line:endend}{{17}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.3}Reduction}{\thepage }}
+\newlabel{reduction}{{2.4.3}{\thepage }}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Algorithm}{\thepage }}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Experimental setup}{\thepage }}
-\bibstyle{abbrv}
-\bibdata{sigproc}
-\bibcite{eps265062}{1}
+\newlabel{gpudp}{{7}{\thepage }}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {7}{\ignorespaces GPU implementation of the DP algorithm}}{\thepage }}
+\newlabel{lst:line:reductionstart}{{25}{\thepage }}
+\newlabel{lst:line:reductionend}{{37}{\thepage }}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Outline of reduction across thread, warp, block and kernel }}{\thepage }}
 \newlabel{fig:reduction}{{1}{\thepage }}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Results}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces LOG Clock Cycles between checkpoints and relative time for each code segment, not sharing splittings}}{\thepage }}
+\newlabel{nosplitt}{{2}{\thepage }}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces LOG Clock Cycles between checkpoints and relative time for each code segment, shared splittings}}{\thepage }}
+\newlabel{splitt}{{3}{\thepage }}
+\bibstyle{abbrv}
+\bibdata{sigproc}
+\bibcite{boyer2012solving}{1}
+\bibcite{eps265062}{2}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces LOG elapsed time for N agents}}{\thepage }}
+\newlabel{time}{{4}{\thepage }}
 \@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{\thepage }}
 \@writefile{toc}{\contentsline {section}{\numberline {6}References}{\thepage }}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Headings in Appendices}{\thepage }}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Introduction}{\thepage }}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}The Body of the Paper}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {A.2.1}Type Changes and Special Characters}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {A.2.2}Math Equations}{\thepage }}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {6}{\ignorespaces GPU implementation of the DP algorithm}}{\thepage }}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces hello}}{\thepage }}
-\@writefile{toc}{\contentsline {paragraph}{Inline (In-text) Equations}{\thepage }}
-\@writefile{toc}{\contentsline {paragraph}{Display Equations}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {A.2.3}Citations}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {A.2.4}Tables}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {A.2.5}Figures}{\thepage }}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {A.2.6}Theorem-like Constructs}{\thepage }}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Conclusions}{\thepage }}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Acknowledgments}{\thepage }}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.5}Additional Authors}{\thepage }}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.6}References}{\thepage }}
-\@writefile{toc}{\contentsline {section}{\numberline {B}More Help for the Hardy}{\thepage }}
