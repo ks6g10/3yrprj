@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  21 FEB 2013 18:21
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  22 FEB 2013 17:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -646,7 +646,11 @@ LaTeX Warning: Overwriting file `./testdata3.dat'.
 LaTeX Warning: Tab has been converted to Blank Space.
 
 
-(./aamas2012_sample.aux)
+(./aamas2012_sample.aux
+
+LaTeX Warning: Label `split' multiply defined.
+
+)
 \openout1 = `aamas2012_sample.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 159.
@@ -808,10 +812,15 @@ uc-
  []
 
 [2]
-Overfull \hbox (14.07402pt too wide) in paragraph at lines 512--522
+Overfull \hbox (14.07402pt too wide) in paragraph at lines 522--532
 \T1/lmr/m/n/9 coali-tion struc-ture, given the coali-tion struc-ture $\OML/lmm/
 m/it/9 C \OT1/lmr/m/n/9 = \OMS/lmsy/m/n/9 f\OML/lmm/m/it/9 f[]; f[]; f[]\OMS/lm
 sy/m/n/9 g$
+ []
+
+
+Overfull \hbox (1.0115pt too wide) in paragraph at lines 533--538
+[]\T1/lmr/m/n/9 nextSplit works through a re-cur-rence re-la-tion which means
  []
 
 [3]
@@ -823,16 +832,21 @@ Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    size: 16702 bytes
 (epstopdf)             Command: <repstopdf --outfile=reduction-eps-converted-to
 .pdf reduction.eps>
-(epstopdf)             \includegraphics on input line 614.
+(epstopdf)             \includegraphics on input line 624.
 Package epstopdf Info: Output file is already uptodate.
  <reduction-eps-converted-to.pdf, id=31, 812.03375pt x 288.07625pt>
 File: reduction-eps-converted-to.pdf Graphic file (type pdf)
 
 <use reduction-eps-converted-to.pdf>
-Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 614.
+Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 624.
 
 (pdftex.def)             Requested size: 504.0pt x 178.79443pt.
- [4]
+
+Overfull \hbox (1.25789pt too wide) in paragraph at lines 644--734
+[]\T1/lmr/m/n/9 The al-go-rithm starts by ini-tial-iz-ing all the vari-ables ne
+eded
+ []
+
 PGFPlots: reading {testdata2.dat}
 PGFPlots: reading {testdata2.dat}
 PGFPlots: reading {testdata2.dat}
@@ -842,42 +856,42 @@ PGFPlots: reading {testdata3.dat}
 PGFPlots: reading {testdata3.dat}
 PGFPlots: reading {testdata3.dat}
 
-Overfull \hbox (2.7595pt too wide) in paragraph at lines 915--916
+Overfull \hbox (2.7595pt too wide) in paragraph at lines 927--928
 [][] 
  []
 
-
-Underfull \vbox (badness 1661) has occurred while \output is active []
-
- [5 <./reduction-eps-converted-to.pdf>] (./aamas2012_sample.bbl) [6
+[4] (./aamas2012_sample.bbl) [5 <./reduction-eps-converted-to.pdf>] [6
 
 ]
-(./aamas2012_sample.aux) ) 
+(./aamas2012_sample.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 19166 strings out of 493488
- 443233 string characters out of 3146892
- 603882 words of memory out of 3000000
- 22018 multiletter control sequences out of 15000+200000
+ 19167 strings out of 493488
+ 443247 string characters out of 3146892
+ 619881 words of memory out of 3000000
+ 22019 multiletter control sequences out of 15000+200000
  69365 words of font info for 63 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
  68i,19n,120p,737b,2082s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}{/
-usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf-dist/fo
-nts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathit.
-enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf-dist/
-fonts/enc/dvips/lm/lm-mathsy.enc}</usr/share/texmf-dist/fonts/type1/public/lm/l
-mbx9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmex10.pfb></usr/share/te
-xmf-dist/fonts/type1/public/lm/lmmi6.pfb></usr/share/texmf-dist/fonts/type1/pub
-lic/lm/lmmi9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmr6.pfb></usr/sh
-are/texmf-dist/fonts/type1/public/lm/lmr9.pfb></usr/share/texmf-dist/fonts/type
-1/public/lm/lmri9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></
-usr/share/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/share/texmf-dist/fon
-ts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helveti
-c/uhvr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/shar
-e/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/typ
-e1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pf
-b>
-Output written on aamas2012_sample.pdf (6 pages, 242265 bytes).
+{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texmf-dist/fon
+ts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-rm.e
+nc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf-di
+st/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ma
+thsy.enc}</usr/share/texmf-dist/fonts/type1/public/lm/lmbx9.pfb></usr/share/tex
+mf-dist/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf-dist/fonts/type1/pub
+lic/lm/lmmi6.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmmi9.pfb></usr/s
+hare/texmf-dist/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf-dist/fonts/typ
+e1/public/lm/lmr9.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmri9.pfb></
+usr/share/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf-dist/fon
+ts/type1/public/lm/lmsy9.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uh
+vb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share
+/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1
+/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
+</usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on aamas2012_sample.pdf (6 pages, 243792 bytes).
 PDF statistics:
  101 PDF objects out of 1000 (max. 8388607)
  74 compressed objects within 1 object stream

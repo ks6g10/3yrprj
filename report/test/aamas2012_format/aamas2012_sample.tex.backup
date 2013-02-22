@@ -298,11 +298,11 @@ Kim Svensson\titlenote{Something}\\
 \maketitle
 
 \begin{abstract}
-A parallel algorithm and implementation using the Nvidia Cuda framework of the dynamic programming algorithm, due To Rothkopf et al. in order to solve the combinatorial auction problem and the complete coalition structure formation problem. 
-Using a consumer grade Nvidia GTX 660 Ti for computational test, processing and implementation in order
-to compare against an sequential version running on a Intel Xeon W3520 with a clockspeed of 2.67GHz. 
+A parallel algorithm and implementation using the NVIDIA CUDA framework of the dynamic programming algorithm, due To Rothkopf et al. in order to solve the combinatorial auction problem and the complete coalition structure formation problem. 
+Using a consumer grade NVIDIA GTX 660 Ti for computational test, processing and implementation in order
+to compare against an sequential version running on a Intel Xeon W3520 with a clock-speed of 2.67GHz. 
 Test results show a speedup factor of 40 with 29 agents with an ever increasing divergence between the CPU and GPU algorithm in terms of growth.
-Techniques of memory compression, utilizastion of reduntant operation and further optimisations to implement in order to raise performance.
+Techniques of memory compression, utilization of redundant operation and further optimization's to implement in order to raise performance.
 \end{abstract}
 
 % Note that the category section should be completed after reference to the ACM Computing Classification Scheme available at
@@ -334,17 +334,17 @@ Techniques of memory compression, utilizastion of reduntant operation and furthe
 The DP algorithm as shown in algorithm \ref{DP} works by producing two output tables, $O$ and $f$, 
 where each table have one entry per coalition structure. 
 An entry in $f$ represent a value a certain coalition structure is given, 
-while $O$ represent which splitting, if any, maximised the coalition structure for the entry in $f$ which it represent.
+while $O$ represent which splitting, if any, maximized the coalition structure for the entry in $f$ which it represent.
 More elaborated, given all coalitions of agents $C\subseteq A$, for each coalition in $C$, evaluate all
 pairwise disjoint subsets here named splittings on their pairwise collective sum against the coalitions
 original value. Given one splitting is greater, update the value of the coalition $f(C) := f(C') + f(C\setminus C')$
 and assign $O$ on $C$ to represent the new splitting, $O(C) := \{C',C\setminus C'\}$. These steps are first carried out
 on all coalition structures with two agents, continuing until $N$ agents. 
 This means, given a coalition structure $S$ with cardinality $|S| = n$, then all coalition structures
-for the sizes 1,2,...,n-1 have already been evaluated. The dynamic programing algorithm is entierly deterministic meaning
+for the sizes 1,2,...,n-1 have already been evaluated. The dynamic programming algorithm is entirely deterministic meaning
 that even if there was only one or two valuations, the algorithm will evaluate all splittings before it reaches a conclusion.
 However this algorithm does not work well with an large amount of agents as it grow exponential and have an time complexity of $O(3^n)$.
-As described later in section ?? the part of the algorithm that is parallilsed is the max function on line \ref{lst:line:a}
+As described later in section ?? the part of the algorithm that is paralleled is the max function on line \ref{lst:line:a}
 which handles the evaluation of all splittings of a given coalition structure.
 
 \begin{algorithm}
@@ -373,11 +373,11 @@ $O$: collection holding the most beneficial splitting for all coalitions.
 \end{algorithm}
 
 The table $O$ may be discarded and not calculated to reduce the memory requirement by half removing instant access to the final splittings.
-These final splittings are easily retrived as outlined in algorithm \ref{idpref}. 
-Essentialy, all coalitions in $C \in CS^*$ which value in $f$
+These final splittings are easily retrieved as outlined in algorithm \ref{idpref}. 
+Essentially, all coalitions in $C \in CS^*$ which value in $f$
 is not equal to the initial bid in $b$, find the first splitting that is equal to the value in $f$.
 The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
-number of evaluations carried out in the previoius steps\cite{eps265062}.
+number of evaluations carried out in the previous steps\cite{eps265062}.
 
 \begin{algorithm}
 \caption{Enumeration of the optimal splittings through re-evaluation of small amount of coalitions \label{idpref}}
@@ -399,42 +399,42 @@ $f:$ the final evaluated values gathered from evaluating splittings.
 
 
 \subsection{The CUDA Architecture} %done
-Graphics Processing Units(GPU) from Nvidia and AMD is highly multithreaded, many-core architectures primarily aimed at 
+Graphics Processing Units(GPU) from NVIDIA and AMD is highly multi-threaded, many-core architectures primarily aimed at 
 highly parallel image processing and rendering, however it have in the recent years moved towards supporting general purpose computing through 
-the OpenCL and Nvidia CUDA framework.
-It does so by devoting a larger amount of transitors towards many computational units rather than data caching and advanced 
-flow controll more often seen in CPU architectures.
-Nvidia describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture, 
-meaning groups of multiple threads excecute the same instructions concurrently and is proportional to SIMD architectures. 
-This enables their GPUs to be highly advantageous when performing data-independant and non-divergent tasks.
+the OpenCL and NVIDIA CUDA framework.
+It does so by devoting a larger amount of transistors towards many computational units rather than data caching and advanced 
+flow control more often seen in CPU architectures.
+NVIDIA describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture, 
+meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
+This enables their GPUs to be highly advantageous when performing data-independent and non-divergent tasks.
 
 To understand this further the grouping of the threads need to be explained and is outlined in figure \ref{fig:reduction}.
 A kernel which is a device specific CUDA function that is called by the sequential host code,
 will request a specified number of blocks in a grid of blocks.
-Each block may to this date consist of up to 1024 threads depending on the compatability of the card, with a maximum
-grid size of $2^{31}-1$ blocks subjected to compatability. When run, the blocks will be distributed onto available multiprocessors,
-which then independantly schedule the runtime of the block. Note that blocks may be excecuted concurrently or sequential depending on
+Each block may to this date consist of up to 1024 threads depending on the compatibility of the card, with a maximum
+grid size of $2^{31}-1$ blocks subjected to compatibility. When run, the blocks will be distributed onto available multiprocessors,
+which then independently schedule the run-time of the block. Note that blocks may be executed concurrently or sequential depending on
 the current workload and the number of available multiprocessors.
 The block is split into smaller units of 32 threads called warps, all threads within the same warp are always scheduled
 the same instruction to be run and this is what embodies the SIMT paradigm. 
-Therefore, branching threads causing inter-warp divergence means a warp will have inactive threads not excecuting any instructions, 
-which may lead to poor efficiency with worst case of sequential performance. Further, warps are scheduled independantly of eachother
-meaning possible concurent excecution of warps.
+Therefore, branching threads causing inter-warp divergence means a warp will have inactive threads not executing any instructions, 
+which may lead to poor efficiency with worst case of sequential performance. Further, warps are scheduled independently of each other
+meaning possible concurrent execution of warps.
 
 The threads communicate with each other through writes to various types of memory outlined in table \ref{mem}.
 There are three types of thread writable memory in the architecture; registers and local memory are each threads
 coupled memory which is not volatile and may be shared with other threads inside the same warp as described in section \ref{reduction}. 
 Shared memory is as its name tells shared between all threads within the same block, as it may be written to by any thread within the block
-it should be treated as volatile, thus syncronization inside the block have to be consider whilts dealing with shared memory.
-Finally, global memory is the only persistant memory which will persist between each kernel call, it may be manipulated by the host,
-but also by any thread, and is the only means of communication inbetween kernels, blocks, and the host. It to should be considered voaltile.
+it should be treated as volatile, thus synchronization inside the block have to be consider whilst dealing with shared memory.
+Finally, global memory is the only persistent memory which will persist between each kernel call, it may be manipulated by the host,
+but also by any thread, and is the only means of communication in between kernels, blocks, and the host. It to should be considered volatile.
 
-Regarding access to the global memory, certain access patterns must be followed in order maximise performance. 
-For global memory, it is important to note that each load request from memory will fetch in cachelines of size $32*wordsize$,
-meaning cachelines of 32, 64, and 128 bytes each when pulling the primitives char, short and int respectively.
+Regarding access to the global memory, certain access patterns must be followed in order maximize performance. 
+For global memory, it is important to note that each load request from memory will fetch in cache-lines of size $32*word-size$,
+meaning cache-lines of 32, 64, and 128 bytes each when pulling the primitives char, short and int respectively.
 The reason for this is the fact mentioned earlier, all 32 threads within the same warp issue the same instruction, 
 thus each warp fetches 32 entities of a specific word type.
-As a result, if the memory reads within a warp is not coalesced(grouped within the same cacheline) within consecutive words, the effective bandwidth will drop immediately.
+As a result, if the memory reads within a warp is not coalesced(grouped within the same cache-line) within consecutive words, the effective bandwidth will drop immediately.
 
 
 \begin{table}
@@ -452,15 +452,15 @@ Global&Kernel \& Host&Program&Slow\\
 How the data is represented and structured is important, 
 especially in bandwidth bound algorithms where the majority of time
 is spent fetching data from memory and the arithmetic overhead is low.
-Selecting the right composition will reduce the memory requirements substantialy.
+Selecting the right composition will reduce the memory requirements substantially.
 Given the two entities of data that is needed to be represented for each coalition structure, 
 the coalition structure itself and its value in $f$. 
 Memory constraints will be imposed given a large amount of agents as a result of DP's exponential growth. 
-In order to minimize memory usage several technices were used. 
+In order to minimize memory usage several techniques were used. 
 Representing a coalition structures members as an array of values,
-where each value represent a distinct agent may seem intinuative at first. 
+where each value represent a distinct agent may seem intuitive at first. 
 However, if the members are represented as bits set in a fixed sized integer, the memory
-requirement will be reduced substantialy as shown by previoius studies.\cite{boyer2012solving}
+requirement will be reduced substantially as shown by previous studies.\cite{boyer2012solving}
 If solving for the complete coalition structure formation problem with n agents representing members as an array of values.
 There are \begin{math}\dbinom{n}{i}\end{math} coalition structures of size $i$, where
 $i$ entries have to be stored per coalition structure.
@@ -473,7 +473,7 @@ needed to store one entry per coalition structure, totaling to \begin{math}2^n-1
 To give an example, with four agents $A = {f_1,f_2,f_3,f_4}$, the coalition $C = {f_1,f_3,f_4}$ would be represented
 as $C = 1101$ in the binary system and $11$ in the decimal system. Therefore, if the coalition
 structure is represented as an integer it can implicitly be stored as an index 
-to its coalition value, by enumerating it on runtime. That means the only
+to its coalition value, by enumerating it on run-time. That means the only
 memory constraint on the system is the store all the values for all the coalition structures.
 
 \subsubsection{Coalition Structure Splittings}
@@ -488,6 +488,19 @@ Binary&0001\hfill 1010&0010\hfill 1001&1000\hfill 0011 \\
 system&&& \\
 \hline\end{tabular}
 \end{table}
+
+\begin{table}
+\centering
+\caption{Splittings of $C = \{f_1,f_3,f_4\}$ Binary $C = 1101$ \label{split}}
+\begin{tabular}{|l|r|r|} \hline
+Binary&$1_3 1_2 0_1 1_0$&\\ \hline
+Shift&\vline 0\vline 3\vline 2\vline 0\vline& Result \\ \hline
+Splitting 1 & $0001 : 1 << shift[0]$& $0001$ \\ 
+Splitting 2 & $0010 : 1 << shift[1]$&$ 0100$ \\
+Splitting 3 & $0011 : 1 << shift[0] + 1 << shift[1]$&$0101$ \\
+\hline\end{tabular}
+\end{table}
+
 
 \begin{algorithm}
 \caption{initShift input $Coalition:C$ \label{initshift}}
@@ -514,13 +527,13 @@ The function initShift as detailed in algorithm \ref{initshift} is necessary to 
 all calls to initialSplit, what it does is using the bit operation $find first set$ to find the indexes of all bits set
 in from the integer coalition input. This will give each entry in the $shift$ array an unique number. 
 This unique numbers will be used by initialSplit to distribute the bits of the count to fit the configurations bits.
-It does so by taking a count as input representing which n'th splitting should be created, finds the index of its 
-set bits, and finaly left shifts each bit with the value in the shift array its index reference to.
+It does so by taking a count as input representing which nth splitting should be created, finds the index of its 
+set bits, and finally left shifts each bit with the value in the shift array its index reference to.
 
-nextSplit works through a recurence relation which means in order to have 
-concurent threads independant of eachother, an initial splitting for each thread have to be calculated using initialSplit. 
-initialSplit works by first genereting an packed index array of which bits are set in the coalition structure using initShift.
-Given which n'th splitting it should generate, it distributes the bits of $n$ to the corresponding bits of coalition $C$. 
+nextSplit works through a recurrence relation which means in order to have 
+concurrent threads independent of each other, an initial splitting for each thread have to be calculated using initialSplit. 
+initialSplit works by first generating an packed index array of which bits are set in the coalition structure using initShift.
+Given which nth splitting it should generate, it distributes the bits of $n$ to the corresponding bits of coalition $C$. 
 Thereafter nextSplit will be used to generate the next splitting. 
 
 
@@ -553,7 +566,7 @@ Thereafter nextSplit will be used to generate the next splitting.
 \begin{algorithm}
 \caption{Fetch using Collision detection \label{collision}}
 Input:
-Index:$\psi$ \hfill Which n'th splitting should be generated
+Index:$\psi$ \hfill Which nth splitting should be generated
 Index:$z$ \hfill The index in $\upsilon$ for the coalition structure that is evaluated 
 
 Variables:Value $\alpha $: \hfill Holds temporary values
@@ -581,28 +594,28 @@ Variables:Value $\alpha $: \hfill Holds temporary values
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Collisions between Splittings of Coalitions}
+\subsubsection{Collisions between Splittings of Coalitions} \label{sectionsplit}
 Given that each thread evaluate several splittings over numerous coalition structures in parallel, 
 it is bound that splittings on two coalition structures that overlap will have splittings that collide.
 A collision means that splittings of coalition structures contain at least one identical subset shared between them.
 \begin{displaymath}\forall S\subset C \wedge S' \subset C' : C \cap C' \neq \emptyset \Rightarrow \exists S \wedge S' : S = S'\end{displaymath}
-For all splittings of $C$ and $C'$ where the coalition structures intersect, there must excist at least one splitting shared between them.
+For all splittings of $C$ and $C'$ where the coalition structures intersect, there must exist at least one splitting shared between them.
 
-The number of splittings that collide is dependant on how many common members the coalitions have in common.
+The number of splittings that collide is dependent on how many common members the coalitions have in common.
 \begin{displaymath}2^{n-1}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
-Specifically, the number of splittings incommon is how many splittings
+Specifically, the number of splittings in common is how many splittings
 can be done all the members in common.
-Normaly, each splitting would be fetched from global memory resulting in it being fetched several times, 
+Normally, each splitting would be fetched from global memory resulting in it being fetched several times, 
 if it have not been evicted from the cache memory.
 
-By using collision detection as described in algorithm \ref{collision} the number of reduntant fetches may be reduced.
+By using collision detection as described in algorithm \ref{collision} the number of redundant fetches may be reduced.
 It works by evaluating two or more coalitions at the same time, lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generates
-the intial splittings and fetches the value for the first splitting. It then trough lines \ref{lst:line:firstif} to \ref{lst:line:firstifend}
-checks wheater the splitting of the second splitting is equal to the first. 
+the initial splittings and fetches the value for the first splitting. It then trough lines \ref{lst:line:firstif} to \ref{lst:line:firstifend}
+checks whether the splitting of the second splitting is equal to the first. 
 If so assign it the first splittings value, else fetch its own value from global memory. 
 Finally, the last lines does the same thing as above just that it does that on the pairwise disjoint subset, 
 and the first splittings next value is stored in an temporary variable. 
-The more splittings that are evaluated at the same time and checked against eachother, the less reduntant memory fetches are done.
+The more splittings that are evaluated at the same time and checked against each other, the less redundant memory fetches are done.
 
 
 \subsubsection{Reduction} \label{reduction} %done
@@ -613,30 +626,32 @@ The more splittings that are evaluated at the same time and checked against each
 \end{figure*}
 
 As the evaluation of each coalition structure is to find the splitting 
-of the coalition structure which maximises the value of the coalition structure,
-it is simply needed to compare the values of all splittings with eachother to find the most valued one. 
+of the coalition structure which maximizes the value of the coalition structure,
+it is simply needed to compare the values of all splittings with each other to find the most valued one. 
 The reduction is done on four levels of scope as seen on lines \ref{lst:line:reductionstart} to \ref{lst:line:reductionend} in algorithm \ref{gpudp},
-as well as outlined in figure \ref{reduction}. 
+as well as outlined in figure \ref{fig:reduction}. 
 
 On thread level, each thread evaluate a number of splittings to determine their most valued splitting. 
 On warp level, all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting among the warp.
-This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between threads within the same warp,
-allowing for a substantial reduction in shared memory use. 
-On thread block level, the threads are split up into two groups, active and inactive threads. 
-The active threads will compare its value against a corresponding inactive thread, then half the number of active thread.
-Iterate until the maximum value have converged into one single thread holding the maximum value for the whole thread block.
-Finally, the single thread will attempt to update the global memory using atomic functions 
-given that the value of the coalition in table $f$  is less.
+This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between any thread within the same warp.
+Using this technique allows for a substantial reduction in shared memory use, as all that is needed to be stored is one value per warp in shared memory. 
+With each single value from each warp moved into shared memory, initially the total number of active threads will be equal to the number
+of warps inside the block divided by two. These thread will compare one warp value each with the respective value that is not being compared by
+another thread, half the number of threads and iterate over again. This is done until only one thread remains which will compare the last two values.
+Finally, the single thread that compared the last values, will try to update the value in global memory if it is larger using atomic functions.
 
-\subsection{Algorithm}
-The algorithm starts by initilising all the variables needed further on, as generating the next coalition structure works through a recurrance relation, only the first thread will update the shared memory. Continuing, next step is to generete the shift array, this can be done in parallel so a number of threads invoke the method initShift.
+\subsection{Algorithm} %not done nein
+The algorithm starts by initializing all the variables needed further on,
+as generating the next coalition structure works through a recurrence relation, 
+only the first thread will update the shared memory. Continuing, next step is to generate the shift array, 
+this can be done in parallel so a number of threads invoke the method initShift.
 \begin{algorithm}
 \caption{GPU implementation of the DP algorithm\label{gpudp}}
 \textbf{Input}
 
 $f$\hfill The array which holds the bids
 
-$C_0$\hfill The first coalition struction to do evaluation on
+$C_0$\hfill The first coalition structure to do evaluation on
 
 $\Psi$\hfill The maximum number of splittings
 
@@ -706,14 +721,12 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
       \STATE $i := tid / 32$
       \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$
     \ENDIF
-   \hfill Checkpoint 5
-  \ENDFOR
+  \ENDFOR   \hfill Checkpoint 5
   \STATE $blockReduction()$
   \hfill Checkpoint 6
   \IF{$tid = 0$}
-  \STATE $atomicUpdate()$\label{lst:line:reductionend}
-  \ENDIF
-  \hfill Checkpoint 7
+  \STATE $atomicUpdate()$\label{lst:line:reductionend} 
+  \ENDIF  \hfill Checkpoint 7
   \STATE $x := x + nparallelconf$
 \ENDFOR
 \end{algorithmic}
@@ -721,11 +734,11 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
 
 \subsection{Experimental setup}
 
-The GPU instance of the algoritm was run on a linux desktop computer using CUDA version 5.0 containing 12GiB DDR3 RAM, 
+The GPU instance of the algorithm was run on a Linux desktop computer using CUDA version 5.0 containing 12GiB DDR3 RAM, 
 3.2GHz AMD Phenom II X4 CPU and a consumer grade NVIDIA GeForce GTX 660 Ti with a GPU clock of 915MHz and 6008MHz effective clock on the memory.
 It ran 256 threads per block, with each thread evaluating two splittings per coalition structure, 
 where 8 coalition structures was evaluated in parallel for a total of 32 coalition structures visited.
-The CPU DP algorithm is run single threaded on a INTEL XEON W3520 with a clockspeed of 2.67GHz with 32KB L1, 256KB L2 cache. 
+The CPU DP algorithm is run single threaded on a INTEL XEON W3520 with a clock-speed of 2.67GHz with 32KB L1, 256KB L2 cache. 
 The way the data is structured and stored is identical between both implementations.
 \section{Results}
 
@@ -908,26 +921,35 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
  ( 29, 10182)
  }; 
 
-\legend{CPU,CPU extrapolated,GPU, GPU Splitt-Sharing}
+\legend{CPU,CPU extrapolated,GPU Splitt-Sharing,GPU}
 
 \end{axis}
 \end{tikzpicture}
 \end{figure}
-\section{Discussion}
-Figures \ref{nosplitt} and \ref{splitt} shows the difference between employing shared splittings discussed in section ??. What it show are the number of logarithmic clock cycles elapsed between the previoius checkpoint and the current one as outline in algorithm ??. What can first be noted is that checkpoint 4 is where the algorithm spends most of the time. Checkpoint 4 denote the generation of splittings and fetching them.
+\section{Discussion} %not done
+Figures \ref{nosplitt} and \ref{splitt} shows the difference between employing 
+shared splittings discussed in section \ref{sectionsplit}. 
+What it show are the number of logarithmic clock cycles elapsed between the 
+previous checkpoint and the current one as outline in algorithm \ref{gpudp}.
+What can first be noted is that checkpoint 4 is where the algorithm spends most of the time. 
+Checkpoint 4 denote the generation of splittings and fetching them.
 As mentioned earlier the algorithm is bandwidth bound and spending almost
 $60\%$ of the time fetching memory shows that. Another reason of the result
 is due to the not aligned random access making the effective bandwidth low.
 Knowing that and looking at figure \ref{splitt} showing the result of sharing splittings it can be concluded that whilst it still spends most 
-of the time fetching memory, henceforth improving the sharing of splittings make a significant impact on the overal performance.
+of the time fetching memory, henceforth improving the sharing of splittings make a significant impact on the overall performance.
 
 Figure \ref{time} shows the difference between the CPU and GPU algorithm.
 For every N agents the y axis shows the logarithmic elapsed time. The difference shown here between the implementations is substantial showing
-that solving the problem on the GPU is highly beneficial. For 29 agents it solves it in 2 hours while the CPU bound algorithm was etrapolated to show that it would take up to 83 hours to complete. This is an speed factor of over 40 which would grow over the amount of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
+that solving the problem on the GPU is highly beneficial. For 29 agents it solves it in 2 hours while the CPU bound algorithm was extrapolated to show that it would take up to 83 hours to complete. This is an speed factor of over 40 which would grow over the amount of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
 The difference between the GPU implementations where one utilizes internal 
 sharing of splittings may also be noted to being $40\%$ faster than the variant without.
 \section{Conclusion}
-This paper show using the GPU to solve to Complete coalition structure formation problem is much viable option. Being so much faster it shows that
+This paper show using the GPU to solve to Complete coalition structure formation problem is much viable option. 
+Being so much faster it shows that
+
+\section{Further work}
+The notion of removing redundant fetches from memory can be expanded into fully constructing the coalitions bottom up,
 % \subsection{Math Equations}
 % % You may want to display math equations in three distinct styles:
 % % inline, numbered or non-numbered display.  Each of
