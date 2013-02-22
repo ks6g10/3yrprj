@@ -1,0 +1,110 @@
+%% Creator: Inkscape inkscape 0.48.3.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'reduction1.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{808.27177734bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.35287351)%
+    \put(0,0){\includegraphics[width=\unitlength]{reduction1.pdf}}%
+    \put(0.3961114,0.19284791){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.02126219,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.03604293,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.00775634,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 0}}}%
+    \put(0.07092957,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.08571031,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.05742372,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 1}}}%
+    \put(0.15541165,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.17019238,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.1419058,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 31}}}%
+    \put(0.09529289,0.19435556){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.05458042,0.26364272){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Warp 0}}}%
+    \put(0.17673436,0.194439){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.15882067,0.29174722){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Block  0}}}%
+    \put(0.2352488,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.25002954,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.22174295,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 0}}}%
+    \put(0.28491618,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.29969692,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.27141033,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 1}}}%
+    \put(0.36939825,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.38417899,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.35589241,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 31}}}%
+    \put(0.30927948,0.19435556){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.26856701,0.26364272){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Warp n}}}%
+    \put(0.45868294,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.47346368,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.44517709,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 0}}}%
+    \put(0.50835032,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.52313106,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.49484447,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 1}}}%
+    \put(0.5928324,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.60761313,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.57932655,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 31}}}%
+    \put(0.53271364,0.19435556){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.49200117,0.26364272){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Warp 0}}}%
+    \put(0.61415514,0.194439){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.59624142,0.29174722){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Block  n}}}%
+    \put(0.67266955,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.68745029,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.6591637,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 0}}}%
+    \put(0.72233693,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.73711767,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.70883108,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 1}}}%
+    \put(0.80681901,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 1}}}%
+    \put(0.82159974,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Value 2}}}%
+    \put(0.79331316,0.25497178){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Thread 31}}}%
+    \put(0.74670023,0.19435556){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.70598777,0.26364272){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Warp n}}}%
+    \put(0.79757213,0.01364172){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(-0.00081985,0.00141505){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{f}}}%
+    \put(0.37521008,0.3268378){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Kernel}}}%
+    \put(0.82902288,0.11885218){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Register memory}}}%
+    \put(0.82966082,0.08951479){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Shared memory}}}%
+    \put(0.82985413,0.06017741){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Global memory}}}%
+    \put(0.82902288,0.1394166){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Reduction in:}}}%
+  \end{picture}%
+\endgroup%
