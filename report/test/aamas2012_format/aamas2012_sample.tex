@@ -520,7 +520,7 @@ Splitting 3 & $0011 : 1 << shift[0]$&\\ & $+ 1 << shift[1]$&$0101$ \\
 
 
 Splittings as mentioned are pairwise disjoint subsets of a coalition structure, 
-given the coalition structure $C = \{f_1,f_3,f_4\}$ the splittings
+given the coalition structure $C = \{f_0,f_3,f_4\}$ the splittings
 are shown in table \ref{split}. In order to generate the splitting there is essentially two methods used, 
 the, initShift, initialSplit and nextSplit methods. 
 The function initShift as detailed in algorithm \ref{initshift} is necessary to setup the environment for 
@@ -535,7 +535,6 @@ concurrent threads independent of each other, an initial splitting for each thre
 initialSplit works by first generating an packed index array of which bits are set in the coalition structure using initShift.
 Given which nth splitting it should generate, it distributes the bits of $n$ to the corresponding bits of coalition $C$. 
 Thereafter nextSplit will be used to generate the next splitting. 
-
 
 
 
