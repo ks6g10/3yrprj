@@ -920,18 +920,18 @@ The way the data is structured and stored is identical between both implementati
 Figures \ref{nosplitt} and \ref{splitt} shows the difference between employing 
 shared splittings discussed in section \ref{sectionsplit}. 
 What it show are the number of logarithmic clock cycles elapsed between the 
-previoius checkpoint and the current one as outline in algorithm \ref{dpgpu}.
+previous checkpoint and the current one as outline in algorithm \ref{gpudp}.
 What can first be noted is that checkpoint 4 is where the algorithm spends most of the time. 
 Checkpoint 4 denote the generation of splittings and fetching them.
 As mentioned earlier the algorithm is bandwidth bound and spending almost
 $60\%$ of the time fetching memory shows that. Another reason of the result
 is due to the not aligned random access making the effective bandwidth low.
 Knowing that and looking at figure \ref{splitt} showing the result of sharing splittings it can be concluded that whilst it still spends most 
-of the time fetching memory, henceforth improving the sharing of splittings make a significant impact on the overal performance.
+of the time fetching memory, henceforth improving the sharing of splittings make a significant impact on the overall performance.
 
 Figure \ref{time} shows the difference between the CPU and GPU algorithm.
 For every N agents the y axis shows the logarithmic elapsed time. The difference shown here between the implementations is substantial showing
-that solving the problem on the GPU is highly beneficial. For 29 agents it solves it in 2 hours while the CPU bound algorithm was etrapolated to show that it would take up to 83 hours to complete. This is an speed factor of over 40 which would grow over the amount of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
+that solving the problem on the GPU is highly beneficial. For 29 agents it solves it in 2 hours while the CPU bound algorithm was extrapolated to show that it would take up to 83 hours to complete. This is an speed factor of over 40 which would grow over the amount of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
 The difference between the GPU implementations where one utilizes internal 
 sharing of splittings may also be noted to being $40\%$ faster than the variant without.
 \section{Conclusion}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  23 FEB 2013 08:02
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  23 FEB 2013 08:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -919,23 +919,17 @@ File: fig3cycles.pdf Graphic file (type pdf)
 Package pdftex.def Info: fig3cycles.pdf used on input line 732.
 (pdftex.def)             Requested size: 347.12354pt x 295.14116pt.
 
-
-LaTeX Warning: Reference `dpgpu' on page 11 undefined on input line 923.
-
 [11] [12] (./coal_gpu_optmas.bbl [13 <./fig1cycles.pdf>]) [14 <./fig2cycles.pdf
 >] [15 <./fig3cycles.pdf>] (./coal_gpu_optmas.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
  ) 
 Here is how much of TeX's memory you used:
- 18561 strings out of 493488
- 425926 string characters out of 3146892
+ 18560 strings out of 493488
+ 425919 string characters out of 3146892
  571458 words of memory out of 3000000
- 21417 multiletter control sequences out of 15000+200000
+ 21416 multiletter control sequences out of 15000+200000
  50599 words of font info for 50 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
  63i,9n,74p,1211b,609s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -957,7 +951,7 @@ ts/type1/public/lm/lmri10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmri
 -dist/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf-dist/fonts/type1/public
 /lm/lmsy7.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/shar
 e/texmf-dist/fonts/type1/public/lm/lmtt9.pfb>
-Output written on coal_gpu_optmas.pdf (15 pages, 436040 bytes).
+Output written on coal_gpu_optmas.pdf (15 pages, 436006 bytes).
 PDF statistics:
  182 PDF objects out of 1000 (max. 8388607)
  135 compressed objects within 2 object streams
