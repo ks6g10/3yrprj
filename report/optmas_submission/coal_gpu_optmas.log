@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  23 FEB 2013 01:22
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  23 FEB 2013 08:02
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -861,27 +861,24 @@ LaTeX Warning: Citation `distcsg' on page 1 undefined on input line 254.
 
 Non-PDF special ignored!{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 292--295
+Underfull \hbox (badness 10000) in paragraph at lines 316--319
 \OML/lmm/m/it/9 O$\OT1/lmr/m/n/9 : col-lec-tion hold-ing the most ben-e-fi-cial
  split-ting for all coali-
  []
 
 
-Overfull \hbox (10.90031pt too wide) in paragraph at lines 342--362
+Overfull \hbox (10.90031pt too wide) in paragraph at lines 366--386
 \OT1/lmr/m/n/10 Graphics Pro-cess-ing Units(GPU) from NVIDIA and AMD is highly 
 multi-threaded,
  []
 
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [3]
-[4] [5] <test.png, id=39, 355.3275pt x 224.7597pt>
+[3] [4] [5] <test.png, id=38, 355.3275pt x 224.7597pt>
 File: test.png Graphic file (type png)
  <use test.png>
-Package pdftex.def Info: test.png used on input line 462.
+Package pdftex.def Info: test.png used on input line 486.
 (pdftex.def)             Requested size: 173.56177pt x 109.78682pt.
- [6] [7 <./test.png>] [8]
+ [6]
+[7 <./test.png>] [8]
 Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    date: 2013-02-22 19:40:36
 (epstopdf)                    size: 52390 bytes
@@ -890,36 +887,43 @@ Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    size: 16702 bytes
 (epstopdf)             Command: <repstopdf --outfile=reduction-eps-converted-to
 .pdf reduction.eps>
-(epstopdf)             \includegraphics on input line 565.
+(epstopdf)             \includegraphics on input line 589.
 Package epstopdf Info: Output file is already uptodate.
- <reduction-eps-converted-to.pdf, id=53, 812.03375pt x 288.07625pt>
+
+<reduction-eps-converted-to.pdf, id=53, 812.03375pt x 288.07625pt>
 File: reduction-eps-converted-to.pdf Graphic file (type pdf)
 
 <use reduction-eps-converted-to.pdf>
-Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 565.
+Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 589.
 
 (pdftex.def)             Requested size: 347.12354pt x 123.14508pt.
+ [9] [10 <./reduction-eps-converted-to.pdf>]
+
+LaTeX Warning: Float too large for page by 107.91177pt on input line 712.
+
+<fig1cycles.pdf, id=66, 247.9654pt x 205.8621pt>
+File: fig1cycles.pdf Graphic file (type pdf)
+ <use fig1cycles.pdf>
+Package pdftex.def Info: fig1cycles.pdf used on input line 724.
+(pdftex.def)             Requested size: 347.12354pt x 288.21439pt.
+
+<fig2cycles.pdf, id=67, 235.34726pt x 200.10158pt>
+File: fig2cycles.pdf Graphic file (type pdf)
+ <use fig2cycles.pdf>
+Package pdftex.def Info: fig2cycles.pdf used on input line 728.
+(pdftex.def)             Requested size: 347.12354pt x 295.14116pt.
+
+<fig3cycles.pdf, id=68, 235.34726pt x 200.10158pt>
+File: fig3cycles.pdf Graphic file (type pdf)
+ <use fig3cycles.pdf>
+Package pdftex.def Info: fig3cycles.pdf used on input line 732.
+(pdftex.def)             Requested size: 347.12354pt x 295.14116pt.
 
 
-LaTeX Warning: Float too large for page by 95.16177pt on input line 674.
+LaTeX Warning: Reference `dpgpu' on page 11 undefined on input line 923.
 
-[9 <./reduction-eps-converted-to.pdf>]
-
-LaTeX Warning: Reference `nosplitt' on page 10 undefined on input line 871.
-
-
-LaTeX Warning: Reference `splitt' on page 10 undefined on input line 871.
-
-
-LaTeX Warning: Reference `dpgpu' on page 10 undefined on input line 874.
-
-
-LaTeX Warning: Reference `splitt' on page 10 undefined on input line 880.
-
-
-LaTeX Warning: Reference `time' on page 10 undefined on input line 883.
-
-(./coal_gpu_optmas.bbl [10] [11]) [12] (./coal_gpu_optmas.aux)
+[11] [12] (./coal_gpu_optmas.bbl [13 <./fig1cycles.pdf>]) [14 <./fig2cycles.pdf
+>] [15 <./fig3cycles.pdf>] (./coal_gpu_optmas.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -928,10 +932,10 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 18539 strings out of 493488
- 425522 string characters out of 3146892
- 569458 words of memory out of 3000000
- 21398 multiletter control sequences out of 15000+200000
+ 18561 strings out of 493488
+ 425926 string characters out of 3146892
+ 571458 words of memory out of 3000000
+ 21417 multiletter control sequences out of 15000+200000
  50599 words of font info for 50 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
  63i,9n,74p,1211b,609s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -953,10 +957,10 @@ ts/type1/public/lm/lmri10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmri
 -dist/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf-dist/fonts/type1/public
 /lm/lmsy7.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/shar
 e/texmf-dist/fonts/type1/public/lm/lmtt9.pfb>
-Output written on coal_gpu_optmas.pdf (12 pages, 411727 bytes).
+Output written on coal_gpu_optmas.pdf (15 pages, 436040 bytes).
 PDF statistics:
- 142 PDF objects out of 1000 (max. 8388607)
- 101 compressed objects within 2 object streams
+ 182 PDF objects out of 1000 (max. 8388607)
+ 135 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 23 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 38 words of extra memory for PDF output out of 10000 (max. 10000000)
 

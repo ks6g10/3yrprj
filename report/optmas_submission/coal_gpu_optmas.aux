@@ -8,61 +8,77 @@
 \@writefile{toc}{\authcount {1}}
 \@writefile{toc}{\contentsline {author}{Kim Svensson,\unskip {} Sarvapali D. Ramchurn,\unskip {} Francisco Cruz,\unskip {} Juan-Antonio Rodriguez,\unskip {} Jesus Cerquides\unskip {}}{1}}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}}
+\citation{ryoo2008optimization}
+\citation{boyer2012solving}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Background}{2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Coalition formation}{2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}The {DP} Algorithm}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Related work}{2}}
+\citation{michalak2010distributed}
 \citation{eps265062}
-\newlabel{DP}{{1}{3}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Dynamic Programming algorithm }}{3}}
-\newlabel{lst:line:a}{{4}{3}}
-\newlabel{lst:line:redo}{{10}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}The {DP} Algorithm}{3}}
+\newlabel{DP}{{1}{4}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Dynamic Programming algorithm }}{4}}
+\newlabel{lst:line:a}{{4}{4}}
+\newlabel{lst:line:redo}{{10}{4}}
 \newlabel{idpref}{{2}{4}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Enumeration of the optimal splittings through re-evaluation of small amount of coalitions }}{4}}
 \newlabel{lst:line:redo2}{{2}{4}}
 \newlabel{lst:line:aa}{{4}{4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}The CUDA Architecture}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}The CUDA Architecture}{5}}
 \citation{boyer2012solving}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Memory scope, lifetime, and speed }}{5}}
-\newlabel{mem}{{1}{5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Data structure}{5}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Splittings of $C = \{f_0,f_2,f_3\}$ Binary $C = 1101$ }}{6}}
-\newlabel{split}{{2}{6}}
-\newlabel{initshift}{{3}{6}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces initShift input $Coalition:C$ $Index:n$ }}{6}}
-\@writefile{toc}{\contentsline {subsubsection}{Coalition Structure Splittings}{6}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Memory scope, lifetime, and speed }}{6}}
+\newlabel{mem}{{1}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Data structure}{6}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Splittings of $C = \{f_0,f_2,f_3\}$ Binary $C = 1101$ }}{7}}
+\newlabel{split}{{2}{7}}
+\newlabel{initshift}{{3}{7}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces initShift input $Coalition:C$ $Index:n$ }}{7}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces How initShift and initialSplit works}}{7}}
 \newlabel{fig:howitworks}{{1}{7}}
-\newlabel{alg:nextsplit}{{4}{7}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces  nextSplit input $Coalition:C$ $Splitting:S$}}{7}}
-\newlabel{alg:initalsplit}{{5}{7}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces initialSplit input $Count:n, Coalition:C$}}{7}}
-\newlabel{sectionsplit}{{2.4}{7}}
-\@writefile{toc}{\contentsline {subsubsection}{Collisions between Splittings of Coalitions}{7}}
-\newlabel{collision}{{6}{8}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {6}{\ignorespaces Fetch using Collision detection }}{8}}
-\newlabel{lst:line:startcol}{{1}{8}}
-\newlabel{lst:line:fetch}{{3}{8}}
-\newlabel{lst:line:firstif}{{4}{8}}
-\newlabel{lst:line:firstifend}{{8}{8}}
-\newlabel{lst:line:startend}{{9}{8}}
-\newlabel{lst:line:endend}{{11}{8}}
+\@writefile{toc}{\contentsline {subsubsection}{Coalition Structure Splittings}{8}}
+\newlabel{alg:nextsplit}{{4}{8}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces  nextSplit input $Coalition:C$ $Splitting:S$}}{8}}
+\newlabel{alg:initalsplit}{{5}{8}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces initialSplit input $Count:n, Coalition:C$}}{8}}
+\newlabel{sectionsplit}{{2.4}{8}}
+\@writefile{toc}{\contentsline {subsubsection}{Collisions between Splittings of Coalitions}{8}}
+\newlabel{collision}{{6}{9}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {6}{\ignorespaces Fetch using Collision detection }}{9}}
+\newlabel{lst:line:startcol}{{1}{9}}
+\newlabel{lst:line:fetch}{{3}{9}}
+\newlabel{lst:line:firstif}{{4}{9}}
+\newlabel{lst:line:firstifend}{{8}{9}}
+\newlabel{lst:line:startend}{{9}{9}}
+\newlabel{lst:line:endend}{{11}{9}}
 \newlabel{reduction}{{2.4}{9}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Outline of reduction across thread, warp, block and kernel }}{9}}
-\newlabel{fig:reduction}{{2}{9}}
 \@writefile{toc}{\contentsline {subsubsection}{Reduction}{9}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Algorithm}{9}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Outline of reduction across thread, warp, block and kernel }}{10}}
+\newlabel{fig:reduction}{{2}{10}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Algorithm}{10}}
+\newlabel{algorithm}{{2.5}{10}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Experimental setup}{11}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{11}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{11}}
+\newlabel{gpudp}{{7}{12}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {7}{\ignorespaces GPU implementation of the DP algorithm}}{12}}
+\newlabel{lst:line:bigfetch}{{10}{12}}
+\newlabel{lst:line:gotoif}{{16}{12}}
+\newlabel{lst:line:reductionstart}{{25}{12}}
+\newlabel{lst:line:checkif}{{26}{12}}
+\newlabel{lst:line:blockReduction}{{35}{12}}
+\newlabel{lst:line:reductionend}{{37}{12}}
 \bibstyle{abbrv}
 \bibdata{sigproc}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Experimental setup}{10}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{10}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{10}}
-\newlabel{gpudp}{{7}{11}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {7}{\ignorespaces GPU implementation of the DP algorithm}}{11}}
-\newlabel{lst:line:reductionstart}{{25}{11}}
-\newlabel{lst:line:reductionend}{{37}{11}}
 \bibcite{boyer2012solving}{1}
-\bibcite{rahwan:jennings:2008b}{2}
-\bibcite{DBLP:conf/atal/RahwanJ08}{3}
-\bibcite{eps265062}{4}
-\bibcite{DBLP:journals/ai/SandholmLAST99}{5}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{12}}
+\bibcite{michalak2010distributed}{2}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces LOG elapsed time for N agents}}{13}}
+\newlabel{time}{{3}{13}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{13}}
+\bibcite{rahwan:jennings:2008b}{3}
+\bibcite{DBLP:conf/atal/RahwanJ08}{4}
+\bibcite{eps265062}{5}
+\bibcite{ryoo2008optimization}{6}
+\bibcite{DBLP:journals/ai/SandholmLAST99}{7}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces LOG Clock Cycles between checkpoints and relative time for each code segment, shared splittings}}{14}}
+\newlabel{splitt}{{4}{14}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces LOG Clock Cycles between checkpoints and relative time for each code segment}}{15}}
+\newlabel{nosplitt}{{5}{15}}
