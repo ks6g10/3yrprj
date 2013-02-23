@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  22 FEB 2013 20:02
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Arch Linux) (format=pdflatex 2013.2.17)  23 FEB 2013 01:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -671,6 +671,29 @@ File: pgflibraryplotmarks.code.tex 2010/10/15 v2.10 (rcs-revision 1.12)
 Package: filecontents 2011/10/08 v1.3 Create an external file from within a LaT
 eX document
 )
+(/usr/share/texmf-dist/tex/latex/tree-dvips/tree-dvips.sty
+tree-dvips version .91 of May 16, 1995
+\nodemargin=\dimen193
+\treelinewidth=\dimen194
+\dashlength=\dimen195
+\arrowwidth=\dimen196
+\arrowlength=\dimen197
+\arrowinset=\dimen198
+\pos@t=\toks44
+\pos@b=\toks45
+\pos@l=\toks46
+\pos@r=\toks47
+\pos@tl=\toks48
+\pos@tr=\toks49
+\pos@bl=\toks50
+\pos@br=\toks51
+\@arrow=\count164
+\@tempdimc=\dimen199
+)
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+positioning.code.tex
+File: tikzlibrarypositioning.code.tex 2008/10/06 v2.10 (rcs-revision 1.7)
+)
 
 LaTeX Warning: Overwriting file `./testdata2.dat'.
 
@@ -689,43 +712,39 @@ LaTeX Warning: Overwriting file `./testdata3.dat'.
 LaTeX Warning: Tab has been converted to Blank Space.
 
 
-(./coal_gpu_optmas.aux
-
-LaTeX Warning: Label `split' multiply defined.
-
-)
+(./coal_gpu_optmas.aux)
 \openout1 = `coal_gpu_optmas.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 159.
-LaTeX Font Info:    ... okay on input line 159.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 159.
-LaTeX Font Info:    ... okay on input line 159.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 159.
-LaTeX Font Info:    ... okay on input line 159.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 159.
-LaTeX Font Info:    ... okay on input line 159.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 159.
-LaTeX Font Info:    ... okay on input line 159.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 159.
-LaTeX Font Info:    ... okay on input line 159.
-LaTeX Font Info:    Try loading font information for OT1+lmr on input line 159.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 162.
+LaTeX Font Info:    ... okay on input line 162.
+LaTeX Font Info:    Try loading font information for OT1+lmr on input line 162.
 
  (/usr/share/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 (/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count164
-\scratchdimen=\dimen193
+\scratchcounter=\count165
+\scratchdimen=\dimen200
 \scratchbox=\box71
-\nofMPsegments=\count165
-\nofMParguments=\count166
-\everyMPshowfont=\toks44
-\MPscratchCnt=\count167
-\MPscratchDim=\dimen194
-\MPnumerator=\count168
-\makeMPintoPDFobject=\count169
-\everyMPtoPDFconversion=\toks45
+\nofMPsegments=\count166
+\nofMParguments=\count167
+\everyMPshowfont=\toks52
+\MPscratchCnt=\count168
+\MPscratchDim=\dimen201
+\MPnumerator=\count169
+\makeMPintoPDFobject=\count170
+\everyMPtoPDFconversion=\toks53
 ) (/usr/share/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
 Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
 )
@@ -778,75 +797,77 @@ ABD: EveryShipout initializing macros
 Package pgfplots notification 'compat/show suggested version=true': document ha
 s been generated with the most recent feature set (\pgfplotsset{compat=1.7}).
 
-LaTeX Font Info:    Try loading font information for OML+lmm on input line 222.
+LaTeX Font Info:    Try loading font information for OML+lmm on input line 225.
 
 (/usr/share/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 222
+LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 225
 .
 
 (/usr/share/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OMX+lmex on input line 222
+LaTeX Font Info:    Try loading font information for OMX+lmex on input line 225
 .
 
 (/usr/share/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 222.
+(Font)              <10> on input line 225.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 222.
+(Font)              <7> on input line 225.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 222.
-LaTeX Font Info:    Try loading font information for U+msa on input line 222.
+(Font)              <5> on input line 225.
+LaTeX Font Info:    Try loading font information for U+msa on input line 225.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 222.
+LaTeX Font Info:    Try loading font information for U+msb on input line 225.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for OT1+lmtt on input line 222
+LaTeX Font Info:    Try loading font information for OT1+lmtt on input line 225
 .
 
 (/usr/share/texmf-dist/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OMS+lmtt on input line 222
+LaTeX Font Info:    Try loading font information for OMS+lmtt on input line 225
 .
-LaTeX Font Info:    No file OMSlmtt.fd. on input line 222.
+LaTeX Font Info:    No file OMSlmtt.fd. on input line 225.
 
 
 LaTeX Font Warning: Font shape `OMS/lmtt/m/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbraceleft' on input line 222.
+(Font)              for symbol `textbraceleft' on input line 225.
 
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 222.
+(Font)              <9> on input line 225.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 222.
+(Font)              <6> on input line 225.
 
 LaTeX Warning: Citation `rahwan2009anytime' on page 1 undefined on input line 2
-50.
+53.
 
 
-LaTeX Warning: Citation `distcsg' on page 1 undefined on input line 251.
+LaTeX Warning: Citation `distcsg' on page 1 undefined on input line 254.
 
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
-Underfull \hbox (badness 10000) in paragraph at lines 289--292
+
+Non-PDF special ignored!{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 292--295
 \OML/lmm/m/it/9 O$\OT1/lmr/m/n/9 : col-lec-tion hold-ing the most ben-e-fi-cial
  split-ting for all coali-
  []
 
 
-Overfull \hbox (10.90031pt too wide) in paragraph at lines 339--359
+Overfull \hbox (10.90031pt too wide) in paragraph at lines 342--362
 \OT1/lmr/m/n/10 Graphics Pro-cess-ing Units(GPU) from NVIDIA and AMD is highly 
 multi-threaded,
  []
@@ -855,7 +876,12 @@ multi-threaded,
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [3]
-[4] [5] [6] [7] [8]
+[4] [5] <test.png, id=39, 355.3275pt x 224.7597pt>
+File: test.png Graphic file (type png)
+ <use test.png>
+Package pdftex.def Info: test.png used on input line 462.
+(pdftex.def)             Requested size: 173.56177pt x 109.78682pt.
+ [6] [7 <./test.png>] [8]
 Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    date: 2013-02-22 19:40:36
 (epstopdf)                    size: 52390 bytes
@@ -864,35 +890,34 @@ Package epstopdf Info: Source file: <reduction.eps>
 (epstopdf)                    size: 16702 bytes
 (epstopdf)             Command: <repstopdf --outfile=reduction-eps-converted-to
 .pdf reduction.eps>
-(epstopdf)             \includegraphics on input line 558.
+(epstopdf)             \includegraphics on input line 565.
 Package epstopdf Info: Output file is already uptodate.
-
-<reduction-eps-converted-to.pdf, id=50, 812.03375pt x 288.07625pt>
+ <reduction-eps-converted-to.pdf, id=53, 812.03375pt x 288.07625pt>
 File: reduction-eps-converted-to.pdf Graphic file (type pdf)
 
 <use reduction-eps-converted-to.pdf>
-Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 558.
+Package pdftex.def Info: reduction-eps-converted-to.pdf used on input line 565.
 
 (pdftex.def)             Requested size: 347.12354pt x 123.14508pt.
 
 
-LaTeX Warning: Float too large for page by 95.16177pt on input line 667.
+LaTeX Warning: Float too large for page by 95.16177pt on input line 674.
 
 [9 <./reduction-eps-converted-to.pdf>]
 
-LaTeX Warning: Reference `nosplitt' on page 10 undefined on input line 864.
+LaTeX Warning: Reference `nosplitt' on page 10 undefined on input line 871.
 
 
-LaTeX Warning: Reference `splitt' on page 10 undefined on input line 864.
+LaTeX Warning: Reference `splitt' on page 10 undefined on input line 871.
 
 
-LaTeX Warning: Reference `dpgpu' on page 10 undefined on input line 867.
+LaTeX Warning: Reference `dpgpu' on page 10 undefined on input line 874.
 
 
-LaTeX Warning: Reference `splitt' on page 10 undefined on input line 873.
+LaTeX Warning: Reference `splitt' on page 10 undefined on input line 880.
 
 
-LaTeX Warning: Reference `time' on page 10 undefined on input line 876.
+LaTeX Warning: Reference `time' on page 10 undefined on input line 883.
 
 (./coal_gpu_optmas.bbl [10] [11]) [12] (./coal_gpu_optmas.aux)
 
@@ -901,15 +926,12 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: There were multiply-defined labels.
-
  ) 
 Here is how much of TeX's memory you used:
- 18440 strings out of 493488
- 423810 string characters out of 3146892
- 569459 words of memory out of 3000000
- 21307 multiletter control sequences out of 15000+200000
+ 18539 strings out of 493488
+ 425522 string characters out of 3146892
+ 569458 words of memory out of 3000000
+ 21398 multiletter control sequences out of 15000+200000
  50599 words of font info for 50 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
  63i,9n,74p,1211b,609s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -931,10 +953,10 @@ ts/type1/public/lm/lmri10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmri
 -dist/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf-dist/fonts/type1/public
 /lm/lmsy7.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/shar
 e/texmf-dist/fonts/type1/public/lm/lmtt9.pfb>
-Output written on coal_gpu_optmas.pdf (12 pages, 341187 bytes).
+Output written on coal_gpu_optmas.pdf (12 pages, 411727 bytes).
 PDF statistics:
- 138 PDF objects out of 1000 (max. 8388607)
- 100 compressed objects within 1 object stream
+ 142 PDF objects out of 1000 (max. 8388607)
+ 101 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 18 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 23 words of extra memory for PDF output out of 10000 (max. 10000000)
 

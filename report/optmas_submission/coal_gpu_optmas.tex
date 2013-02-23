@@ -48,6 +48,9 @@
 
 \usepackage{pgfplots}
 \usepackage{filecontents}
+\usepackage{tikz}
+\usepackage{tree-dvips}
+\usetikzlibrary{positioning}
 \pgfplotsset{compat=newest}
 
 
@@ -426,27 +429,27 @@ system&&& \\
 \end{table}
 
 
-\begin{table}
-\centering
-\caption{Initialize shift on $C = \{f_0,f_2,f_3\}$\label{split}}
-\begin{tabular}{|l|r|r|} \hline
-Binary&$1_3 1_2 0_1 1_0$&\\ \hline
-Shift&\vline 0\vline 3\vline 2\vline 0\vline& Result \\ \hline
-Splitting 1 & $0001 : 1 << shift[0]$& $0001$ \\ 
-Splitting 2 & $0010 : 1 << shift[1]$&$ 0100$ \\
-Splitting 3 & $0011 : 1 << shift[0]$&\\ & $+ 1 << shift[1]$&$0101$ \\
-\hline\end{tabular}
-\end{table}
+% \begin{table}
+% \centering
+% \caption{Initialize shift on $C = \{f_0,f_2,f_3\}$\label{split}}
+% \begin{tabular}{|l|r|r|} \hline
+% Binary&$1_3 1_2 0_1 1_0$&\\ \hline
+% Shift&\vline 0\vline 3\vline 2\vline 0\vline& Result \\ \hline
+% Splitting 1 & $0001 : 1 << shift[0]$& $0001$ \\ 
+% Splitting 2 & $0010 : 1 << shift[1]$&$ 0100$ \\
+% Splitting 3 & $0011 : 1 << shift[0]$&\\ & $+ 1 << shift[1]$&$0101$ \\
+% \hline\end{tabular}
+% \end{table}
 
 \begin{algorithm}
-\caption{initShift input $Coalition:C$ \label{initshift}}
+\caption{initShift input $Coalition:C$ $Index:n$ \label{initshift}}
 \begin{algorithmic}[1]
 \STATE $t :=C$
 \STATE $count := 0$
-\WHILE{$t > 0$} {
-\STATE $index := FindFirstSet(t)$
-\STATE $shift_{count} := index$
-\STATE $nullBit(t,index)$
+\WHILE{$t > 0$} { 
+\STATE $index := FindFirstSet(t)$ \hfill Finds first bit set in t
+\STATE $shift_{n,count} := index$ 
+\STATE $nullBit(t,index)$ \hfill Sets one bit in t to zero
 \STATE $count++$
 }
 \ENDWHILE
@@ -454,28 +457,29 @@ Splitting 3 & $0011 : 1 << shift[0]$&\\ & $+ 1 << shift[1]$&$0101$ \\
 \end{algorithmic}
 \end{algorithm}
 
+\begin{figure*}
+\centering
+\includegraphics[width=0.5\linewidth]{test}
+\caption{How initShift and initialSplit works\label{fig:howitworks}}
+\end{figure*}
 
 
 Splittings as mentioned are pairwise disjoint subsets of a coalition structure, 
 given the coalition structure $C = \{f_0,f_3,f_4\}$ the splittings
-are shown in table \ref{split}. In order to generate the splitting there is essentially two methods used, 
-the, initShift, initialSplit and nextSplit methods. 
-The function initShift as detailed in algorithm \ref{initshift} is necessary to setup the environment for 
-all calls to initialSplit, what it does is using the bit operation $find first set$ to find the indexes of all bits set
-in from the integer coalition input. This will give each entry in the $shift$ array an unique number. 
-This unique numbers will be used by initialSplit to distribute the bits of the count to fit the configurations bits.
-It does so by taking a count as input representing which nth splitting should be created, finds the index of its 
-set bits, and finally left shifts each bit with the value in the shift array its index reference to.
-
-nextSplit works through a recurrence relation which means in order to have 
-concurrent threads independent of each other, an initial splitting for each thread have to be calculated using initialSplit. 
-initialSplit works by first generating an packed index array of which bits are set in the coalition structure using initShift.
-Given which nth splitting it should generate, it distributes the bits of $n$ to the corresponding bits of coalition $C$. 
-Thereafter nextSplit will be used to generate the next splitting. 
-
+are shown in table \ref{split}. In order to generate the splitting there is essentially three methods used, 
+initShift, initialSplit and nextSplit. 
+The function initShift as detailed in algorithm \ref{initshift} and partly illustraded in figure \ref{fig:howitworks}, 
+it is necessary to setup the environment for all calls to initialSplit. 
+What it does is using the bit operation $find first set$ to find the indexes of all bits set
+in the integer coalition input, and sets those indexes as values in the shift array.
+These numbers will be used by initialSplit in algorithm \ref{alg:initalsplit} to distribute the bits of the count to fit the coalition's bits.
+It does so by taking a count as input representing which nth splitting should be created, finds the index of the counts 
+set bits, and finally left shifts each bit with the value in the shift array its index reference to, 
+this is also illustradet in figure \ref{fig:howitworks}.
+Then to generate the next splitting, a call to nextSplit in algorithm \ref{alg:nextsplit} is needed which works through a recurence relation to generate the next splitting.
 
 \begin{algorithm}
-\caption{ nextSplit input $Coalition:C$ $Splitting:S$}
+\caption{ nextSplit input $Coalition:C$ $Splitting:S$\label{alg:nextsplit}}
 \begin{algorithmic}[1]
 \STATE $C' := twosComplement(C)$
 \STATE $S' := bitwiseAND((C'+S),C)$
@@ -484,14 +488,14 @@ Thereafter nextSplit will be used to generate the next splitting.
 \end{algorithm}
 
 \begin{algorithm}
-\caption{initialSplit input $Count:n, Coalition:C$}
+\caption{initialSplit input $Count:n, Coalition:C$\label{alg:initalsplit}}
 \begin{algorithmic}[1]
 \STATE $t := n$
 \STATE $S := 0$
-\WHILE{$t > 0$} {
-\STATE $index := FindFirstSet(t)$
-\STATE $S := S + leftShift(1,shift_{index,C})$
-\STATE $nullBit(t,index)$??
+\WHILE{$t > 0$} { 
+\STATE $index := FindFirstSet(t)$ \hfill Finds the first set bit in t
+\STATE $S := S + leftShift(1,shift_{C,index})$ \hfill Shifts 1 left with the value in shift and adds
+\STATE $nullBit(t,index)$ \hfill Sets the bit of t to 0
 }
 \ENDWHILE
 \RETURN $S$
@@ -507,24 +511,25 @@ Index:$z$ \hfill The index in $\upsilon$ for the coalition structure that is eva
 Variables:Value $\alpha $: \hfill Holds temporary values
 
 \begin{algorithmic}[1]
-    \STATE $C_{0} := initialSplit(\psi,CS_0)$ \label{lst:line:startcol}
-    \STATE $C_{1} := initialSplit(\psi,CS_1)$
-    \STATE $\upsilon_{0,z} := f(C_{0})$ \label{lst:line:fetch}
+    \STATE $C_{0} := initialSplit(\psi,CS_0)$ \label{lst:line:startcol} \hfill Gets the splitting on $CS_0$ with index $\psi$
+    \STATE $C_{1} := initialSplit(\psi,CS_1)$ \hfill Gets the splitting on $CS_1$ with index $\psi$
+    \STATE $\upsilon_{0,z} := f(C_{0})$ \label{lst:line:fetch} \hfill Fetch the first value
     
-    \IF{$C_{1} = C_{0}$} \label{lst:line:firstif}
-      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z}$
+    \IF{$C_{1} = C_{0}$} \label{lst:line:firstif} 
+      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z}$ \hfill Sets the other splittings value as its own
       \ELSE
-      \STATE $\upsilon_{0,z+1} := f(C_{1})$
+      \STATE $\upsilon_{0,z+1} := f(C_{1})$ \hfill Else fetches its own value
      \ENDIF \label{lst:line:firstifend}
-    \STATE $C_{0} := CS_0\backslash C_{0}$ \label{lst:line:startend}
-    \STATE $\alpha := f(C_{0})$
-    \STATE $C_{1} := CS_1\backslash C_{1}$
+    \STATE $C_{0} := CS_0\backslash C_{0}$ \label{lst:line:startend} \hfill Get the other subset of the pairwise disjoint subset
+    \STATE $\alpha := f(C_{0})$ \hfill Fetch the second value to a temporary variable
+    \STATE $\upsilon_{0,z} := \upsilon_{0,z}  + \alpha$ \label{lst:line:endend} \hfill Add it
+    \STATE $C_{1} := CS_1\backslash C_{1}$ \hfill Get the other subset of the pairwise disjoint subset
     \IF{$C_{1} = C_{0}$}
-      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z+1}  + \alpha$
+      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z+1}  + \alpha$ \hfill Add the other splittings value to its own
     \ELSE
-      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z+1} + f(C_{1})$
+      \STATE $\upsilon_{0,z+1} := \upsilon_{0,z+1} + f(C_{1})$ \hfill Else add its own value
     \ENDIF
-    \STATE $\upsilon_{0,z} := \upsilon_{0,z}  + \alpha$ \label{lst:line:endend}
+    
 \RETURN $\upsilon$
 \end{algorithmic}
 \end{algorithm}
@@ -542,14 +547,16 @@ can be done all the members in common.
 Normally, each splitting would be fetched from global memory resulting in it being fetched several times, 
 if it have not been evicted from the cache memory.
 
-By using collision detection as described in algorithm \ref{collision} the number of redundant fetches may be reduced.
-It works by evaluating two or more coalitions at the same time, lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generates
+By using collision detection as described in algorithm \ref{collision} the number of redundant fetches may be reduced,
+which may only be possible by evaluating two or more coalitions at the same time. 
+
+Lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generates
 the initial splittings and fetches the value for the first splitting. It then trough lines \ref{lst:line:firstif} to \ref{lst:line:firstifend}
 checks whether the splitting of the second splitting is equal to the first. 
 If so assign it the first splittings value, else fetch its own value from global memory. 
 Finally, the last lines does the same thing as above just that it does that on the pairwise disjoint subset, 
 and the first splittings next value is stored in an temporary variable. 
-The more splittings that are evaluated at the same time and checked against each other, the less redundant memory fetches are done.
+The more splittings that are evaluated at the same time and checked against each other, the less redundant memory fetches will be done.
 
 
 \subsubsection{Reduction} \label{reduction} %done
@@ -622,7 +629,7 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
   \ENDFOR \hfill Checkpoint 1
 \ENDIF
 \IF{$tid < confpkernel$}
-  \STATE $initShift(conf_{tid})$ 
+  \STATE $initShift(conf_{tid},tid)$ 
 \ENDIF
 \hfill Checkpoint 2
 \FOR{$x := 0$ to $confpkernel$}
