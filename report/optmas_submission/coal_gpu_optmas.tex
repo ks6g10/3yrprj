@@ -216,7 +216,7 @@ x whiskerbottom boxbottom median boxtop whiskertop
 % 1st. author
 \author{Kim Svensson,\inst{1} Sarvapali D. Ramchurn,\inst{1} Francisco Cruz,\inst{2} Juan-Antonio Rodriguez,\inst{2} Jesus Cerquides\inst{2}}
 \institute{Electronics and Computer Science, University of Southampton, SO17 1BJ, UK
-\email{\tt\{ks,sdr\}@ecs.soton.ac.uk} 
+\email{\tt\{ks6g10,sdr\}@ecs.soton.ac.uk} 
 \and
 IIIA, CSIC, Spain
  \email{\tt\{tito,jar,jesus\}@iiia.csic.es}
@@ -271,7 +271,7 @@ Now, turning to the CSG problem, in terms of parallel programming approaches, we
 In what follows, we first describe the CUDA architecture (the GPU architecture provided by NVidia) to clarify what are the key features and issues of using GPUs to solve large combinatorial problems. We then describe the DP algorithm and then describe the data structures we use to implement it on the CUDA architecture.
 
 \subsection{The CUDA Architecture} %done
-Graphics Processing Units (GPUs) from NVIDIA and AMD are highly multi-threaded, many-core architectures primarily aimed at  highly parallel image processing and rendering. In recent years, however, there has been a move to use these to support more general purpose computing through  the OpenCL and NVIDIA CUDA framework. This was achieved by devoting a larger amount of transistors towards many computational units rather than data caching and advanced  flow control more often seen in CPU architectures. NVIDIA describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture,  meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
+Graphics Processing Units (GPUs) from NVIDIA and AMD are highly multi-threaded, many-core architectures primarily aimed at highly parallel image processing and rendering. In recent years, however, there has been a move to use these to support more general purpose computing through the OpenCL and NVIDIA CUDA framework. This was achieved by devoting a larger amount of transistors towards many computational units rather than data caching and advanced  flow control more often seen in CPU architectures. NVIDIA describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture, meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
 This enables their GPUs to be highly advantageous when performing data-independent and non-divergent tasks. To understand this further the grouping of the threads need to be explained and is outlined in figure \ref{fig:reduction}.
 \subsubsection{Reduction} \label{reduction} %done
 \begin{figure*}
