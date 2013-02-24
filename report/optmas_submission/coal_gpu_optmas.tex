@@ -255,7 +255,7 @@ achieve some individual or group objective.  An important step in the
 
 In contrast, in the last few years, a surge in the development of frameworks for parallel programming on a single machine has been noted with the development of general purpose Graphics Processing Units (GPUs). Indeed, these processors, originally developed for only processing high end graphics, can now be programmed to perform simple mathematical operations that, when performed in thousands in parallel, can significantly outperform single-threaded machines with higher frequencies and memory speeds. There are multiple challenges, however, that need to be overcome before complex algorithms as for CSG can be implemented onto the GPU (we elaborate on these in Section \textbf{XX}) including the need to limit random memory access,  the limits on the number of threads that can be launched to share the same memory blocks, and the need to avoid loading data frequently from main memory. 
 
-Against this background, in this paper, we present a parallel algorithm for CSG for highly multi-threaded GPUs that meets the challenges above and outperforms the best algorithms for CSG. Our algorithm, GPU-CSG, parallelises the computation of individual steps of a dynamic program to solve the CSG. It does so by partitioning the computation across thousands of threads where each solves a small sub-problem of the larger optimisation problem. The solution to each sub-problem is then used to find the best partition of agents. In more detail, this paper advances the state of the art in the following ways. First, we develop the first parallel  algorithm for CSG that avoids redundant memory storage and inter-processor communication. Second, we prove that GPU-CSG is correct and complete and demonstrate through empirical evaluation that its growth rate is significantly lower than that of the dynamic programming approach it builds upon. Third, we empirically show that GPU-CSG outperforms the state of the art by orders of magnitude, solving the CSG problem for 30 agents in \textbf{XX} hours as opposed to \textbf{XX days or months} for the previous state of the art.
+Against this background, in this paper, we present a parallel algorithm for CSG for highly multi-threaded GPUs that meets the challenges above and outperforms the best algorithms for CSG. Our algorithm, GPU-CSG, parallelises the computation of individual steps of a dynamic program to solve the CSG. It does so by partitioning the computation across thousands of threads where each solves a small sub-problem of the larger optimisation problem. The solution to each sub-problem is then used to find the best partition of agents. In more detail, this paper advances the state of the art in the following ways. First, we develop the first parallel  algorithm for CSG that avoids redundant memory storage and inter-processor communication. Second, we prove that GPU-CSG is correct and complete and demonstrate through empirical evaluation that its growth rate is significantly lower than that of the dynamic programming approach it builds upon. Third, we empirically show that GPU-CSG outperforms the state of the art by orders of magnitude, solving the CSG problem for 30 agents in less than 3 hours as opposed to 82 hours for the CPU-based algorithm.
 
 The rest of this paper is structured as follows. Section 2 presents the
 background to this work and discusses related work while Section 3 introduces
@@ -264,47 +264,56 @@ while section 5 while Section 7 concludes.
 
 \section{Background}
 Solving data independent and parallel problems will always have a benefit when run on a GPU, 
-whether it is computing on MRI scans which gave an significantly large speedup factor of 431 using the GPU, or generating hashes and getting a comparably modest speedup of times 11~\cite{ryoo2008optimization}. 
-It has been shown from time to time, whenever the algorithm have data independent parts which may be run concurrently,
-the GPU will most likely succeed better.
+whether it is computing on MRI scans which gave an significantly large speedup factor of 431 using the GPU, or generating hashes and getting a comparably modest speedup of times 11~\cite{ryoo2008optimization}.  This is particularly the case whenever the algorithm has data independent sub-routines which may be run concurrently, the GPU will most likely perform better.  Using the GPU together with dynamic programming have been used before to solve similar combinatorial optimisation problems.  Boyer, V et al successfully implemented and solved the knapsack problem with a factor speedup of 26~\cite{boyer2012solving}.  They also introduced ways to reduce memory usage and thus enable computation of much larger data sets as well as reduce the  bandwidth utilised. In so doing, they also reduce computation time by being able to fetch more data points at an faster rate. Thus, they fully exploit the key features of GPU programming whereby, with limited amount of memory available on a GPU,  they are able to maximise the effective bandwidth of the algorithm.
 
-Using the GPU together with dynamic programming have been used before to solve similar combinatorial optimization problems. 
-Boyer, V et al successfully implemented and solved the knapsack problem with a factor speedup of 26~\cite{boyer2012solving}. 
-They also introduced ways of reducing memory occupancy which enable computation of much larger data sets as well as reducing the 
-bandwidth utilized allowing for a faster processing speed, due to being able to fetch more data points at an faster rate. 
-This is one of the most important aspects of GPU programming as you are first limited to the amount of memory the GPU have, 
-but also in order to increase the effective bandwidth of the algorithm.
+Now, turning to the CSG problem, in terms of parallel programming approaches, we note the work of where Michalak et. al. that use a distributed variant of the anytime IP algorithm called D-IP to solve the Coalition Structure Generation~\cite{michalak2010distributed}. Using 14 dualcore workstations to distribute the workload to speed up their runtime. Their algorithm  shows it is possible to distribute the solutions for the CSG problem and that there may be significant from distributing computation (taking 11\% to 4\%  compared to the centrilised and serialised IP). However, while their algorithm use traditional programming strategies effective on powerful single threaded systems, it does require data to be shared between computational nodes over potentially slow thereat links and also sharing redundant copies of the input across each. Finally, their algorithm also suffers from the same weaknesses as IP, that is, no deterministic completion time (in the worst case ($O(n^n))$ as it is dependent on the coalition value function. In contrast, GPU-CSG has a deterministic completion time ($O(3^n)$) and relies on much faster GPU memory access.
 
-Moving on to the CSG problem where Michalak, T et. al. uses a distributed variant of the anytime IP algorithm called
-D-IP to solve the Coalition Structure Generation~\cite{michalak2010distributed}.
-Using 14 dualcore workstations to ditribute the workload to speed up their runtime.
-This study first shows it is possible to distribute the solutions for the CSG problem,
-secondly the speed benefit they gained from distributing computation, 
-with only a runtime of 11\% to 4\%  compared to the centrilised and serialised IP.
-However, having a tighter coupling between the computation units such as with the GPU, 
-expensive latencies from ethernet communication and moving essentiall data between computational units will be largely reduced.
+In what follows, we first describe the CUDA architecture (the GPU architecture provided by NVidia) to clarify what are the key features and issues of using GPUs to solve large combinatorial problems. We then describe the DP algorithm and then describe the data structures we use to implement it on the CUDA architecture.
 
+\subsection{The CUDA Architecture} %done
+Graphics Processing Units (GPUs) from NVIDIA and AMD are highly multi-threaded, many-core architectures primarily aimed at  highly parallel image processing and rendering. In recent years, however, there has been a move to use these to support more general purpose computing through  the OpenCL and NVIDIA CUDA framework. This was achieved by devoting a larger amount of transistors towards many computational units rather than data caching and advanced  flow control more often seen in CPU architectures. NVIDIA describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture,  meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
+This enables their GPUs to be highly advantageous when performing data-independent and non-divergent tasks. To understand this further the grouping of the threads need to be explained and is outlined in figure \ref{fig:reduction}.
+\subsubsection{Reduction} \label{reduction} %done
+\begin{figure*}
+\centering
+\includegraphics[width=\linewidth]{reduction}
+\caption{Outline of reduction across thread, warp, block and kernel \label{fig:reduction}. The kernel is a function called by the CPU.}
+\end{figure*}
+The kernel is a device specific CUDA function that is called by the sequential host code, will request a specified number of blocks in a grid of blocks. Each block may to this date consist of up to 1024 threads depending on the compatibility of the card, with a maximum grid size of $2^{31}-1$ blocks subjected to compatibility. When run, the blocks will be distributed onto available multiprocessors, which then independently schedule the run-time of the block. Note that blocks may be executed concurrently or sequential depending on the current workload and the number of available multiprocessors. The block is split into smaller units of 32 threads called warps, all threads within the same warp are always scheduled the same instruction to be run and this is what embodies the SIMT (\textbf{what is this?}) paradigm.  Therefore, branching threads causing inter-warp divergence means a warp will have inactive threads not executing any instructions,  which may lead to poor efficiency with worst case of sequential performance. Further, warps are scheduled independently of each other meaning possible concurrent execution of warps.
 
+The threads communicate with each other through writes to various types of memory outlined in table \ref{mem}. There are three types of thread writable memory in the architecture; registers and local memory are each threads coupled memory which is not volatile and may be shared with other threads inside the same warp as described in section \ref{reduction}.  Shared memory is as its name tells shared between all threads within the same block, as it may be written to by any thread within the block it should be treated as volatile, thus synchronization inside the block have to be consider whilst dealing with shared memory. Finally, global memory is the only persistent memory which will persist between each kernel call, it may be manipulated by the host, but also by any thread, and is the only means of communication in between kernels, blocks, and the host.
+
+Now, an important element of GPU programming is to manage the access to global memory effectively as it is very slow compared to memory access on the GPU. In more detail,  each load request from memory will fetch in cache-lines of size $32*wordsize$, meaning cache-lines of 32, 64, and 128 bytes each when pulling the primitives char, short and int respectively. This is because, as mentioned earlier, all 32 threads within the same warp issue the same instruction.  Thus each warp fetches 32 entities of a specific word type and, if the memory reads within a warp is not coalesced (grouped within the same cacheline) within consecutive words, the effective bandwidth will drop immediately. Table \ref{mem} summarises the key features of GPU memory access speeds and shows why it is important to avoid loading data from the global memory.
+
+\begin{table}
+\centering
+\caption{Memory scope, lifetime, and speed \label{mem}}
+\begin{tabular}{|l|l|l|l|} \hline
+Type&Scope&Lifetime&Relative Speed \\ \hline
+Register&Thread \& Warp&Thread&Fastest\\
+Shared&Block&Block&Fast\\
+Global&Kernel \& Host&Program&Slow\\
+\hline\end{tabular}
+\end{table}
+In the following subsections, we describe the DP algorithm which we build upon  and explain how we adapt the data structures and the sub-routines of the algorithm  to create a new algorithm that can run on the GPU. 
 
 \subsection{The {DP} Algorithm} 
 %done
+The DP algorithm \cite{DPalgorithm} was originally designed to solve the winner determination problem for combinatorial auctions. However, in recent years, it has been applied as the de facto  algorithm (complete and with the lowest worst case complexity) to solve the CSG problem and variants of it have improved and adapted it to different settings \cite{DBLP:conf/atal/RahwanJ08,DBLP:conf/aamas/VoiceRJ12}. However, the core of the algorithm is the same in all these variants and relies on dynamic programming. Hence, in this paper we use this as the basis for our GPU version as the dynamic programming approach has shown potential for parallelisation as evidenced by previous work (as for the Knapsack problem as mentioned earlier). 
+
+To show how the algorithm works, we first formalise the CSG problem.  Let $A=\{1,\ldots,\vert A \vert \}$ be a set of agents. A subset $C \subseteq A$ is termed a coalition.  Then, a $CSG$ problem is completely defined by its characteristic function $v: 2^{A} \rightarrow \Re$ (with $v(\emptyset)=0$), which assigns a real value representing utility to every feasible coalition.  The CSG problem is to identify the exhaustive disjoint partition of the space of agents into coalitions (or, \emph{coalition structure})  $CS=\{C_1,\ldots,C_k\}$ so that the total sum of values, $\sum^k_{i=1} v(C_k)$,
+is maximised.
 
 
-The DP algorithm as shown in algorithm \ref{DP} works by producing two output tables, $O$ and $f$, 
+Now, DP (see Algorithm  \ref{DP}) works by producing two output tables, $O$ and $f$, 
 where each table have one entry per coalition structure. 
 An entry in $f$ represent a value a certain coalition structure is given, 
 while $O$ represent which splitting, if any, maximised the coalition structure for the entry in $f$ which it represent.
 More elaborated, given all coalitions of agents $C\subseteq A$, for each coalition in $C$, evaluate all
 pairwise disjoint subsets here named splittings on their pairwise collective sum against the coalitions
 original value. Given one splitting is greater, update the value of the coalition $f(C) := f(C') + f(C\setminus C')$
-and assign $O$ on $C$ to represent the new splitting, $O(C) := \{C',C\setminus C'\}$. These steps are first carried out
-on all coalition structures with two agents, continuing until $N$ agents. 
-This means, given a coalition structure $S$ with cardinality $|S| = n$, then all coalition structures
-for the sizes 1,2,...,n-1 have already been evaluated. The dynamic programming algorithm is entirely deterministic meaning
-that even if there was only one or two valuations, the algorithm will evaluate all splittings before it reaches a conclusion.
-However this algorithm does not work well with an large amount of agents as it grow exponential and have an time complexity of $O(3^n)$.
-As described later in section \ref{algorithm} the part of the algorithm that is paralleled is the max function on line \ref{lst:line:a}
-which handles the evaluation of all splittings of a given coalition structure.
+and assign $O$ on $C$ to represent the new splitting, $O(C) := \{C',C\setminus C'\}$. These steps are first carried out on all coalition structures with two agents, continuing until $N$ agents.  This means, given a coalition structure $S$ with cardinality $|S| = n$, then all coalition structures
+for the sizes $1,2,...,n-1$ have already been evaluated. The dynamic programming algorithm is entirely deterministic meaning that even if there was only one or two valuations, the algorithm will evaluate all splittings before it reaches a conclusion. However this algorithm does not work well with an large number of agents as it grow exponentially and have an time and memory complexity of $O(3^n)$. As described later in section \ref{algorithm} the part of the algorithm that is paralleled is the max function on line \ref{lst:line:a} which handles the evaluation of all splittings of a given coalition structure.
 
 \begin{algorithm}
 \caption{Dynamic Programming algorithm \label{DP}}
@@ -331,11 +340,7 @@ $O$: collection holding the most beneficial splitting for all coalitions.
 \end{algorithmic}
 \end{algorithm}
 
-The table $O$ may be discarded and not calculated to reduce the memory requirement by half removing instant access to the final splittings.
-These final splittings are easily retrieved as outlined in algorithm \ref{idpref}. 
-Essentially, all coalitions in $C \in CS^*$ which value in $f$
-is not equal to the initial bid in $b$, find the first splitting that is equal to the value in $f$.
-The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
+The table $O$ may be discarded and not calculated to reduce the memory requirement by half removing instant access to the final splittings. These final splittings are easily retrieved as outlined in algorithm \ref{idpref}.  Essentially, all coalitions in $C \in CS^*$ which value in $f$ is not equal to the initial bid in $b$, find the first splitting that is equal to the value in $f$. The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
 number of evaluations carried out in the previous steps\cite{eps265062}.
 
 \begin{algorithm}
@@ -357,53 +362,6 @@ $f:$ the final evaluated values gathered from evaluating splittings.
 
 
 
-\subsection{The CUDA Architecture} %done
-Graphics Processing Units(GPU) from NVIDIA and AMD is highly multi-threaded, many-core architectures primarily aimed at 
-highly parallel image processing and rendering, however it have in the recent years moved towards supporting general purpose computing through 
-the OpenCL and NVIDIA CUDA framework.
-It does so by devoting a larger amount of transistors towards many computational units rather than data caching and advanced 
-flow control more often seen in CPU architectures.
-NVIDIA describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture, 
-meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
-This enables their GPUs to be highly advantageous when performing data-independent and non-divergent tasks.
-To understand this further the grouping of the threads need to be explained and is outlined in figure \ref{fig:reduction}.
-A kernel which is a device specific CUDA function that is called by the sequential host code,
-will request a specified number of blocks in a grid of blocks.
-Each block may to this date consist of up to 1024 threads depending on the compatibility of the card, with a maximum
-grid size of $2^{31}-1$ blocks subjected to compatibility. When run, the blocks will be distributed onto available multiprocessors,
-which then independently schedule the run-time of the block. Note that blocks may be executed concurrently or sequential depending on
-the current workload and the number of available multiprocessors.
-The block is split into smaller units of 32 threads called warps, all threads within the same warp are always scheduled
-the same instruction to be run and this is what embodies the SIMT paradigm. 
-Therefore, branching threads causing inter-warp divergence means a warp will have inactive threads not executing any instructions, 
-which may lead to poor efficiency with worst case of sequential performance. Further, warps are scheduled independently of each other
-meaning possible concurrent execution of warps.
-
-The threads communicate with each other through writes to various types of memory outlined in table \ref{mem}.
-There are three types of thread writable memory in the architecture; registers and local memory are each threads
-coupled memory which is not volatile and may be shared with other threads inside the same warp as described in section \ref{reduction}. 
-Shared memory is as its name tells shared between all threads within the same block, as it may be written to by any thread within the block
-it should be treated as volatile, thus synchronization inside the block have to be consider whilst dealing with shared memory.
-Finally, global memory is the only persistent memory which will persist between each kernel call, it may be manipulated by the host,
-but also by any thread, and is the only means of communication in between kernels, blocks, and the host. It to should be considered volatile.
-
-Regarding access to the global memory, certain access patterns must be followed in order maximise performance. 
-For global memory, it is important to note that each load request from memory will fetch in cachelines of size $32*wordsize$,
-meaning cachelines of 32, 64, and 128 bytes each when pulling the primitives char, short and int respectively.
-The reason for this is the fact mentioned earlier, all 32 threads within the same warp issue the same instruction, 
-thus each warp fetches 32 entities of a specific word type.
-As a result, if the memory reads within a warp is not coalesced(grouped within the same cacheline) within consecutive words, the effective bandwidth will drop immediately.
-
-\begin{table}
-\centering
-\caption{Memory scope, lifetime, and speed \label{mem}}
-\begin{tabular}{|l|l|l|l|} \hline
-Type&Scope&Lifetime&Relative Speed \\ \hline
-Register&Thread \& Warp&Thread&Fastest\\
-Shared&Block&Block&Fast\\
-Global&Kernel \& Host&Program&Slow\\
-\hline\end{tabular}
-\end{table}
 
 \subsection{Data structure} %done
 How the data is represented and structured is important, 
@@ -578,12 +536,6 @@ and the first splittings next value is stored in an temporary variable.
 The more splittings that are evaluated at the same time and checked against each other, the less redundant memory fetches will be done.
 
 
-\subsubsection{Reduction} \label{reduction} %done
-\begin{figure*}
-\centering
-\includegraphics[width=\linewidth]{reduction}
-\caption{Outline of reduction across thread, warp, block and kernel \label{fig:reduction}}
-\end{figure*}
 
 As the evaluation of each coalition structure is to find the splitting 
 of the coalition structure which maximizes the value of the coalition structure,
