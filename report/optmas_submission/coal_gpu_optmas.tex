@@ -359,39 +359,25 @@ $f:$ the final evaluated values gathered from evaluating splittings.
 \RETURN $CS^*$
 \end{algorithmic}
 \end{algorithm}
+Having described the DP algorithm, we next elaborate on how the data structure we use to extend DP into GPU-CSG.
 
+\subsection{The Data Structure} %done
+How the data is represented and structured is important,  especially in bandwidth bound algorithms where the majority of time is spent fetching data from memory and the arithmetic overhead is low.
+Selecting the right composition will reduce the memory requirements substantially. Given the two entities of data that is needed to be represented for each coalition structure,  the coalition structure itself and its value in $f$, we propose data structures that aim to allow a large number of agents to be represented in spit of the exponential growth of the input (i.e., $2^n$).
 
-
-
-\subsection{Data structure} %done
-How the data is represented and structured is important, 
-especially in bandwidth bound algorithms where the majority of time
-is spent fetching data from memory and the arithmetic overhead is low.
-Selecting the right composition will reduce the memory requirements substantially.
-Given the two entities of data that is needed to be represented for each coalition structure, 
-the coalition structure itself and its value in $f$. 
-Memory constraints will be imposed given a large amount of agents as a result of DP's exponential growth.
-
-In order to minimize memory usage several techniques were used. 
-Representing a coalition structures members as an array of values,
-where each value represent a distinct agent may seem intuitive at first. 
-However, if the members are represented as bits set in a fixed sized integer, the memory
+In order to minimize memory usage we applied several  techniques as follows. First, we represent  coalitions as an array of values, where each value represent a distinct agent. While this may seem intuitive at first, if the members are represented as bits set in a fixed sized integer, the memory
 requirement will be reduced substantially as shown by previous studies~\cite{boyer2012solving}.
-If solving for the complete coalition structure formation problem with n agents representing members as an array of values.
-There are \begin{math}\dbinom{n}{i}\end{math} coalition structures of size $i$, where
-$i$ entries have to be stored per coalition structure.
-The total number of values needed to store just to represent the coalition structures is there for equal to:
-\begin{displaymath}\sum_{i=i}^{n} \dbinom{n}{i}*i\end{displaymath}
+When solving the CSG problem with $n$ agents representing members as an array of values, there are \[\dbinom{n}{i}\] coalition structures of size $i$, where $i$ entries have to be stored per coalition structure.
+
+The total number of values needed to store just to represent the coalition structures is therefore equal to:
+\begin{displaymath}\sum_{i=i}^{n} \dbinom{n}{i}\times i\end{displaymath}
 
 Given the same constraints, representing the coalition structure as an fixed sized integer, it is only 
-needed to store one entry per coalition structure, totaling to \begin{math}2^n-1\end{math} data points.
+needed to store one entry per coalition, totalling to \begin{math}2^n-1\end{math} data points.
 
-To give an example, with four agents $A = {f_0,f_1,f_2,f_3}$, the coalition $C = {f_0,f_2,f_3}$ would be represented
-as $C = 1101$ in the binary system and $13$ in the decimal system. Therefore, if the coalition
-structure is represented as an integer it can implicitly be stored as an index 
-to its coalition value, by enumerating it on run-time. That means the only
-memory constraint on the system is the store all the values for all the coalition structures.
+To give an example, with four agents $A = {f_0,f_1,f_2,f_3}$, the coalition $C = {f_0,f_2,f_3}$ would be represented as $C = 1101$ in the binary system and $13$ in the decimal system. Therefore, if the coalition structure is represented as an integer it can implicitly be stored as an index  to its coalition value, by enumerating it on run-time. That means the only memory constraint on the system is the storage for all  coalition values.
 
+Now, having defined coalitions as binary arrays, we next move on to explain how we create splits of such coalitions efficiently for our algorithm to go through sub-solutions of the CSG problem.
 \subsubsection{Coalition Structure Splittings}
 
 % \begin{table}
@@ -408,8 +394,7 @@ memory constraint on the system is the store all the values for all the coalitio
 
 Splittings as mentioned are pairwise disjoint subsets of a coalition structure, 
 given the coalition structure $C = \{f_0,f_3,f_4\}$ the splittings
-are shown in table \ref{split}. In order to generate the splitting there is essentially three methods used, 
-initShift, initialSplit and nextSplit. 
+are shown in table \ref{split}. In order to generate the splitting there are essentially three methods used,  $initShift$, $initialSplit$, and $nextSplit$. 
 
 \begin{table}[htbp]
 \centering
@@ -422,10 +407,10 @@ system&&& \\
 \hline\end{tabular}
 \end{table}
 
-The function initShift as detailed in algorithm \ref{initshift} and partly illustrated in Figure \ref{fig:howitworks}, 
-it is necessary to setup the environment for all calls to initialSplit. 
+The function $initShift$ as detailed in Algorithm \ref{initshift} and partly illustrated in Figure \ref{fig:howitworks}, 
+it is necessary to setup the environment for all calls to $initialSplit$. 
 \begin{algorithm}
-\caption{initShift input $Coalition:C$ $Index:n$ \label{initshift}}
+\caption{$initShift$ input $Coalition:C$ $Index:n$ \label{initshift}}
 \begin{algorithmic}[1]
 \STATE $t :=C$
 \STATE $count := 0$
@@ -440,20 +425,14 @@ it is necessary to setup the environment for all calls to initialSplit.
 \end{algorithmic}
 \end{algorithm}
 
-
-What it does is using the bit operation $find first set$ to find the indexes of all bits set
-in the integer coalition input, and sets those indexes as values in the shift array.
-These numbers will be used by initialSplit in algorithm \ref{alg:initalsplit} to distribute the bits of the count to fit the coalition's bits.
+Thus the algorithm uses the bit operation $find first set$ to find the indexes of all bits set in the integer coalition input, and sets those indexes as values in the shift array. These numbers are then used by initialSplit in algorithm \ref{alg:initalsplit} to distribute the bits of the count to fit the coalition's bits.
 \begin{figure*}[htbp]
 \centering
 \includegraphics[width=0.5\linewidth]{test}
 \caption{How initShift and initialSplit works\label{fig:howitworks}}
 \end{figure*}
 
-It does so by taking a count as input representing which nth splitting should be created, finds the index of the counts 
-set bits, and finally left shifts each bit with the value in the shift array its index reference to, 
-this is also illustradet in figure \ref{fig:howitworks}.
-Then to generate the next splitting, a call to nextSplit in algorithm \ref{alg:nextsplit} is needed which works through a recurrence relation to generate the next splitting.
+It does so by taking a count as input representing which nth splitting should be created, finds the index of the counts  set bits, and finally left shifts each bit with the value in the shift array its index reference to,  this is also illustradet in figure \ref{fig:howitworks}. Then to generate the next splitting, a call to nextSplit in algorithm \ref{alg:nextsplit} is needed which works through a recurrence relation to generate the next splitting.
 
 \begin{algorithm}
 \caption{ nextSplit input $Coalition:C$ $Splitting:S$\label{alg:nextsplit}}
@@ -479,7 +458,21 @@ Then to generate the next splitting, a call to nextSplit in algorithm \ref{alg:n
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}
+\subsubsection{Collisions between Splittings of Coalitions} \label{sectionsplit}
+Given that each thread evaluate several splittings over numerous coalition structures in parallel, 
+it is bound that splittings on two coalition structures that overlap will have splittings that collide.
+A collision means that splittings of coalition structures contain at least one identical subset shared between them.
+\begin{displaymath}\forall S\subset C \wedge S' \subset C' : C \cap C' \neq \emptyset \Rightarrow \exists S \wedge S' : S = S'\end{displaymath}
+For all splittings of $C$ and $C'$ where the coalition structures intersect, there must exist at least one splitting shared between them.
+
+The number of splittings that collide is dependent on how many common members the coalitions have in common.
+\begin{displaymath}2^{n-1}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
+Specifically, the number of splittings in common is how many splittings
+can be done all the members in common.
+Normally, each splitting would be fetched from global memory resulting in it being fetched several times, 
+if it have not been evicted from the cache memory.
+
+\begin{algorithm}[htbp]
 \caption{Fetch using Collision detection \label{collision}}
 Input:
 Index:$\psi$ \hfill Which nth splitting should be generated
@@ -510,21 +503,7 @@ Variables:Value $\alpha $: \hfill Holds temporary values
 \RETURN $\upsilon$
 \end{algorithmic}
 \end{algorithm}
-\subsubsection{Collisions between Splittings of Coalitions} \label{sectionsplit}
-Given that each thread evaluate several splittings over numerous coalition structures in parallel, 
-it is bound that splittings on two coalition structures that overlap will have splittings that collide.
-A collision means that splittings of coalition structures contain at least one identical subset shared between them.
-\begin{displaymath}\forall S\subset C \wedge S' \subset C' : C \cap C' \neq \emptyset \Rightarrow \exists S \wedge S' : S = S'\end{displaymath}
-For all splittings of $C$ and $C'$ where the coalition structures intersect, there must exist at least one splitting shared between them.
-
-The number of splittings that collide is dependent on how many common members the coalitions have in common.
-\begin{displaymath}2^{n-1}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
-Specifically, the number of splittings in common is how many splittings
-can be done all the members in common.
-Normally, each splitting would be fetched from global memory resulting in it being fetched several times, 
-if it have not been evicted from the cache memory.
-
-By using collision detection as described in algorithm \ref{collision} the number of redundant fetches may be reduced,
+By using collision detection as described in Algorithm \ref{collision} the number of redundant fetches may be reduced,
 which may only be possible by evaluating two or more coalitions at the same time. 
 
 Lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generates
