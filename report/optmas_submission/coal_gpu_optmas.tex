@@ -605,7 +605,14 @@ of warps inside the block divided by two. These thread will compare one warp val
 another thread, half the number of threads and iterate over again. This is done until only one thread remains which will compare the last two values.
 Finally, the single thread that compared the last values, will try to update the value in global memory if it is larger using atomic functions.
 
-\subsection{Algorithm}\label{algorithm} %not done nein
+\subsection{Algorithm}\label{algorithm}
+To parallise the algorithm it evaluates several coaltion structures at the same time, where each thread evaluate
+a total of two splitting per coaltion structure. As memory is constraint per thread in terms of register and shared memory it will evaluate 
+coalition structures in batches. The total number of coalitions structures is denoted by the constant $\alpha$ 
+and how many coalitions per batch is determined by the constant $\beta$.
+The input it takes is the array which holds the values assigned to $f$, the initial coalition structure that it will evaluate on and generate the
+consecutive coalition structures on. The last ones are constants that determine how many splittings that can be done 
+and which is the largest coalition structure which the algorithm is not allowed to exceed.r
 The algorithm starts by initializing all the variables needed further on,
 as generating the next coalition structure works through a recurrence relation, 
 only the first thread will update the shared memory. Continuing, next step is to generate the shift array, 
@@ -627,19 +634,21 @@ Increment the counter and if there is still coalitions to evaluate start from th
 \caption{GPU implementation of the DP algorithm\label{gpudp}}
 \textbf{Input}
 
-$f$\hfill The array which holds the bids
+$f$\hfill The array which holds the values
 
 $C_0$\hfill The first coalition structure to do evaluation on
 
 $\Psi$\hfill The maximum number of splittings
 
+$\Omega$ \hfill The full coalition structure
+
 \textbf{Constants}
 
 $\lambda$ \hfill How many splittings should be evaluated per thread
 
-$confpkernel$
+$\alpha$ \hfill The total number of caolition structures that are being evaluated
 
-$nparallelconf$
+$\beta$ \hfill The number of coalition structures that are evaluated per batch
 
 \textbf{Variables} 
 
@@ -647,9 +656,11 @@ $\Upsilon$ \hfill A shared array containing warps maximum bid values
 
 $\upsilon$ \hfill A local array containing one of the threads bid value
 
+$\Delta$ \hfill Holds all the coalition structures that will be evaluated
+
 $bid = blockIdx.x$ \hfill Which block the threads belong to
 
-$conf$
+
 
 $bdim = blockdim.x$ \hfill How many threads inside the block
 
@@ -660,34 +671,34 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
 \textbf{Start of algorithm}
 \begin{algorithmic}[1]
 \IF{$tid = 0$}
-  \STATE $conf_0 := C_0$ \hfill Thread 0 sets the first coalition from input
-  \FOR {$i := 1$ to $confpkernel$}
-    \STATE $conf_i := nextCoalition(conf_{i-1})$ \hfill Generate the next coalitions to evaluate
+  \STATE $\Delta_0 := C_0$ \hfill Thread 0 sets the first coalition from input
+  \FOR {$i := 1$ to $\alpha$}
+    \STATE $\Delta_i := nextCoalition(\Delta_{i-1})$ \hfill Generate the next coalitions to evaluate
   \ENDFOR \hfill Checkpoint 1
 \ENDIF
-\IF{$tid < confpkernel$}
-  \STATE $initShift(conf_{tid},tid)$ \hfill Initialise the shift array
+\IF{$tid < \alpha$}
+  \STATE $initShift(\Delta_{tid},tid)$ \hfill Initialise the shift array
 \ENDIF
 \hfill Checkpoint 2
-\FOR{$x := 0$ to $confpkernel$}\label{lst:line:bigfetch}
+\FOR{$x := 0$ to $\alpha$}\label{lst:line:bigfetch}
   \STATE Set all values in $\upsilon$ to 0 \hfill Reset the values to 0
 
   \IF{$\psi \geq \Psi$}
     \STATE goto line \ref{lst:line:reductionstart} \hfill The threads index is larger than the number of splittings
   \ENDIF
 \hfill Checkpoint 3
-  \FOR{$z := 0$ to $nparallelconf$}
-    \IF{$conf_{z+x} \geq maxval$}\label{lst:line:gotoif}
+  \FOR{$z := 0$ to $\beta$}
+    \IF{$\Delta_{z+x} \geq \Omega$}\label{lst:line:gotoif}
       \STATE goto line \ref{lst:line:reductionstart} \hfill The coalition is outside the range of the calculation
     \ENDIF
-    \STATE $C := initialSplit(\psi,conf_{z+x})$ \hfill Generate the $\psi$th splitting from a coalition 
-    \STATE $\upsilon_{0,z} := f(conf_{z+x}\backslash C)+f(C)$ \hfill Fetch the splittings value
+    \STATE $C := initialSplit(\psi,\Delta_{z+x})$ \hfill Generate the $\psi$th splitting from a coalition 
+    \STATE $\upsilon_{0,z} := f(\Delta_{z+x}\backslash C)+f(C)$ \hfill Fetch the splittings value
     \STATE $C := nextSplit(C)$ \hfill Generate the next splitting of the coalition
-    \STATE $\upsilon_{1,z} := f(conf_{z+x}\backslash C)+f(C)$ \hfill Fetch the splittings value
+    \STATE $\upsilon_{1,z} := f(\Delta_{z+x}\backslash C)+f(C)$ \hfill Fetch the splittings value
     \STATE $z := z + 1$ \hfill Increment counter and move on the next coalition
   \ENDFOR
 \hfill Checkpoint 4
-  \FOR{$z:=0 to nparallelconf$}\label{lst:line:reductionstart}
+  \FOR{$z:=0$ to $\beta$}\label{lst:line:reductionstart}
   
     \IF{$\upsilon_{1,z} > \upsilon_{0,z}$}\label{lst:line:checkif}
       \STATE $\upsilon_{0,z} := \upsilon_{1,z}$ \hfill Sets the biggest value
@@ -696,7 +707,7 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
     \STATE $warpReduction(\upsilon_{0,z})$ \hfill Finds maximum value in scope of warp
 
     \IF{$tid \% 32 = 0$}
-      \STATE $i := tid / 32$
+      \STATE $i := tid / 32$ \hfill Which nth warp does the thread belong to
       \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$ \hfill First thread in each warp writes maximum value
     \ENDIF
   \ENDFOR   \hfill Checkpoint 5
@@ -705,7 +716,7 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
   \IF{$tid = 0$}
   \STATE $atomicUpdate()$\label{lst:line:reductionend} \hfill First thread does an atomic update on global memory
   \ENDIF  \hfill Checkpoint 7
-  \STATE $x := x + nparallelconf$
+  \STATE $x := x + \beta$
 \ENDFOR
 \RETURN $f$
 \end{algorithmic}
