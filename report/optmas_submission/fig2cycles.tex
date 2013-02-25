@@ -25,13 +25,13 @@ x whiskerbottom boxbottom median boxtop whiskertop
 
 \begin{filecontents}{testdata3.dat}
 x whiskerbottom boxbottom median boxtop whiskertop 
-1 	2329 	4472 	7075 	11553 	78186
-2 	469 	2014 	2626 	3623 	49390
-3 	78 	143 	378 	428 	42615
-4 	382 	10019 	14027 	24771 	189689
-5 	1052 	1116 	1218 	1430 	49089
-6 	122 	566 	595	643 	30414
-7 	153 	1963 	2585 	3596 	67910
+1 	1926 	3181 	4285 	6373 	104034
+2 	457 	1536 	2104 	3147 	64420
+3 	77 	130 	145 	269 	35831
+4 	122 	6658 	9760 	15162 	129745
+5 	107 	1506 	1576 	1915 	55035
+6 	110 	486 	503	520 	45320
+7 	123 	1503	1903 	3532 	67151
 \end{filecontents}
 
 \pgfplotsset{
@@ -156,14 +156,22 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
    every axis y label/.style={at={(rel axis cs:1,1)},anchor= north east}
    ]
 \addplot[ mark = *,red, only marks] coordinates  
-{( 1, 24.82 )
-( 2, 9.21 )
-( 3, 1.33 )
-( 4, 49.21 )
-( 5, 4.27 )
-( 6, 2.09 )
-( 7, 9.07 )
+{( 1, 21.13 )
+( 2, 10.37 )
+( 3, 0.71 )
+( 4, 48.13 )
+( 5, 7.77 )
+( 6, 2.48 )
+( 7, 9.38 )
 }; 
+21.1333596370093
+10.3768001578221
+0.71513118958374
+48.1357269678438
+7.77273623988952
+2.48076543696982
+9.38548037088183
+
 \end{axis}
 \end{tikzpicture}
 \end{document}
