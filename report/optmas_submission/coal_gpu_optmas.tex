@@ -116,7 +116,7 @@
 % affiliation/address with \affaddr, and tag the
 % e-mail address with \email.
 % 1st. author
-\author{Kim Svensson,\inst{1} Sarvapali D. Ramchurn,\inst{1} Francisco Cruz,\inst{2} Juan-Antonio Rodriguez,\inst{2} Jesus Cerquides\inst{2}}
+\author{Kim Svensson,\inst{1} Sarvapali D. Ramchurn,\inst{1} Francisco Cruz,\inst{2} Juan-Antonio Rodriguez-Aguilar,\inst{2} Jesus Cerquides\inst{2}}
 \institute{Electronics and Computer Science, University of Southampton, SO17 1BJ, UK
 \email{\tt\{ks6g10,sdr\}@ecs.soton.ac.uk} 
 \and
@@ -127,7 +127,7 @@ IIIA, CSIC, Spain
 \maketitle
 
 \begin{abstract}
-We develop the first parallel algorithm for combinatorial optimisation problem of Coalition Structure Generation (CSG) that is central to many multi-agent systems applications. Our approach involves distributing the key steps of a dynamic programming approach to CSG across computational nodes on a Graphics Processing Unit (GPU) such that each of the thousands of threads of computation can be used to perform small computations that speed up the overall process. In so doing, we solve important challenges that arise in solving combinatorial optimisation problems on GPUs such as the efficient allocation of memory and computational threads to every step of the algorithm. In our empirical evaluations on a standard GPU,  our results show an improvement of orders of magnitude over current dynamic programming approaches with an ever increasing divergence between the CPU and GPU-based algorithms in terms of growth. Thus, our algorithm is able to solve the CSG problem for 29 agents in one hour and thirty minutes as opposed to three days for the current state of the art dynamic programming algorithms.
+We develop the first parallel algorithm for Coalition Structure Generation (CSG), which is central to many multi-agent systems applications. Our approach involves distributing the key steps of a dynamic programming approach to CSG across computational nodes on a Graphics Processing Unit (GPU) such that each of the thousands of threads of computation can be used to perform small computations that speed up the overall process. In so doing, we solve important challenges that arise in solving combinatorial optimisation problems on GPUs such as the efficient allocation of memory and computational threads to every step of the algorithm. In our empirical evaluations on a standard GPU,  our results show an improvement of orders of magnitude over current dynamic programming approaches with an ever increasing divergence between the CPU and GPU-based algorithms in terms of growth. Thus, our algorithm is able to solve the CSG problem for 29 agents in one hour and thirty minutes as opposed to three days for the current state of the art dynamic programming algorithms.
 \end{abstract}
 
 % Note that the category section should be completed after reference to the ACM Computing Classification Scheme available at
@@ -147,13 +147,13 @@ We develop the first parallel algorithm for combinatorial optimisation problem o
 %\keywords{AAMAS proceedings, \LaTeX, text tagging}
 
 \section{Introduction}
-\noindent Coalition formation is a one of the key coordination mechanisms in
+\noindent Coalition formation is one of the key coordination mechanisms in
 multi-agent systems. It involves the coming together of a number of  agents to
 achieve some individual or group objective.  An important step in the 
  coalition formation process involves partitioning the set of agents into coalitions that, on aggregate (as a coalition structure), maximise the efficiency in the system. This problem is termed the 
 \emph{Coalition Structure Generation} problem (CSG)
 ~\cite{DBLP:journals/ai/SandholmLAST99}.   The  CSG problem is a hard combinatorial optimisation problem and scales in $\omega(n^n)$ \cite{DBLP:journals/ai/SandholmLAST99}. To date, many algorithms have been designed to solve the CSG. These range from branch-and-bound approaches such as \cite{rahwan2009anytime}, to dynamic programming approaches such as
-\cite{DBLP:conf/atal/RahwanJ08,rahwan:jennings:2008b}. The latter are particularly attractive given their lower complexity but most of these algorithms scale to around 30 agents given the exponential growth in computation involved. We also note that these algorithms were mainly designed for single threaded architectures, and even if distributed variants exist \cite{michalak2010distributed}, these require storing the input data redundantly across multiple computers and sharing information over network links that may be liable to delays and losses. 
+\cite{DBLP:conf/atal/RahwanJ08,rahwan:jennings:2008b}. The latter are particularly attractive given their lower complexity, but most of these algorithms scale to around 30 agents given the exponential growth in computation involved. We also note that these algorithms were mainly designed for single threaded architectures, and even if distributed variants exist \cite{michalak2010distributed}, these require storing the input data redundantly across multiple computers and sharing information over network links that may be liable to delays and losses. 
 
 In contrast, in the last few years, a surge in the development of frameworks for parallel programming on a single machine has been noted with the development of general purpose Graphics Processing Units (GPUs). Indeed, these processors, originally developed for only processing high end graphics, can now be programmed to perform simple mathematical operations that, when performed in thousands in parallel, can significantly outperform single-threaded machines with higher frequencies and memory speeds. There are multiple challenges, however, that need to be overcome before complex algorithms as for CSG can be implemented onto the GPU (we elaborate on these in Section \ref{sec:gpu-csg}) including the need to limit random memory access,  the limits on the number of threads that can be launched to share the same memory blocks, and the need to avoid loading data frequently from main memory. 
 
@@ -166,11 +166,11 @@ while section 5 while Section 7 concludes.
 
 \section{Background}
 Solving data independent and parallel problems will always have a benefit when run on a GPU, 
-whether it is computing on MRI scans which gave an significantly large speedup factor of 431 using the GPU, or generating hashes and getting a comparably modest speedup of times 11~\cite{ryoo2008optimization}.  This is particularly the case whenever the algorithm has data independent sub-routines which may be run concurrently, the GPU will most likely perform better. Using the GPU together with dynamic programming have been used before to solve similar combinatorial optimisation problems.  Boyer, V et al successfully implemented and solved the knapsack problem with a factor speedup of 26~\cite{boyer2012solving}.  They also introduced ways to reduce memory usage and thus enable computation of much larger data sets as well as reduce the  bandwidth utilised. In so doing, they also reduce computation time by being able to fetch more data points at an faster rate. Thus, they fully exploit the key features of GPU programming whereby, with limited amount of memory available on a GPU,  they are able to maximise the effective bandwidth of the algorithm.
+whether it is computing on MRI scans, which gave a significantly large speedup factor of 431 using the GPU, or generating hashes and getting a comparably modest speedup of times 11~\cite{ryoo2008optimization}.  This is particularly the case whenever the algorithm has data independent sub-routines which may be run concurrently. If so the GPU will most likely perform better. Combining the GPU together with dynamic programming has been used before to solve similar combinatorial optimisation problems.  Boyer, et al. successfully implemented and solved the knapsack problem with a factor speedup of 26~\cite{boyer2012solving}.  They also introduced ways to reduce memory usage and thus enable computation of much larger data sets as well as reduce the  bandwidth utilised. In so doing, they also reduce computation time by being able to fetch more data points at an faster rate. Thus, they fully exploit the key features of GPU programming whereby, with limited amount of memory available on a GPU,  they are able to maximise the effective bandwidth of the algorithm.
 
-Now, turning to the CSG problem, in terms of parallel programming approaches, we note the work of where Michalak et. al. that use a distributed variant of the anytime IP algorithm called D-IP to solve the Coalition Structure Generation~\cite{michalak2010distributed}. Using 14 dualcore workstations to distribute the workload to speed up their runtime. Their algorithm  shows it is possible to distribute the solutions for the CSG problem and that there may be significant from distributing computation (taking 11\% to 4\%  compared to the centrilised and serialised IP). However, while their algorithm use traditional programming strategies effective on powerful single threaded systems, it does require data to be shared between computational nodes over potentially slow ethernet links and also sharing redundant copies of the input across each. Finally, their algorithm also suffers from the same weaknesses as IP, that is, no deterministic completion time (in the worst case ($O(n^n))$ as it is dependent on the coalition value function. In contrast, GPU-CSG has a deterministic completion time ($O(3^n)$) and relies on much faster GPU memory access.
+Now, turning to the CSG problem, in terms of parallel programming approaches, we note the work of Michalak et. al. that uses a distributed variant of the anytime IP algorithm called D-IP to solve the Coalition Structure Generation~\cite{michalak2010distributed}. They use 14 dual-core workstations to distribute the workload to speed up their run-time. Their algorithm  shows it is possible to distribute the solutions for the CSG problem and that there may be significant from distributing computation (taking 11\% to 4\%  compared to the centrilised and serialised IP). However, while their algorithm use traditional programming strategies effective on powerful single threaded systems, it does require data to be shared between computational nodes over potentially slow Ethernet links and also sharing redundant copies of the input across each. Finally, their algorithm also suffers from the same weaknesses as IP, that is, no deterministic completion time (in the worst case ($O(n^n))$ as it is dependent on the coalition value function. In contrast, GPU-CSG has a deterministic completion time ($O(3^n)$) and relies on much faster GPU memory access.
 
-In what follows, we first describe the CUDA architecture (the GPU architecture provided by NVidia) to clarify what are the key features and issues of using GPUs to solve large combinatorial problems. We then describe the DP algorithm and then describe the data structures we use to implement it on the CUDA architecture.
+In what follows, we first describe the CUDA architecture (the GPU architecture provided by Nevada) to clarify what are the key features and issues of using GPUs to solve large combinatorial problems. We then describe the DP algorithm and the data structures we use to implement it on the CUDA architecture.
 
 \subsection{The CUDA Architecture} \label{Cuda} %done
 Graphics Processing Units (GPUs) from NVIDIA and AMD are highly multi-threaded, many-core architectures primarily aimed at highly parallel image processing and rendering. In recent years, however, there has been a move to use these to support more general purpose computing through the OpenCL and NVIDIA CUDA framework. This was achieved by devoting a larger amount of transistors towards many computational units rather than data caching and advanced  flow control more often seen in CPU architectures. NVIDIA describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture, meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
@@ -205,14 +205,14 @@ To show how the algorithm works, we first formalise the CSG problem.  Let $A=\{1
 is maximised.
 
 Now, DP (see Algorithm  \ref{DP}) works by producing two output tables, $O$ and $f$, 
-where each table have one entry per coalition structure. 
-An entry in $f$ represent a value a certain coalition structure is given, 
-while $O$ represent which splitting, if any, maximised the coalition structure for the entry in $f$ which it represent.
+where each table has one entry per coalition structure. 
+An entry in $f$ represents a value a certain coalition structure is given, 
+while $O$ represent which splitting, if any, maximised the coalition structure for the entry in $f$ which it represents.
 More elaborated, given all coalitions of agents $C\subseteq A$, for each coalition in $C$, evaluate all
 pairwise disjoint subsets here named splittings on their pairwise collective sum against the coalitions
 original value. Given one splitting is greater, update the value of the coalition $f(C) := f(C') + f(C\setminus C')$
-and assign $O$ on $C$ to represent the new splitting, $O(C) := \{C',C\setminus C'\}$. These steps are first carried out on all coalition structures with two agents, continuing until $N$ agents.  This means, given a coalition structure $S$ with cardinality $|S| = n$, then all coalition structures
-for the sizes $1,2,...,n-1$ have already been evaluated. The dynamic programming algorithm is entirely deterministic meaning that even if there was only one or two valuations, the algorithm will evaluate all splittings before it reaches a conclusion. However this algorithm does not work well with an large number of agents as it grow exponentially and have an time and memory complexity of $O(3^n)$. As described later in section \ref{algorithm} the part of the algorithm that is paralleled is the max function on line \ref{lst:line:a} which handles the evaluation of all splittings of a given coalition structure.
+and assign $O$ on $C$ to represent the new splitting, $O(C) := \{C',C\setminus C'\}$. These steps are first carried out on all coalition structures with two agents, continuing until $|A|$ agents.  This means, given a coalition structure $S$ with cardinality $|S| = n$, then all coalition structures
+for the sizes $1,2,...,n-1$ have already been evaluated. The dynamic programming algorithm is entirely deterministic meaning that even if there was only one or two valuations, the algorithm will evaluate all splittings before it reaches a conclusion. However this algorithm does not work well with a large number of agents as it grows exponentially and has time and memory complexity $O(3^n)$. Since described later in section \ref{algorithm}, the part of the algorithm that is parallelized is the max function on line \ref{lst:line:a}, which handles the evaluation of all splittings of a given coalition structure.
 
 \begin{algorithm}
 \caption{Dynamic Programming algorithm \label{DP}}
@@ -239,7 +239,7 @@ $O$: collection holding the most beneficial splitting for all coalitions.
 \end{algorithmic}
 \end{algorithm}
 
-The table $O$ may be discarded and not calculated to reduce the memory requirement by half removing instant access to the final splittings. These final splittings are easily retrieved as outlined in algorithm \ref{idpref}.  Essentially, all coalitions in $C \in CS^*$ which value in $f$ is not equal to the initial bid in $v$, find the first splitting that is equal to the value in $f$. The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
+The table $O$ may be discarded and not calculated to reduce memory requirements by half removing instant access to the final splittings. These final splittings are easily retrieved as outlined in algorithm \ref{idpref}.  Essentially, all coalitions in $C \in CS^*$ whose value in $f$ is not equal to the initial value in $v$, find the first splitting that is equal to the value in $f$. The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
 number of evaluations carried out in the previous steps\cite{eps265062}.
 
 \begin{algorithm}
@@ -258,15 +258,15 @@ $f:$ the final evaluated values gathered from evaluating splittings.
 \RETURN $CS^*$
 \end{algorithmic}
 \end{algorithm}
-Having described the DP algorithm, we next elaborate on how the data structure we use to extend DP into GPU-CSG and then go on to detail the algorithm.
+Having described the DP algorithm, we next elaborate on the data structure we use to extend DP into GPU-CSG and then go on to detail the algorithm.
 
 \section{GPU-CSG} \label{sec:gpu-csg} %done
-GPU-CSG parallelises the key steps of the DP algorithm. This is a non-trivial process (as we will see) as it requires us to be efficient in memory access and in sharing the computation among the threads on the GPU so that access to global memory is reduced to zero while minimising the need for synchronising the threads. To this end, we first propose a memory efficient technique to store coalitions and their values in memory. This is important because (as discussed  in Section 2), the GPU typically have relatively smaller amounts of memory. Moreover, we discuss different ways to navigate through the search space of coalitions as DP requires splitting coalitions into their components to evaluate each sub-problem separately.
+GPU-CSG parallelises the key steps of the DP algorithm. This is a non-trivial process (as we will see) as it requires us to be efficient in memory access and in sharing the computation among the threads on the GPU so that access to global memory is reduced while minimising the need for synchronising the threads. To this end, we first propose a memory efficient technique to store coalitions and their values in memory. This is important because (as discussed  in Section 2), the GPU typically have relatively smaller amounts of memory. Moreover, we discuss different ways to navigate through the search space of coalitions as DP requires splitting coalitions into their components to evaluate each sub-problem separately.
 \subsection{The Data Structure}\label{sec:data}
-How the data is represented and structured is important,  especially in bandwidth bound algorithms where the majority of time is spent fetching data from memory and the arithmetic overhead is low.
-Selecting the right composition will reduce the memory requirements substantially. Given the two entities of data that is needed to be represented for each coalition structure, the coalition structure itself and its value in $f$, we propose data structures that aim to allow a large number of agents to be represented in spit of the exponential growth of the input (i.e., $2^n$).
+How data is represented and structured is important,  especially in bandwidth bound algorithms where the majority of time is spent fetching data from memory and the arithmetic overhead is low.
+Selecting the right composition will reduce the memory requirements substantially. Given the two entities of data that is needed to be represented for each coalition structure, the coalition structure itself and its value in $f$, we propose data structures that aim to allow a large number of agents to be represented in spite of the exponential growth of the input (i.e., $2^n$).
 
-In order to minimize memory usage we applied several techniques as follows. First, we represent coalitions as an array of values, where each value represent a distinct agent. While this may seem intuitive at first, if the members are represented as bits set in a fixed sized integer, the memory
+In order to minimize memory usage we applied several techniques as follows. First, we represent each coalition as an array of values, where each value represents a distinct agent. While this may seem intuitive at first, if the members are represented as bits set in a fixed sized integer, the memory
 requirement will be reduced substantially as shown by previous studies~\cite{boyer2012solving}.
 When solving the CSG problem with $n$ agents representing members as an array of values, there are \[\dbinom{n}{i}\] coalition structures of size $i$, where $i$ entries have to be stored per coalition structure.
 
@@ -276,9 +276,9 @@ The total number of values needed to store just to represent the coalition struc
 Given the same constraints, representing the coalition structure as an fixed sized integer, it is only 
 needed to store one entry per coalition, totalling to \begin{math}2^n-1\end{math} data points.
 
-To give an example, with four agents $A = {f_0,f_1,f_2,f_3}$, the coalition $C = {f_0,f_2,f_3}$ would be represented as $C = 1101$ in the binary system and $13$ in the decimal system. Therefore, if the coalition structure is represented as an integer it can implicitly be stored as an index  to its coalition value, by enumerating it on run-time. That means the only memory constraint on the system is the storage for all coalition values.
+To give an example, with four agents $A = {f_0,f_1,f_2,f_3}$, the coalition $C = {f_0,f_2,f_3}$ would be represented as $C = 1101$ in the binary system and $13$ in the decimal system. Therefore, if the coalition structure is represented as an integer it can implicitly be stored as an index to its coalition value, by enumerating it at run-time. That means the only memory constraint on the system is the storage for all coalition values.
 
-Now, having defined coalitions as binary arrays, we next move on to explain how we create splits of such coalitions efficiently for our algorithm to go through sub-solutions of the CSG problem.
+Now, having defined coalitions as binary arrays, we next move on to explain how we create splittings of such coalitions efficiently for our algorithm to go through sub-solutions of the CSG problem.
 \subsubsection{Coalition Structure Splittings}
 
 % \begin{table}
@@ -294,8 +294,8 @@ Now, having defined coalitions as binary arrays, we next move on to explain how 
 % \end{table}
 
 Splittings as mentioned are pairwise disjoint subsets of a coalition structure, 
-given the coalition structure $C = \{f_0,f_3,f_4\}$ the splittings
-are shown in table \ref{split}. In order to generate the splitting there are essentially three methods used,  $initShift$, $initialSplit$, and $nextSplit$. 
+given the coalition structure $C = \{f_0,f_2,f_3\}$ the splittings
+are shown in table \ref{split}. In order to generate the splitting there are essentially three methods used:  $initShift$, $initialSplit$, and $nextSplit$. 
 
 \begin{table}[htbp]
 \centering
@@ -308,8 +308,10 @@ system&&& \\
 \hline\end{tabular}
 \end{table}
 
-The function $initShift$ as detailed in Algorithm \ref{initshift} and partly illustrated in Figure \ref{fig:howitworks}, 
-it is necessary to setup the environment for all calls to $initialSplit$. 
+The function $initShift$, as detailed in Algorithm \ref{initshift} and partly illustrated in Figure \ref{fig:howitworks}, 
+ is necessary to setup the environment for all calls to $initialSplit$.
+ It takes as input the coalition structure that should be evaluated and the index $n$ which
+represent the index for the coalition structure in the two dimensional array shift.
 \begin{algorithm}
 \caption{$initShift$ input $Coalition:C$ $Index:n$ \label{initshift}}
 \begin{algorithmic}[1]
@@ -326,14 +328,14 @@ it is necessary to setup the environment for all calls to $initialSplit$.
 \end{algorithmic}
 \end{algorithm}
 
-Thus the algorithm uses the bit operation $find first set$ to find the indexes of all bits set in the integer coalition input, and sets those indexes as values in the shift array. These numbers are then used by $initialSplit$ in Algorithm \ref{alg:initalsplit} to distribute the bits of the count to fit the coalition's bits.
+Thus the algorithm uses the bit operation $find first set$ to find the indexes of all bits set in the integer coalition input, and sets those indexes as values in the shift array. Essentially the shift array is an shared two dimensional array that stores which agents the coalition structure have for all coalition structures evaluated by that kernel. These numbers are then used by $initialSplit$ in Algorithm \ref{alg:initalsplit} to distribute the bits of the count to fit the coalition's bits. 
 \begin{figure*}[htbp]
 \centering
-\includegraphics[width=0.5\linewidth]{test}
+\includegraphics[width=0.7\linewidth]{test}
 \caption{How initShift and initialSplit works\label{fig:howitworks}}
 \end{figure*}
 
-It does so by taking a count as input representing which $n$th splitting that should be created, finds the index of the counts  set bits, and finally left shifts each bit with the value in the shift array its index references to. This is also illustrated in Figure \ref{fig:howitworks}. Then to generate the next splitting, a call to $nextSplit$ in Algorithm \ref{alg:nextsplit} is needed that works through a recurrence relation to generate the next splitting.
+It does so by taking a count as input representing which $n$th splitting that should be created, finds the indexes of the set bits of count, and finally adds together all left shifts to a one with the value in the shift array each bit index references to. This is also illustrated in Figure \ref{fig:howitworks}. What it does is for each set bit in count, its index will select the nth member from the coalition structure. Then to generate the next splitting, a call to $nextSplit$ in Algorithm \ref{alg:nextsplit} is needed that works through a recurrence relation to generate the next splitting.
 
 \begin{algorithm}
 \caption{ nextSplit input $Coalition:C$ $Splitting:S$\label{alg:nextsplit}}
@@ -345,7 +347,7 @@ It does so by taking a count as input representing which $n$th splitting that sh
 \end{algorithm}
 
 \begin{algorithm}
-\caption{initialSplit input $Count:n, Coalition:C$\label{alg:initalsplit}}
+\caption{initialSplit input $Count:n$ $Coalition:C$\label{alg:initalsplit}}
 \begin{algorithmic}[1]
 \STATE $t := n$
 \STATE $S := 0$
@@ -367,9 +369,11 @@ A collision means that splittings of coalition contain at least one identical su
 For all splittings of $C$ and $C'$ where the coalitions intersect, there must exist at least one splitting shared between them.
 
 The number of splittings that collide is dependent on how many common members the coalitions have in common.
-\begin{displaymath}2^{n-1}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
-Specifically, the number of splittings in common is how many splittings
-can be done all the members og the intersection. Normally, each splitting would be fetched from global memory resulting in it being fetched several times, if it have not been evicted from the cache memory.
+\begin{displaymath}2^{n}-1:C\neq C'\wedge |C \cap C'| = n \wedge n > 1 \end{displaymath}
+Specifically, the number of splittings in common is how many combinations
+can be done on all the members of the intersection. Normally, each splitting would be fetched from global memory resulting in it being fetched several times, if it have not been evicted from the cache memory.
+
+For example, given two coalition structures $C_1 =\{f_0,f_1,f_2\}$ and $C_2 =\{f_0,f_1,f_3\}$ that intersect on $f_0$ and $f_1$, all splittings value where one subset only contain one or both members may be shared in-between them. I.e. the values for $S_1 = {f_0}$, $S_2 = {f_1}$, and $S_3 = {f_0,f_1}$ are interchangeable.
 
 \begin{algorithm}[htbp]
 \caption{Fetch using Collision detection \label{collision}}
@@ -405,28 +409,28 @@ Variables:Value $\alpha $: \hfill Holds temporary values
 By using collision detection as described in Algorithm \ref{collision}, the number of redundant fetches may be reduced,
 which may only be possible by evaluating two or more coalitions at the same time. 
 
-Lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generates
-the initial splittings and fetches the value for the first splitting. It then trough lines \ref{lst:line:firstif} to \ref{lst:line:firstifend}
-checks whether the splitting of the second splitting is equal to the first. 
-If so assign it the first splittings value, else fetch its own value from global memory. 
-Finally, the last lines does the same thing as above just that it does that on the pairwise disjoint subset, 
-and the first splittings next value is stored in an temporary variable. 
-The more splittings that are evaluated at the same time and checked against each other, the less redundant memory fetches will be done.
+Lines \ref{lst:line:startcol} to \ref{lst:line:fetch} generate
+the initial splittings and fetch the value for the first coalition structure. It then trough lines \ref{lst:line:firstif} to \ref{lst:line:firstifend}
+checks whether the splitting of the second coalition structure is equal to the first. 
+If so it assigns to it the first coalition structure value, else it fetches its own value from global memory. 
+Finally, the last lines do the same thing as above just that it does that on the pairwise disjoint subset, 
+and the first splitting next value is stored in a temporary variable. 
+The more splittings that are evaluated at the same time and checked against each other, the less redundant memory fetches will be done. This can easily be extended throughout each warp by warp communication as long as the arithmetic overhead is less than the time it takes to fetch from memory. 
 
 
 \subsubsection{Reduction} \label{reduction} %done
-As the evaluation of each coalition  means finding the splitting  of the coalition  which maximizes the value of the coalition structure, it is simply needed to compare the values of all splittings with each other to find the most valued one.  The reduction is done on four levels of scope as seen on lines \ref{lst:line:reductionstart} to \ref{lst:line:reductionend} in algorithm \ref{gpudp},
-as well as outlined in figure \ref{fig:reduction}.
+As the evaluation of each coalition  means finding the splitting  of the coalition  which maximizes the value of the coalition structure, it is simply needed to compare the values of all splittings with each other to find the most valued one.  The reduction is done on four levels of scope as seen between lines \ref{lst:line:reductionstart} to \ref{lst:line:reductionend} in algorithm \ref{gpudp},
+as well as outlined in figure \ref{fig:reduction}, where the lines detail the propagation and reduction of values throughout the scopes.
 
-Now, turning to how the above computations are spread on the GPU, at a 'thread level' (see Section \ref{Cuda}), each thread evaluate a number of splittings to determine their most valued splitting.  On warp level, all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting among the warp. This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between any thread within the same warp.
+Now, turning to how the above computations are spread on the GPU, at a 'thread level' (see Section \ref{Cuda}), each thread evaluates a number of splittings to determine their most valued splitting.  At warp level, all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting among the warp. This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between any thread within the same warp.
 Using this technique allows for a substantial reduction in shared memory use, as all that is needed to be stored is one value per warp in shared memory.  With each single value from each warp moved into shared memory, initially the total number of active threads will be equal to the number
-of warps inside the block divided by two. These thread will compare one warp value each with the respective value that is not being compared by another thread, half the number of threads and iterate over again. This is done until only one thread remains which will compare the last two values.
-Finally, the single thread that compared the last values, will try to update the value in global memory if it is larger using atomic functions. We next detail how we bring all of the above techniques together in our algorithm.
+of warps inside the block divided by two. These threads will compare one warp value each with the respective value that is not being compared by another thread, half the number of threads and iterate over again. This is done until only one thread remains which will compare the last two values.
+Finally, the single thread that compared the last values will try to update the value in global memory if it is larger using atomic functions. We next detail how we bring all of the above techniques together in our algorithm.
 
 \section{The GPU-CSG Algorithm}\label{algorithm}
-To parallelise the steps of the DP algorithm, GPU-CSG (depicted in Algorithm \ref{gpudp}) evaluates several coalition structures at the same time, where each thread evaluate a total of two splitting per coalition structure.  As memory is constraint per thread in terms of register and shared memory it will evaluate  coalition structures in batches. The total number of coalitions structures is denoted by the constant $\alpha$  and how many coalitions per batch is determined by the constant $\beta$. The input it takes is the array which holds the values assigned to $f$, the initial coalition structure that it will evaluate on and generate the consecutive coalition structures on. The last ones are constants that determine how many splittings that can be done  and which is the largest coalition structure which the algorithm is not allowed to exceed.
+To parallelise the steps of the DP algorithm, GPU-CSG (depicted in Algorithm \ref{gpudp}) evaluates several coalition structures at the same time, where each thread evaluate a total of two splitting per coalition structure.  As memory is constraint per thread in terms of register and shared memory the algorithm will evaluate coalition structures in batches. The total number of coalitions structures is denoted by the constant $\alpha$  and how many coalitions per batch is determined by the constant $\beta$. The input it takes is the array which holds the values assigned to $f$, the initial coalition structure that it will evaluate on and generate the consecutive coalition structures on. The last ones are constants that determine how many splittings can be done  and which is the largest coalition structure which the algorithm is not allowed to exceed.
 
-The algorithm starts by initializing all the variables needed further on, as generating the next coalition structure works through a recurrence relation,  only the first thread will update the shared memory. Continuing, next step is to generate the shift array,  this can be done in parallel so a number of threads invoke the method $initShift$. From line \ref{lst:line:bigfetch} it will initialise the loop and start resetting all the values to zero  in order to remove any old values in the register. The next line \ref{lst:line:gotoif} determince whether the thread will continue to the fetching stage or skip it completely. If the thread have a splitting index which denotes which nth splitting should be constructed,  is larger than maximum allowed it will jump past the fetch and wait there until all other threads have finished. If it did not jump past it will now generate an amount of splittings and fetching their values to an array to later be evaluated.
+The algorithm starts by initializing all the variables needed further on, as generating the next coalition structure works through a recurrence relation,  only the first thread will update the shared memory. Continuing, next step is to generate the shift array,  this can be done in parallel so a number of threads invoke the method $initShift$(depicted in Algorithm \ref{initshift}). From line \ref{lst:line:bigfetch} it will initialise the loop and start resetting all the values to zero  in order to remove any old values in the register. The next line, \ref{lst:line:gotoif}, determine whether the thread will continue the fetching stage or skip it completely. If the thread has a splitting index which denotes which nth splitting should be constructed,  is larger than maximum allowed it will jump past the fetch and wait there until all other threads have finished. If it did not jump past it will now generate an amount of splittings using $initalSplit$ and $nextSplit$ (depicted in Algorithm \ref{alg:initalsplit} and \ref{alg:nextsplit}) and fetching their values to an array to later be evaluated. Here is where algorithm \ref{collision} would be fitted but left out for clarity of the algorithm.
 
 Going beyond line \ref{lst:line:reductionstart} the reduction procedure is applied, where,  
 on line \ref{lst:line:checkif} it evaluates which of the subsets for a coalition structure is the greatest and updates its variables accordingly. Next it will do a reduction in the scope of warp followed by each first thread in each warp will write to the shared memory  the maximum value the warp reduction concluded on. Finally, line \ref{lst:line:blockReduction} does the reduction on all the concluded values
@@ -448,15 +452,15 @@ $\Omega$ \hfill The full coalition structure
 
 $\lambda$ \hfill How many splittings should be evaluated per thread
 
-$\alpha$ \hfill The total number of caolition structures that are being evaluated
+$\alpha$ \hfill The total number of coalition structures that are being evaluated
 
 $\beta$ \hfill The number of coalition structures that are evaluated per batch
 
 \textbf{Variables} 
 
-$\Upsilon$ \hfill A shared array containing warps maximum bid values
+$\Upsilon$ \hfill A shared array containing warps maximum values
 
-$\upsilon$ \hfill A local array containing one of the threads bid value
+$\upsilon$ \hfill A local array containing one of the threads value
 
 $\Delta$ \hfill Holds all the coalition structures that will be evaluated
 
@@ -527,12 +531,12 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
 We next empirically evaluate GPU-CSG and compare it against the DP algorithm. The aim is to test whether our memory and computation efficient techniques do permit significant speedups, particularly given that the allocation of threads on the GPU cannot be exactly controlled.
 
 \section{Empirical Evaluation}
-In this section we detail two experiments were we evaluate the performance of GPU-CSG. First, we evaluate the two techniques to share the splittings among the threads we presented earlier (see Section \ref{sectionsplit}) to identify whether there are any significant differences in performance. Second, we compare the runtimes of GPU-CSG against an optimised version of the DP algorithm (implemented in the C-programming language).
+In this section we detail two experiments we evaluate the performance of GPU-CSG. First, we evaluate the two techniques to share the splittings among the threads we presented in Section \ref{sectionsplit} to identify whether there are any significant differences in performance. Second, we compare the run-time of GPU-CSG against an optimised version of the DP algorithm (implemented in the C-programming language).
 
 The GPU instance of the algorithm was run on a Linux desktop computer using CUDA version 5.0 containing 12GiB DDR3 RAM,  3.2GHz AMD Phenom II X4 CPU and a consumer grade NVIDIA GeForce GTX 660 Ti with a GPU clock of 915MHz and 6008MHz effective clock on the memory.
 It ran 256 threads per block, with each thread evaluating two splittings per coalition structure, 
-where 8 coalition structures was evaluated in parallel for a total of 32 coalition structures visited.
-The CPU DP algorithm is run single threaded on a INTEL XEON W3520 with a clock-speed of 2.67GHz with 32KB L1, 256KB L2 cache.  The way the data is structured and stored is identical between both implementations.
+where 8 coalition structures are evaluated in parallel for a total of 32 coalition structures visited.
+The CPU DP algorithm is run single threaded on an INTEL XEON W3520 with a clock-speed of 2.67GHz with 32KB L1, 256KB L2 cache.  The way the data is structured and stored is identical between both implementations.
 
 %\begin{figure}[width=\linewidth]
 %\caption{LOG Clock Cycles between checkpoints and relative time for each code segment, not sharing splittings\label{nosplitt}}
@@ -719,15 +723,15 @@ The CPU DP algorithm is run single threaded on a INTEL XEON W3520 with a clock-s
 %\end{tikzpicture}
 %\end{figure}
 \subsection{Experiment 1: Splittings Sharing} %not done
-Figures \ref{nosplitt} and \ref{splitt} shows the difference between employing  shared splittings discussed in Section \ref{sectionsplit}. 
+Figures \ref{nosplitt} and \ref{splitt} show the difference between employing shared splittings discussed in Section \ref{sectionsplit}. 
 What it show are the number of logarithmic clock cycles elapsed between the 
-previous checkpoint and the current one as outline in algorithm \ref{gpudp}.
+previous checkpoint and the current one as outlined in algorithm \ref{gpudp}.
 What can first be noted is that checkpoint 4 is where the algorithm spends most of the time. 
-Checkpoint 4 denote the generation of splittings and fetching them.
+Checkpoint 4 denotes the generation of splittings and fetching them.
 As mentioned earlier the algorithm is bandwidth bound and spending almost
 $60\%$ of the time fetching memory shows that. Another reason of the result
 is due to the not aligned random access making the effective bandwidth low.
-Knowing that and looking at figure \ref{splitt} showing the result of sharing splittings it can be concluded that whilst it still spends most  of the time fetching memory, henceforth improving the sharing of splittings make a significant impact on the overall performance.
+Knowing that and looking at figure \ref{splitt} showing the result of sharing splittings it can be concluded that whilst it still spends most  of the time fetching memory, henceforth improving the sharing of splittings makes a significant impact on the overall performance by means of algorithm \ref{collision}. It can be noted from figure \ref{time} that the GPU implementations where one utilizes internal sharing of splittings is twice as fast than without.
 \begin{figure}[htbp]\centering
 \includegraphics[width=0.8\columnwidth]{fig3cycles}
 \caption{LOG Clock Cycles between checkpoints and relative time for each code segment\label{nosplitt}}
@@ -735,22 +739,20 @@ Knowing that and looking at figure \ref{splitt} showing the result of sharing sp
 
 \begin{figure}[htbp]\centering
 \includegraphics[width=0.8\columnwidth]{fig2cycles}
-\caption{LOG Clock Cycles between checkpoints and relative time for each code segment, shared splittings\label{splitt}}
+\caption{LOG Clock Cycles between checkpoints and relative time for each code segment, (shared splittings)\label{splitt}}
 \end{figure}
 
 \subsection{Experiment 2: GPU-CSG v/s DP}
-Figure \ref{time} shows the difference between the CPU and GPU algorithm.
+Figure \ref{time} shows the difference between the CPU and GPU algorithms.
 For every N agents the y axis shows the logarithmic elapsed time. The difference shown here between the implementations is substantial showing
-that solving the problem on the GPU is highly beneficial. For 29 agents it solves it in 1.5 hours while the CPU bound algorithm was extrapolated to show that it would take up to 83 hours to complete. This is an speed factor of over 55 which would grow over the amount of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
-The difference between the GPU implementations where one utilizes internal 
-sharing of splittings may also be noted to being twice as fast than the variant without.
+that solving the problem on the GPU is highly beneficial. For 29 agents GPU-CSG employs 1.5 hours, while the CPU bound algorithm was extrapolated to show that it would take up to 83 hours to complete. This is a speedup factor of over 55, which is expected to grow with the number of agents. The reason it would grow is due to the implementations not being linearly parallel in logarithmic time where the GPU implementation having a smaller growth.
 
 \begin{figure}[htbp]\centering
 \includegraphics[width=0.8\columnwidth]{fig1cycles}
 \caption{LOG elapsed time for N agents\label{time}}
 \end{figure}
 \section{Conclusion}
-This paper presented the first GPU-based solution for the combinatorial optimisation problem of Coalition Structure Generation. Our algorithm, GPU-CSG is shown to efficiently use memory access and thread allocation on the GPU in order to speed up the computations performed by a dynamic program for the CSG problem. In so doing, it is able to outperform the DP algorithm by up to 55 times, reducing the time taken to solve the problem for 29 agents to 1.5 hours as compared to 83 hours previously. Given the promising results of this initial work, we aim to develop new solutions for other similar optimisation problems in the future.
+This paper presented the first GPU-based solution for the combinatorial optimisation problem of Coalition Structure Generation. Our algorithm, GPU-CSG, is shown to efficiently use memory access and thread allocation on the GPU in order to speed up the computations performed by a dynamic program for the CSG problem. In so doing, it is able to outperform the DP algorithm by up to 55 times, reducing the time taken to solve the problem for 29 agents to 1.5 hours as compared to 83 hours previously. Given the promising results of this initial work, we aim to develop new solutions for other similar optimisation problems in the future.
 \bibliographystyle{abbrv}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 \end{document}
