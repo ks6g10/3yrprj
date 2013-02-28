@@ -44,6 +44,105 @@
 \usepackage{amssymb}
 \usepackage{algorithmic}
 \usepackage{algorithm}
+
+
+\usepackage{pgfplots}
+\usepackage{filecontents}
+\pgfplotsset{compat=newest}
+
+\begin{filecontents}{testdata.dat}
+0 10 12 4 15 2
+1 20 23 15 27 10
+2 7 14 5 19 1
+\end{filecontents}
+
+\begin{filecontents}{testdata2.dat}
+x whiskerbottom boxbottom median boxtop whiskertop 
+1	 149	 4690	 8019	 10907	 142503
+2	 105	 1769	 3017	 3807	 58616
+3	 98	 141	 317	 544	 82674
+4	 111	 17107	 27189	 46238	 403068
+5	 145	 3626	 4461	 6126	 119222
+6	 63	 463	 707	 913	 44684
+7	 64	 3639	 4707	 7416	 189636
+\end{filecontents}
+
+\pgfplotsset{
+    box plot/.style={
+        /pgfplots/.cd,
+        black,
+        only marks,
+        mark=-,
+        mark size=\pgfkeysvalueof{/pgfplots/box plot width},
+        /pgfplots/error bars/y dir=plus,
+        /pgfplots/error bars/y explicit,
+        /pgfplots/table/x index=\pgfkeysvalueof{/pgfplots/box plot x index},
+    },
+    box plot box/.style={
+        /pgfplots/error bars/draw error bar/.code 2 args={%
+            \draw  ##1 -- ++(\pgfkeysvalueof{/pgfplots/box plot width},0pt) |- ##2 -- ++(-\pgfkeysvalueof{/pgfplots/box plot width},0pt) |- ##1 -- cycle;
+        },
+        /pgfplots/table/.cd,
+        y index=\pgfkeysvalueof{/pgfplots/box plot box top index},
+        y error expr={
+            \thisrowno{\pgfkeysvalueof{/pgfplots/box plot box bottom index}}
+            - \thisrowno{\pgfkeysvalueof{/pgfplots/box plot box top index}}
+        },
+        /pgfplots/box plot
+    },
+    box plot top whisker/.style={
+        /pgfplots/error bars/draw error bar/.code 2 args={%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark}%
+            {\pgfplotserrorbarsmark}%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark options}%
+            {\pgfplotserrorbarsmarkopts}%
+            \path ##1 -- ##2;
+        },
+        /pgfplots/table/.cd,
+        y index=\pgfkeysvalueof{/pgfplots/box plot whisker top index},
+        y error expr={
+            \thisrowno{\pgfkeysvalueof{/pgfplots/box plot box top index}}
+            - \thisrowno{\pgfkeysvalueof{/pgfplots/box plot whisker top index}}
+        },
+        /pgfplots/box plot
+    },
+    box plot bottom whisker/.style={
+        /pgfplots/error bars/draw error bar/.code 2 args={%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark}%
+            {\pgfplotserrorbarsmark}%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark options}%
+            {\pgfplotserrorbarsmarkopts}%
+            \path ##1 -- ##2;
+        },
+        /pgfplots/table/.cd,
+        y index=\pgfkeysvalueof{/pgfplots/box plot whisker bottom index},
+        y error expr={
+            \thisrowno{\pgfkeysvalueof{/pgfplots/box plot box bottom index}}
+            - \thisrowno{\pgfkeysvalueof{/pgfplots/box plot whisker bottom index}}
+        },
+        /pgfplots/box plot
+    },
+    box plot median/.style={
+        /pgfplots/box plot,
+        /pgfplots/table/y index=\pgfkeysvalueof{/pgfplots/box plot median index}
+    },
+    box plot width/.initial=1em,
+    box plot x index/.initial=0,
+    box plot median index/.initial=1,
+    box plot box top index/.initial=2,
+    box plot box bottom index/.initial=3,
+    box plot whisker top index/.initial=4,
+    box plot whisker bottom index/.initial=5,
+}
+
+\newcommand{\boxplot}[2][]{
+    \addplot [box plot median,#1] table {#2};
+    \addplot [forget plot, box plot box,#1] table {#2};
+    \addplot [forget plot, box plot top whisker,#1] table {#2};
+    \addplot [forget plot, box plot bottom whisker,#1] table {#2};
+}
+
+
 % if you are using PDF LaTex and you cannot find a way for producing
 % letter, the following explicit settings may help
  
@@ -109,11 +208,11 @@
 % 1st. author
 \alignauthor
 Paper  XXX
-%Ben Trovato\titlenote{Dr.~Trovato insisted his name be first.}\\
-%       \affaddr{Institute for Clarity in Documentation}\\
-%       \affaddr{1932 Wallamaloo Lane}\\
-%       \affaddr{Wallamaloo, New Zealand}\\
-%       \email{trovato@corporation.com}
+Kim Svensson\titlenote{Something}\\
+       \affaddr{University of Southampton}\\
+       \affaddr{Southampton SO17 1BJ}\\
+       \affaddr{United Kingdom}\\
+       \email{ks6g10@ecs.soton.ac.uk}
 % 2nd. author
 %\alignauthor
 %G.K.M. Tobin\titlenote{The secretary disavows any knowledge of this author's actions.}\\
@@ -259,26 +358,37 @@ specifically available for denoting the structure of a
 proceedings paper, rather than with giving rigorous descriptions
 or explanations of such commands.
 
-\section{The {\secit DP} Algorithm} 
-The fundamental output of the DP algorithm is two tables, $O$ and $f$. 
-An entry in $f$ represent a value a coalition structure is given, 
-while $O$ represent which coalition structure the entry in $f$ represent.
+\section{Background}
 
-It does that by the bottom up principle where it starts with the smallest splittable 
-coalition structure of two agents, checks if any of the splittings is more beneficial to make.
-If so, updates $f$ and $O$ with the new value and coalition structure. 
-It iterates over all the coalitions of same cardinality until it moves on the the 
-next coalition size.
+\subsection{Coalition formation}
 
 
-Given the set of all coalitions $C\subseteq A$, it will compute $O$
+\subsection{The {\secit DP} Algorithm} 
+The DP algorithm as shown in algorithm \ref{DP} works by producing two output tables, $O$ and $f$, 
+where each table have one entry per coalition structure. 
+An entry in $f$ represent a value a certain coalition structure is given, 
+while $O$ represent which splitting, if any, maximised the coalition structure for the entry in $f$ which it represent.
+More elaborated, given all coalitions of agents $A$, $C\subseteq A$, for each coalition in $C$, evaluate all
+pairwise disjoint subsets named splittings on their pairwise collective sum against the coalitions
+original value. Given one splitting is greater, update the value of the coalition $f(C) := f(C') + f(C\setminus C')$
+and assign $O$ on $C$ to represent the new splitting, $O(C) := \{C',C''\}$. These steps are first carried out
+on all coalition structures with two agents, continuing until $N$ agents. 
+This means, given a coalition structure $S$ with cardinality $|S| = n$, then all coalition structures
+for the sizes 1,2,...,n-1 have already been evaluated. Given 
+As described later in section ?? the part of the algorithm that is parallilsed is the max function on line \ref{lst:line:a}
+which handles the evaluation of all splittings of a given coalition structure.
 
+The table $O$ may be discarded to reduce the memory requirement by half removing instant access to the splittings,
+the valid splittings is easily retrived however as outlined in algorithm \ref{idpref}. Essentialy, all coalitions in $C \in CS^*$ which value in $f$
+is not equal to the initial bid in $b$, find the first splitting that is equal to the value in $f$.
+The overhead of this is insignificant as it needs to evaluate at most $n -1$ coalitions compared to the exponential
+numbers of evaluations carried out \cite{eps265062}.
 
 \begin{algorithm}
 \caption{Dynamic Programming algorithm \label{DP}}
-INPUT: $b(C)$ the bids for all sets $C \subseteq A$ where $A$ is the set of assets.\\*
+INPUT: $b(C)$ the bids for all coalitions $C \subseteq A$ where $A$ is the set of agents.\\*
 VARIABLES: $f$ a function that maps from a subset $C \subseteq A$ to a value\\*
-$O$ a function that maps from a subset $C \subseteq A$ to the subset that maximize the value for set $C$.
+$O$ a function that maps from a subset $C \subseteq A$ to the set that maximize the value for set $C$.
 \begin{algorithmic}[1]
 \STATE\algorithmicfor\ all $x \in A$, \algorithmicdo $f(\{x\}):= b(\{x\}),O\{x\}:= \{x\}$ \algorithmicendfor
 \FOR{$i := 2$ to $n$}
@@ -288,32 +398,76 @@ $O$ a function that maps from a subset $C \subseteq A$ to the subset that maximi
 \STATE\algorithmicif $f(C) < b(C)$ \algorithmicthen\ $f(C) := b(C)\wedge O(C) := C$ \algorithmicendif
 \ENDFOR
 \ENDFOR
+\STATE Set $CS^* := \{A\}$
+\FOR{all $C \in CS^*$} \label{lst:line:redo}
+\IF{$O(C) \neq C$}
+\STATE Set $CS^* := (CS^*\setminus \{C\})\cup \{O(C),C\setminus O(C)\}$ 
+\STATE Goto \ref{lst:line:redo} and start with a new $CS^*$
+\ENDIF
+\ENDFOR
+\RETURN $CS^*$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Recursive enumeration of most optimal splittings \label{idpref}}
+INPUT: $b(C)$ the bids for all coalitions $C \subseteq A$.
+$f(C)$ the final values for all coalitions $C \subseteq A$.
+\begin{algorithmic}[1]
+\STATE Set $CS^* := \{A\}$
+\FOR{all $C \in CS^*$} \label{lst:line:redo2}
+\IF{$f(C) \neq b(C)$}
+\STATE find first $C^*$ where $f(C) = f(C\backslash C^*)+f(C^*):C^*\subseteq C \wedge 1 \leq \vert C^* \vert \leq \dfrac{\vert C \vert}{2}$ \label{lst:line:aa}
+\STATE Set $CS^* := (CS^*\setminus \{C\})\cup \{C^*,C\setminus C^*\}$
+\STATE Goto \ref{lst:line:redo2} and start with a new $CS^*$
+\ENDIF
+\ENDFOR
+\RETURN $CS^*$
 \end{algorithmic}
 \end{algorithm}
 
 
-Typically, the body of a paper is organized
-into a hierarchical structure, with numbered or unnumbered
-headings for sections, subsections, sub-subsections, and even
-smaller sections.  The command \texttt{{\char'134}section} that
-precedes this paragraph is part of such a
-hierarchy.\footnote{This is the second footnote.  It
-starts a series of three footnotes that add nothing
-informational, but just give an idea of how footnotes work
-and look. It is a wordy one, just so you see
-how a longish one plays out.} \LaTeX\ handles the numbering
-and placement of these headings for you, when you use
-the appropriate heading commands around the titles
-of the headings.  If you want a sub-subsection or
-smaller part to be unnumbered in your output, simply append an
-asterisk to the command name.  Examples of both
-numbered and unnumbered headings will appear throughout the
-balance of this sample document.
 
-Because the entire article is contained in
-the \textbf{document} environment, you can indicate the
-start of a new paragraph with a blank line in your
-input file; that is why this sentence forms a separate paragraph.
+\subsection{The CUDA Architecture}
+Graphics Processing Units(GPU) from Nvidia and AMD is highly multithreaded, many-core architectures primarily aimed at 
+highly parallel image processing and rendering, however it have in the last years moved more towards supporting general purpose computing.
+It does so by devoting a larger amount of transitors towards many computational units rather than data caching and advanced 
+flow controll more often seen in CPU architectures.
+Nvidia describes their general purpose GPU CUDA architecture as a Single Instruction Multiple Threads (SIMT) architecture, 
+meaning groups of multiple threads excecute the same instructions concurrently and is proportional to SIMD architectures. 
+This enables their GPUs to be highly advantageous when performing data-independant and non-divergent tasks. 
+
+To understand this further the grouping of the threads need to be explained.
+A kernel which is a device specific CUDA function that is called by the sequential host code,
+will request a specified number of blocks in a grid of blocks.
+Each block may to this date consist of up to 1024 threads depending on the compatability of the card, with a maximum
+grid size of $2^{31}-1$ blocks subjected to compatability. When run, the blocks will be distributed onto available multiprocessors,
+which then independantly schedule the runtime of the block. Note that blocks may be excecuted concurrently or sequential depending on
+the current workload and the number of available multiprocessors.
+The block is split into smaller units of 32 threads called warps, all threads within the same warp are always scheduled
+the same instruction to be run and this is what embodies the SIMT paradigm. 
+Therefore, branching threads causing inter-warp divergence means a warp will have inactive threads not excecuting any instructions, 
+which may lead to poor efficiency with worst case of sequential performance. Further, warps are scheduled independantly of eachother
+meaning possible concurent excecution of warps.
+
+The threads communicate with eachother through writes to various types of memory outlined in table \ref{mem}.
+There are three types of thread writable memory in the architecture; registers and local memory are each threads
+coupled memory which is not volatile and may be shared with other threads inside the same warp as described in section \ref{reduction}. 
+Shared memory is by its name shared between all threads within the same block, as it may be written to by any thread within the block
+it should be treated as volatile, thus syncronization inside the block have to be consider whilts dealing with shared memory.
+Finally, global memory is the only persistant memory which will persist between each kernel call, it may be manipulated by the host,
+but also by any thread, and is the only means of communication inbetween kernels, blocks, and the host.
+
+\begin{table}
+\centering
+\caption{Memory scope, lifetime, and speed \label{mem}}
+\begin{tabular}{|l|l|l|l|} \hline
+Type&Scope&Lifetime&Relative Speed \\ \hline
+Register&Thread \& Warp&Thread&Fastest\\
+Shared&Block&Block&Fast\\
+Global&Kernel \& Host&Program&Slow\\
+\hline\end{tabular}
+\end{table}
 
 \subsection{Model and Cuda Implementation}
 Given the three entities of data that is needed to be represented for each coalition structure; 
@@ -321,39 +475,32 @@ the coalition structure itself, its value and the most beneficial splitting.
 Memory constraints will be imposed given a large amount of agents as a result 
 of its exponential growth of coalition structures. In order to minimize memory usage
 several technices were imposed. Firstly, given N agents, the number of values for each coalition
-structure possible is $2^{|N|}$, which was represented as a simple integer array.
-The coalition structure itself may be represented as an integer where the nth 
-agent of the coalition structure represent the nth bit in an integer. 
-Given four agents $A = {f1,f2,f3,f4}$, coalition $C = {f1,f2,f4}$ would be represented
-as $C = 1011$ in binary system or 11 in the decimal system. Therefore, if the coalition
-structure is represented as a integer it can implicitly be stored as an index 
+structure possible is $2^{|N|}$, which was represented as a simple value array.
+The coalition structure itself may be represented as an integer where the n'th 
+agent of the coalition structure is represented by setting the n'th bit in an binary integer. 
+Given four agents $A = {f_1,f_2,f_3,f_4}$, coalition $C = {f_1,f_3,f_4}$ would be represented
+as $C = 1101$ in the binary system and $11$ in the decimal system. Therefore, if the coalition
+structure is represented as an integer it can implicitly be stored as an index 
 to its coalition value and most beneficial splitting.
 
-A kernel is the function called from the host side to be run on a CUDA enabled GPU, it 
-consists of se
+
+
 
 \subsubsection{Coalition Structure Splittings}
 
 \begin{table}
 \centering
-\caption{Splittings of $C = \{f_1,f_2,f_4\}$}
+\caption{Splittings of $C = \{f_1,f_3,f_4\}$ Binary $C = 1101$ \label{split}}
 \begin{tabular}{|l|c|c|c|} \hline
-Set& $\{f_1\}$\hfill$\{f_2,f_4\}$ &$\{f_2\},\{f_1,f_4\}$&$\{f_4\},\{f_1,f_2\}$ \\ 
+Set& $\{f_1\}$\hfill$\{f_3,f_4\}$ &$\{f_3\},\{f_1,f_4\}$&$\{f_4\},\{f_1,f_3\}$ \\ 
 system&&& \\ \hline	
 Binary&0001\hfill 1010&0010\hfill 1001&1000\hfill 0011 \\
 system&&& \\
 \hline\end{tabular}
 \end{table}
 
-Splittings are pairwise disjoint subsets of a coalition structure, given the coalition structure $C = \{f1,f2,f3\}$ the splittings
-are shown in table??. In order to generate the splitting there is essentially two methods used, 
-the {\secit initialSplit} and {\secit nextSplit} methods. {\secit nextSplit} works through a recurence relation which means in order to have 
-concurent threads independant of eachother, an initial splitting have to be calculated using {\secit initialSplit}. 
-{\secit initialSplit} works by first genereting an packed index array of which bits are set in the coalition structure using initShift.
-Given which nth splitting it should generate, it distributes the bits of $n$ to the corresponding bits of coalition $C$. 
-Thereafter nextSplit will be used to generate the next splitting.
 \begin{algorithm}
-\caption{{\secit initShift} input $Coalition:C$}
+\caption{{\secit initShift} input $Coalition:C$ \label{initshift}}
 \label{<your label for references later in your document>}
 \begin{algorithmic}[1]
 \STATE $t :=C$
@@ -369,6 +516,37 @@ Thereafter nextSplit will be used to generate the next splitting.
 \end{algorithmic}
 \end{algorithm}
 
+\begin{table}
+\centering
+\caption{Splittings of $C = \{f_1,f_3,f_4\}$ Binary $C = 1101$ \label{split}}
+\begin{tabular}{|l|c|c|c|} \hline
+Set& $\{f_1\}$\hfill$\{f_3,f_4\}$ &$\{f_3\},\{f_1,f_4\}$&$\{f_4\},\{f_1,f_3\}$ \\ 
+system&&& \\ \hline	
+Binary&0001\hfill 1100&0100\hfill 1001&1000\hfill 0101 \\
+system&&& \\
+\hline\end{tabular}
+\end{table}
+
+Splittings as mentioned are pairwise disjoint subsets of a coalition structure, 
+given the coalition structure $C = \{f_1,f_3,f_4\}$ the splittings
+are shown in table \ref{split}. In order to generate the splitting there is essentially two methods used, 
+the, initShift, initialSplit and nextSplit methods. 
+The function initShift as detailed in algorithm \ref{initshift} is necessary to setup the environment for 
+all calls to initialSplit, what it does is using the bit operation $find first set$ to find the indexes of all bits set
+in from the integer coalition input. This will give each entry in the $shift$ array an unique number. 
+This unique numbers will be used by initialSplit to distribute the bits of the count to fit the configurations bits.
+It does so by taking a count as input representing which n'th splitting should be created, finds the index of its 
+set bits, and finaly left shifts each bit with the value in the shift array its index reference to.
+
+nextSplit works through a recurence relation which means in order to have 
+concurent threads independant of eachother, an initial splitting for each thread have to be calculated using initialSplit. 
+initialSplit works by first genereting an packed index array of which bits are set in the coalition structure using initShift.
+Given which n'th splitting it should generate, it distributes the bits of $n$ to the corresponding bits of coalition $C$. 
+Thereafter nextSplit will be used to generate the next splitting. 
+
+
+
+
 \begin{algorithm}
 \caption{{\secit nextSplit} input $Coalition:C$ $Splitting:S$}
 \label{<your label for references later in your document>}
@@ -380,35 +558,38 @@ Thereafter nextSplit will be used to generate the next splitting.
 \end{algorithm}
 
 \begin{algorithm}
-\caption{{\secit initialSplit} input $Coalition:C$ $Index:n$}
+\caption{{\secit initialSplit} input $Count:n, Coalition:C$}
 \label{<your label for references later in your document>}
 \begin{algorithmic}[1]
 \STATE $t := n$
 \STATE $S := 0$
 \WHILE{$t > 0$} {
 \STATE $index := FindFirstSet(t)$
-\STATE $S := S + leftShift(1,shift_{index})$
+\STATE $S := S + leftShift(1,shift_{index,C})$
 \STATE $nullBit(t,index)$??
 }
 \ENDWHILE
-\STATE $S :=nextSplit(C,S)$
 \RETURN $S$
 \end{algorithmic}
 \end{algorithm}
 
 
 
-\subsubsection{Reduction}
-As the evaluation of each coalition structure is to find the splitting of the coalition structure which maximises the value of the coalition structure,
-it is needed to compare the values of all splittings with eachother. 
+\subsubsection{Reduction} \label{reduction}
+As the evaluation of each coalition structure is to find the splitting 
+of the coalition structure which maximises the value of the coalition structure,
+it is simply needed to compare the values of all splittings with eachother to find the most valued one. 
 
-The reduction is done on three levels of memory scope. On register level, each thread evaluate a number of splittings and determine the largest one,
-then all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting amoung the warp.
-On shared memory level, the threads are split up into two groups, active and inactive threads. 
-The active threads will compare its value against the a corresponding inactive thread, then half the number of active thread.
+The reduction is done on four levels of scope as seen on lines ?? to ?? in algorithm ??. On thread level, 
+each thread evaluate a number of splittings to determine their most valued splitting,
+then all threads inside the same warp concurrently exchange their largest register values to find the most valued splitting among the warp.
+This is done by utilizing a function called $\_\_shfl\_xor$ which allows for an exchange of register values between threads within the same warp,
+allowing for a substantial reduction in shared memory use. 
+On thread block level, the threads are split up into two groups, active and inactive threads. 
+The active threads will compare its value against a corresponding inactive thread, then half the number of active thread.
 Iterate until the maximum value have converged into one single thread holding the maximum value for the whole thread block.
-Finally, the single thread will then attempt to update the global memory using atomic functions 
-given that the original coalition value is less than the value of the coalition structure splitting.
+Finally, the single thread will attempt to update the global memory using atomic functions 
+given that the value of the coalition in table $f$  is less.
 
 
 We have already seen several typeface changes in this sample.  You
@@ -435,6 +616,204 @@ you can find a complete list of what is
 available in the \textit{\LaTeX\
 User's Guide}\cite{Lamport:LaTeX}.
 
+\subsection{Algorithm}
+\begin{algorithm}
+\textbf{Input}
+
+$f$\hfill The array which holds the bids
+
+$ \Phi $ \hfill A reference to an maximum value bucket unique for each kernel
+
+$C_0$\hfill The first coalition struction to do evaluation on
+
+$\Psi$\hfill The maximum number of splittings
+
+\textbf{Constants}
+
+$\lambda$ \hfill How many bids should be evaluated per thread
+
+$confpkernel$
+
+$nparallelconf$
+
+\textbf{Variables} 
+
+$\Upsilon$ \hfill A shared array containing warps maximum bid values
+
+$\upsilon$ \hfill A local array containing one of the threads bid value
+
+$bid = blockIdx.x$ \hfill Which block the threads belong to
+
+$conf$
+
+$bdim = blockdim.x$ \hfill How many threads inside the block
+
+$tid = threadIdx.x$ \hfill The thread index inside the block
+
+$\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
+
+\textbf{Start of algorithm}
+\begin{algorithmic}[1]
+\IF{$tid = 0$}
+  \STATE $conf_0 := C_0$
+  \FOR {$i := 1$ to $confpkernel$}
+    \STATE $conf_i := nextCoalitoin(conf_{i-1})$
+  \ENDFOR
+\ENDIF
+\IF{$tid < confpkernel$}
+  \STATE $initShift(conf_{tid})$
+\ENDIF
+
+\FOR{$x := 0$ to $confpkernel$}
+  \STATE Set all values in $\upsilon$ to 0
+
+  \IF{$\psi \geq \Psi$}
+    \STATE goto postfetch
+  \ENDIF
+
+  \FOR{$z:=0$ to $nparallelconf$}
+    \IF{$conf_{z+x} >= maxval$}
+      \STATE break
+    \ENDIF
+    \STATE $C := initialSplit(\psi,conf_{z+x}$
+    \STATE $\upsilon_{0,z} := f(conf_{z+x}\backslash C)+f(C)$
+    \STATE $C := nextSplit(C)$
+    \STATE $\upsilon_{1,z} := f(conf_{z+x}\backslash C)+f(C)$
+  \ENDFOR
+
+  \FOR{$z:=0 to nparallelconf$}
+  
+    \IF{$\upsilon_{1,z} > \upsilon_{0,z}$}
+      \STATE $\upsilon_{0,z} := \upsilon_{1,z}$
+    \ENDIF
+    
+    \STATE $warpReduction(\upsilon_{0,z})$
+    
+    \IF{$tid \% 32 = 0$}
+      \STATE $i := tid / 32$
+      \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$
+    \ENDIF
+  \ENDFOR
+  \STATE $blockReduction()$
+  \IF{$tid = 0$}
+  \STATE $atomicUpdate()$
+  \ENDIF
+  \STATE $x := x + nparallelconf$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Experimental setup}
+
+The GPU instance of the algoritm was run on a linux desktop computer using CUDA version 5.0 containing 12GiB DDR3 RAM, 
+3.2GHz AMD Phenom II X4 CPU and a consumer grade NVIDIA GeForce GTX 660 Ti with a GPU clock of 915MHz and 6008MHz effective clock on the memory.
+
+\section{Results}
+\def\alglabels{{"a","a","b","c","d","e","f","g","h","i","j"}}
+\begin{figure}[width=\linewidth]
+\begin{tikzpicture}[align=left]
+\begin{axis} [
+%scale only axis, % The height and width argument only apply to the actual axis
+%width=\linewidth,
+%box plot width=4mm,
+%xticklabel={\pgfmathparse{\alglabels[\tick]}\pgfmathresult}],
+ymode=log,
+title={LOG Clock Cycles and relative time for each code segment},
+xlabel={Code segment},
+ylabel={LOG Clock Cycles},
+ylabel near ticks,
+ymax = 10e5,
+ymin = 0,
+axis line style={blue},
+every axis label/.append style ={blue},
+every tick label/.append style={blue},
+every axis y label/.style={at={(current axis.above origin)},anchor=north west}
+]
+%\boxplot [forget plot, red] {testdata.dat}
+\boxplot [
+    forget plot,
+    blue,
+    box plot whisker bottom index=1,
+    box plot whisker top index=5,
+    box plot box bottom index=2,
+    box plot box top index=4,
+    box plot median index=3
+] {testdata2.dat}
+
+%\addplot [domain=-2:6, thick, cyan] {-x+25+rnd}; \addlegendentry{Some line}
+\end{axis}
+\begin{axis}[axis line style={red},
+    every axis label/.append style ={red},
+    every tick label/.append style={red},    
+    axis x line*=bottom,
+    ylabel near ticks,    
+    axis lines=right, 
+    hide x axis, 
+    ymax = 60, 
+    ymin = 0, 
+    ylabel = Relative time \,/\,\%, 
+    xmin = 0.5,
+    xtick = data,
+    xmax = 7.5,
+    %every axis y label/.style={at={(rel axis cs:1,1)},anchor= north east}
+    ]
+\addplot[ mark = *,red, only marks] coordinates  
+{( 1, 16.56 )
+ ( 2, 6.23 )
+ ( 3, 0.66 )
+ ( 4, 56.16 )
+ ( 5, 9.21 )
+ ( 6, 1.46 )
+ ( 7, 9.72 )
+ }; 
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\begin{figure}[width=\linewidth]
+\begin{tikzpicture}[align=left]
+\begin{axis}[
+  xmin = 20,
+  xmax = 29,
+  ymax = 10e5,
+  grid,
+  xtick={20,...,29},
+  axis lines=right, 
+  legend pos= north west,
+  ymode=log
+    ]
+\addplot[ mark = *,red] coordinates  
+{( 20, 5 )
+ ( 21, 18 )
+ ( 22, 61 )
+ ( 23, 201 )
+ ( 24, 700 )
+ ( 25, 2344 )
+ ( 26, 7910 )
+ }; 
+ \addplot[ mark = x,red] coordinates  
+{
+ ( 26, 7910 )
+ ( 27, 26302 )
+ ( 28, 88644)
+ ( 29, 298267)
+ }; 
+ \addplot[ mark = x,blue] coordinates  
+{( 20, 1 )
+ ( 21, 2 )
+ ( 22, 3 )
+ ( 23, 10 )
+ ( 24, 32 )
+ ( 25, 105 )
+ ( 26, 333 )
+ ( 27, 1037 )
+ ( 28, 3218)
+ ( 29, 10182)
+ }; 
+\legend{CPU,CPU extrapolated,GPU}
+\end{axis}
+\end{tikzpicture}
+\end{figure}
 \subsection{Math Equations}
 You may want to display math equations in three distinct styles:
 inline, numbered or non-numbered display.  Each of
