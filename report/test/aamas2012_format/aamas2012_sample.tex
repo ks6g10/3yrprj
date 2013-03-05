@@ -608,7 +608,7 @@ The more splittings that are evaluated at the same time and checked against each
 \subsubsection{Reduction} \label{reduction} %done
 \begin{figure*}
 \centering
-\includegraphics[width=\linewidth]{reduction}
+\includegraphics[width=\linewidth]{reduction.png}
 \caption{Outline of reduction across thread, warp, block and kernel \label{fig:reduction}}
 \end{figure*}
 
@@ -934,7 +934,11 @@ that solving the problem on the GPU is highly beneficial. For 29 agents it solve
 The difference between the GPU implementations where one utilizes internal 
 sharing of splittings may also be noted to being $40\%$ faster than the variant without.
 \section{Conclusion}
-This paper show using the GPU to solve to Complete coalition structure formation problem is much viable option. Being so much faster it shows that
+This paper show using the GPU to solve to Complete coalition structure formation problem is much viable option. 
+Being so much faster it shows that
+
+\section{Further work}
+The notion of removing reduntant fetches from memory can be expanded into fully constructing the coalitions bottom up,
 % \subsection{Math Equations}
 % % You may want to display math equations in three distinct styles:
 % % inline, numbered or non-numbered display.  Each of
