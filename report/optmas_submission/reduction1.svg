@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg2" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="356.52213" width="1010.3397" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <metadata id="metadata7">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(-23.748881,306.83757)">
+  <g id="g3326" transform="matrix(0.99044118,0,0,1,0.22786874,0)">
+   <rect id="rect3262" height="38" width="1020" y="-35.632648" x="23.838577" fill="#afe9af"/>
+   <rect id="rect3264" height="27.625" width="1020" y="-63.257748" x="23.838577" fill="#d5fff6"/>
+   <rect id="rect3266" height="25.5625" width="1020" y="-88.695351" x="23.838577" fill="#afc6e9"/>
+  </g>
+  <text id="text3050" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="29.862183" x="22.5" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan3052" x="22.5" y="29.862183"/></text>
+  <g id="g3168">
+   <text id="text3467-8" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="-145.15735" x="423.95596" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan3469-6" x="423.95596" y="-145.15735">...</tspan></text>
+   <g id="g7603">
+    <g id="g6558" transform="translate(23,-316.21986)">
+     <g id="g5717" transform="translate(-29,-4)">
+      <g id="g5572">
+       <rect id="rect3010" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="44.236889" stroke-width="0.99672931" fill="#FFF"/>
+       <rect id="rect3021" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="44.241909" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="51.230919" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027" font-size="12px" y="51.230919" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="66.164482" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8" font-size="12px" y="66.164482" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="30.442568" fill="none"/>
+       <text id="text2993" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="37.585423" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="37.585423" x="112.2963">Thread 0</tspan></text>
+       <rect id="rect3023" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="59.225288" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056" stroke-linejoin="miter" d="m66.406854,214.36772,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058" stroke-linejoin="miter" d="m58.156854,223.49272,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5493">
+       <rect id="rect3010-3" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="94.417816" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-9" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="94.422836" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-2" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="101.41184" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-7" font-size="12px" y="101.41184" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-9" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="116.34541" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-8" font-size="12px" y="116.34541" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-6" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="80.623489" fill="none"/>
+       <text id="text2993-6" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="87.76635" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-8" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="87.76635" x="112.2963">Thread 1</tspan></text>
+       <rect id="rect3023-4" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="109.40621" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-0" stroke-linejoin="miter" d="m116.58778,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-2" stroke-linejoin="miter" d="m108.33778,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5611">
+       <rect id="rect3010-2" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="179.77341" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-05" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="179.77843" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-8" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="186.76744" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-70" font-size="12px" y="186.76744" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-97" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="201.701" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-735" font-size="12px" y="201.701" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-0" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="165.97908" fill="none"/>
+       <text id="text2993-766" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="173.12195" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-5" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="173.12195" x="112.2963">Thread 31</tspan></text>
+       <rect id="rect3023-43" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="194.76181" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-4" stroke-linejoin="miter" d="m201.94337,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-1" stroke-linejoin="miter" d="m193.69337,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <text id="text3467" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="173.53928" x="126.02707" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3469" y="173.53928" x="126.02707">...</tspan></text>
+      <rect id="rect3528" height="173.24117" width="179.14079" stroke="#000" y="83.73671" x="30.376965" stroke-width="0.97227097" fill="none"/>
+      <text id="text3530" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="103.5357" x="84.893646" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3532" font-size="20px" y="103.5357" x="84.893646">Warp 0</tspan></text>
+      <path id="path3534" stroke-linejoin="miter" d="m58.093669,240.71442,136.118051,0" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      <path id="path3536" stroke-linejoin="miter" d="m119.94736,240.6984,0,33.5" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+     </g>
+     <text id="text3467-8-5" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="169.45497" x="179.31062" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan3469-6-4" x="179.31062" y="169.45497">...</tspan></text>
+     <rect id="rect4646" height="234.11975" width="395.35489" stroke="#000" y="46.447338" x="1.2739944" stroke-width="0.87093455" fill="none"/>
+     <text id="text4648" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="71.14061" x="161.21172" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan4650" font-size="20px" y="71.14061" x="161.21172">Block  0</tspan></text>
+     <g id="g5967" transform="translate(-41,-4)">
+      <g id="g5572-6" transform="translate(228.19917,0)">
+       <rect id="rect3010-6" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="44.236889" stroke-width="0.99672931" fill="#FFF"/>
+       <rect id="rect3021-8" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="44.241909" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-0" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="51.230919" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-1" font-size="12px" y="51.230919" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-6" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="66.164482" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-4" font-size="12px" y="66.164482" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-69" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="30.442568" fill="none"/>
+       <text id="text2993-8" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="37.585423" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-6" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="37.585423" x="112.2963">Thread 0</tspan></text>
+       <rect id="rect3023-0" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="59.225288" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-6" stroke-linejoin="miter" d="m66.406854,214.36772,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-6" stroke-linejoin="miter" d="m58.156854,223.49272,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5493-9" transform="translate(228.19917,0)">
+       <rect id="rect3010-3-3" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="94.417816" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-9-5" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="94.422836" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-2-8" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="101.41184" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-7-1" font-size="12px" y="101.41184" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-9-4" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="116.34541" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-8-4" font-size="12px" y="116.34541" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-6-5" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="80.623489" fill="none"/>
+       <text id="text2993-6-4" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="87.76635" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-8-2" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="87.76635" x="112.2963">Thread 1</tspan></text>
+       <rect id="rect3023-4-2" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="109.40621" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-0-4" stroke-linejoin="miter" d="m116.58778,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-2-7" stroke-linejoin="miter" d="m108.33778,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5611-7" transform="translate(228.19917,0)">
+       <rect id="rect3010-2-3" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="179.77341" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-05-4" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="179.77843" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-8-1" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="186.76744" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-70-9" font-size="12px" y="186.76744" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-97-1" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="201.701" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-735-9" font-size="12px" y="201.701" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-0-9" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="165.97908" fill="none"/>
+       <text id="text2993-766-2" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="173.12195" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-5-8" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="173.12195" x="112.2963">Thread 31</tspan></text>
+       <rect id="rect3023-43-5" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="194.76181" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-4-9" stroke-linejoin="miter" d="m201.94337,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-1-7" stroke-linejoin="miter" d="m193.69337,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <text id="text3467-6" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="173.53928" x="354.22623" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3469-7" y="173.53928" x="354.22623">...</tspan></text>
+      <rect id="rect3528-0" height="173.24117" width="179.14079" stroke="#000" y="83.73671" x="258.57614" stroke-width="0.97227097" fill="none"/>
+      <text id="text3530-2" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="103.5357" x="313.0928" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3532-5" font-size="20px" y="103.5357" x="313.0928">Warp n</tspan></text>
+      <path id="path3534-9" stroke-linejoin="miter" d="m286.29284,240.71442,136.11805,0" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      <path id="path3536-5" stroke-linejoin="miter" d="m348.14653,240.6984,0,33.5" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+     </g>
+     <path id="path6017" stroke-linejoin="miter" d="m90.46977,269.73718,216.95199,0" stroke="#000" stroke-linecap="butt" stroke-width="0.97500348px" fill="none"/>
+     <path id="path6019" stroke-linejoin="miter" d="m204.88639,269.66084,0.26516,28.99138" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+    </g>
+    <g id="g7083" transform="translate(-22,0)">
+     <g id="g5717-9" transform="translate(457.94356,-320.21986)">
+      <g id="g5572-7">
+       <rect id="rect3010-28" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="44.236889" stroke-width="0.99672931" fill="#FFF"/>
+       <rect id="rect3021-4" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="44.241909" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-37" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="51.230919" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-3" font-size="12px" y="51.230919" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-4" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="66.164482" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-7" font-size="12px" y="66.164482" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-9" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="30.442568" fill="none"/>
+       <text id="text2993-0" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="37.585423" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-4" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="37.585423" x="112.2963">Thread 0</tspan></text>
+       <rect id="rect3023-9" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="59.225288" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-1" stroke-linejoin="miter" d="m66.406854,214.36772,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-5" stroke-linejoin="miter" d="m58.156854,223.49272,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5493-7">
+       <rect id="rect3010-3-8" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="94.417816" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-9-2" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="94.422836" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-2-7" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="101.41184" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-7-6" font-size="12px" y="101.41184" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-9-3" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="116.34541" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-8-2" font-size="12px" y="116.34541" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-6-8" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="80.623489" fill="none"/>
+       <text id="text2993-6-46" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="87.76635" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-8-3" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="87.76635" x="112.2963">Thread 1</tspan></text>
+       <rect id="rect3023-4-8" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="109.40621" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-0-6" stroke-linejoin="miter" d="m116.58778,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-2-3" stroke-linejoin="miter" d="m108.33778,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5611-4">
+       <rect id="rect3010-2-5" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="179.77341" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-05-0" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="179.77843" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-8-9" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="186.76744" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-70-3" font-size="12px" y="186.76744" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-97-5" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="201.701" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-735-2" font-size="12px" y="201.701" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-0-3" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="165.97908" fill="none"/>
+       <text id="text2993-766-0" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="173.12195" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-5-80" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="173.12195" x="112.2963">Thread 31</tspan></text>
+       <rect id="rect3023-43-1" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="194.76181" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-4-96" stroke-linejoin="miter" d="m201.94337,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-1-2" stroke-linejoin="miter" d="m193.69337,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <text id="text3467-2" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="173.53928" x="126.02707" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3469-4" y="173.53928" x="126.02707">...</tspan></text>
+      <rect id="rect3528-00" height="173.24117" width="179.14079" stroke="#000" y="83.73671" x="30.376965" stroke-width="0.97227097" fill="none"/>
+      <text id="text3530-8" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="103.5357" x="84.893646" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3532-9" font-size="20px" y="103.5357" x="84.893646">Warp 0</tspan></text>
+      <path id="path3534-8" stroke-linejoin="miter" d="m58.093669,240.71442,136.118051,0" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      <path id="path3536-1" stroke-linejoin="miter" d="m119.94736,240.6984,0,33.5" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+     </g>
+     <text id="text3467-8-5-1" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="-146.76489" x="666.25421" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan3469-6-4-6" x="666.25421" y="-146.76489">...</tspan></text>
+     <rect id="rect4646-5" height="234.11975" width="395.35489" stroke="#000" y="-269.77252" x="488.21756" stroke-width="0.87093455" fill="none"/>
+     <text id="text4648-0" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="-245.07925" x="648.15527" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan4650-2" font-size="20px" y="-245.07925" x="648.15527">Block  n</tspan></text>
+     <g id="g5967-5" transform="translate(445.94356,-320.21986)">
+      <g id="g5572-6-6" transform="translate(228.19917,0)">
+       <rect id="rect3010-6-5" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="44.236889" stroke-width="0.99672931" fill="#FFF"/>
+       <rect id="rect3021-8-0" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="44.241909" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-0-3" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="51.230919" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-1-7" font-size="12px" y="51.230919" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-6-9" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="66.164482" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-4-8" font-size="12px" y="66.164482" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-69-4" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="30.442568" fill="none"/>
+       <text id="text2993-8-3" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="37.585423" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-6-3" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="37.585423" x="112.2963">Thread 0</tspan></text>
+       <rect id="rect3023-0-4" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="59.225288" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-6-2" stroke-linejoin="miter" d="m66.406854,214.36772,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-6-4" stroke-linejoin="miter" d="m58.156854,223.49272,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5493-9-7" transform="translate(228.19917,0)">
+       <rect id="rect3010-3-3-1" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="94.417816" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-9-5-2" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="94.422836" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-2-8-0" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="101.41184" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-7-1-5" font-size="12px" y="101.41184" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-9-4-6" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="116.34541" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-8-4-2" font-size="12px" y="116.34541" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-6-5-6" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="80.623489" fill="none"/>
+       <text id="text2993-6-4-5" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="87.76635" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-8-2-1" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="87.76635" x="112.2963">Thread 1</tspan></text>
+       <rect id="rect3023-4-2-6" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="109.40621" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-0-4-8" stroke-linejoin="miter" d="m116.58778,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-2-7-5" stroke-linejoin="miter" d="m108.33778,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <g id="g5611-7-3" transform="translate(228.19917,0)">
+       <rect id="rect3010-2-3-6" height="120.71756" width="29.80327" stroke="#000" y="110.29459" x="179.77341" stroke-width="0.99672931" fill="none"/>
+       <rect id="rect3021-05-4-5" height="103.99408" width="29.793858" stroke="#000" y="110.29911" x="179.77843" stroke-width="1.00577891" fill="none"/>
+       <text id="text3025-8-1-5" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="186.76744" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-70-9-1" font-size="12px" y="186.76744" x="112.2963">Value 1</tspan></text>
+       <text id="text3025-3-97-1-3" style="writing-mode:tb-rl;letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="11px" font-style="normal" y="112.2963" x="201.701" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3027-8-735-9-2" font-size="12px" y="201.701" x="112.2963">Value 2</tspan></text>
+       <rect id="rect2991-0-9-1" height="120.71429" width="43.57143" stroke="#000" y="110.29622" x="165.97908" fill="none"/>
+       <text id="text2993-766-2-8" style="letter-spacing:0px;word-spacing:-5.5999999px;" line-height="103.00000906%" font-weight="normal" font-size="40px" font-style="normal" y="112.2963" x="173.12195" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan2995-5-8-9" style="word-spacing:-7.57999992px;writing-mode:tb-rl;letter-spacing:0px;" font-size="12px" line-height="125%" dx="0" y="173.12195" x="112.2963">Thread 31</tspan></text>
+       <rect id="rect3023-43-5-2" height="104.00543" width="14.815886" stroke="#000" y="110.29357" x="194.76181" stroke-width="0.99469978" fill="none"/>
+       <path id="path3056-4-9-8" stroke-linejoin="miter" d="m201.94337,214.36771,0,9.25-15.25,0,0-9.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+       <path id="path3058-1-7-4" stroke-linejoin="miter" d="m193.69337,223.49271,0,17.75" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      </g>
+      <text id="text3467-6-8" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="173.53928" x="354.22623" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3469-7-2" y="173.53928" x="354.22623">...</tspan></text>
+      <rect id="rect3528-0-0" height="173.24117" width="179.14079" stroke="#000" y="83.73671" x="258.57614" stroke-width="0.97227097" fill="none"/>
+      <text id="text3530-2-0" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" font-weight="normal" font-size="40px" font-style="normal" y="103.5357" x="313.0928" font-family="Sans" xml:space="preserve" fill="#000000"><tspan id="tspan3532-5-8" font-size="20px" y="103.5357" x="313.0928">Warp n</tspan></text>
+      <path id="path3534-9-8" stroke-linejoin="miter" d="m286.29284,240.71442,136.11805,0" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+      <path id="path3536-5-3" stroke-linejoin="miter" d="m348.14653,240.6984,0,33.5" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+     </g>
+     <path id="path6017-0" stroke-linejoin="miter" d="m577.41333-46.48268,216.95199,0" stroke="#000" stroke-linecap="butt" stroke-width="0.97500348px" fill="none"/>
+     <path id="path6019-8" stroke-linejoin="miter" d="m691.82995-46.55902,0.26516,28.99138" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+    </g>
+    <path id="path7186" stroke-linejoin="miter" d="m670.59381-18.098648-442.78128,0" stroke="#000" stroke-linecap="butt" stroke-width="1.00014961px" fill="none"/>
+   </g>
+   <g id="g7543" stroke="#000" fill="none" transform="translate(15.556349,-14.142136)">
+    <g id="g7379" transform="translate(-2.7734334,0)">
+     <g id="g7319" transform="translate(-3.4426823,0.53033009)">
+      <g id="g7300" transform="translate(-2.6898955,-1.2236611)">
+       <g id="g7261" transform="translate(-19.821439,-2.4473221)">
+        <rect id="rect7192" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+       <g id="g7261-0" transform="translate(44.678561,-2.4473221)">
+        <rect id="rect7192-5" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-1" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+      </g>
+      <g id="g7261-3" transform="translate(106.48867,-3.6709832)">
+       <rect id="rect7192-0" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+       <rect id="rect7192-1-9" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+      </g>
+     </g>
+     <g id="g7319-8" transform="translate(190.05732,0.53033009)">
+      <g id="g7300-3" transform="translate(-2.6898955,-1.2236611)">
+       <g id="g7261-1" transform="translate(-19.821439,-2.4473221)">
+        <rect id="rect7192-3" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-95" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+       <g id="g7261-0-0" transform="translate(44.678561,-2.4473221)">
+        <rect id="rect7192-5-6" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-1-1" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+      </g>
+      <g id="g7261-3-0" transform="translate(106.48867,-3.6709832)">
+       <rect id="rect7192-0-3" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+       <rect id="rect7192-1-9-0" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+      </g>
+     </g>
+    </g>
+    <g id="g7379-0" transform="translate(384.22657,0)">
+     <g id="g7319-1" transform="translate(-3.4426823,0.53033009)">
+      <g id="g7300-7" transform="translate(-2.6898955,-1.2236611)">
+       <g id="g7261-5" transform="translate(-19.821439,-2.4473221)">
+        <rect id="rect7192-4" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-2" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+       <g id="g7261-0-7" transform="translate(44.678561,-2.4473221)">
+        <rect id="rect7192-5-5" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-1-5" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+      </g>
+      <g id="g7261-3-1" transform="translate(106.48867,-3.6709832)">
+       <rect id="rect7192-0-35" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+       <rect id="rect7192-1-9-3" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+      </g>
+     </g>
+     <g id="g7319-8-5" transform="translate(190.05732,0.53033009)">
+      <g id="g7300-3-8" transform="translate(-2.6898955,-1.2236611)">
+       <g id="g7261-1-9" transform="translate(-19.821439,-2.4473221)">
+        <rect id="rect7192-3-6" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-95-5" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+       <g id="g7261-0-0-8" transform="translate(44.678561,-2.4473221)">
+        <rect id="rect7192-5-6-7" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+        <rect id="rect7192-1-1-1-8" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+       </g>
+      </g>
+      <g id="g7261-3-0-2" transform="translate(106.48867,-3.6709832)">
+       <rect id="rect7192-0-3-1" height="32.25" width="32.25" y="34.217354" x="64.901077"/>
+       <rect id="rect7192-1-9-0-0" height="32.25" width="32.25" y="34.217354" x="97.151077"/>
+      </g>
+     </g>
+    </g>
+   </g>
+   <text id="text7591" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="35.901779" x="829.56769" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan7595" x="829.56769" y="35.901779">...</tspan></text>
+   <text id="text7599" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="48.254879" x="22.920559" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan7601" x="22.920559" y="48.254879">f</tspan></text>
+   <path id="path7812" stroke-linejoin="miter" d="m453.96255,295.08168,0,54.09366" transform="translate(0.83852717,-313.62713)" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+   <path id="path7816" stroke-linejoin="miter" d="m454.66436,35.195289-7.95495-7.95495" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+   <path id="path7816-5" stroke-linejoin="miter" d="m454.95144,35.18579,7.95495-7.95495" stroke="#000" stroke-linecap="butt" stroke-width="1px" fill="none"/>
+   <rect id="rect7847" height="308.29855" width="837.44318" stroke="#000" y="-306.33792" x="24.248528" stroke-width="0.99929297" fill="none"/>
+   <text id="text7849" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="40px" font-style="normal" y="-280.53265" x="402.83853" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan7851" font-size="24px" y="-280.53265" x="402.83853">Kernel</tspan></text>
+  </g>
+  <rect id="rect3260" transform="translate(0.83852717,-313.62713)" height="0" width="0" y="0" x="0" fill="#CFA"/>
+  <g id="g3444" font-size="24px" font-family="Sans" font-style="normal" font-weight="normal" fill="#000000">
+   <text id="text3289" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" y="-70.396523" x="861.34363" xml:space="preserve"><tspan id="tspan3291" font-size="20px" y="-70.396523" x="861.34363">Register memory</tspan></text>
+   <text id="text3289-4" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" y="-40.755795" x="861.98816" xml:space="preserve"><tspan id="tspan3291-5" font-size="20px" y="-40.755795" x="861.98816">Shared memory</tspan></text>
+   <text id="text3289-8" style="letter-spacing:0px;word-spacing:0px;" line-height="125%" y="-11.11507" x="862.18347" xml:space="preserve"><tspan id="tspan3291-0" font-size="20px" y="-11.11507" x="862.18347">Global memory</tspan></text>
+  </g>
+  <path id="path3351" fill="#afc6e9" d="m760.25824,208.10407c-2.37175,0.0147-4.7435,0.0295-7.11526,0.0442-0.26141,2.6172-0.0973,5.41281-0.19097,8.09836,0.44305,0.73129,2.04013,0.11935,2.92549,0.32063h11.496c0.23191-2.51408,0.0328-5.2067,0.0994-7.78923,0.21955-1.36235-1.75994-0.45802-2.57425-0.70638-1.54681,0.0108-3.09363,0.0216-4.64045,0.0324z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3353" fill="#afc6e9" d="m746.06087,208.15932v15.73312c2.51437,0.2312,5.20602,0.0344,7.78922,0.0994,1.75676-0.0686,3.62659,0.13575,5.31435-0.0994-0.0663-2.14075,0.13254-4.39129-0.0994-6.4634h-6.79485v-9.26972c-1.95426-0.23198-4.08695-0.0332-6.10985-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3355" fill="#afc6e9" d="m768.33473,208.15932v9.26972h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.54351,0.232,5.26547,0.0332,7.87762,0.0994,2.37644-0.0663,4.8627,0.13255,7.1705-0.0994v-15.73312c-2.13118-0.23162-4.44067-0.0328-6.64017-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3357" fill="#afc6e9" d="m831.44401,208.15932v15.73312c2.51437,0.2312,5.20603,0.0344,7.78922,0.0994,1.75676-0.0686,3.62659,0.13575,5.31435-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.79485v-9.26972c-1.95426-0.23198-4.08695-0.0332-6.10985-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3359" fill="#afc6e9" d="m838.3383,208.15932v8.3085c2.5142,0.2316,5.2063,0.0337,7.78922,0.0994,2.22847-0.0679,4.56897,0.13473,6.72856-0.0994v-8.3085c-2.5142-0.2316-5.2063-0.0337-7.78922-0.0994-2.22659,0.0674-4.57164-0.13399-6.72856,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3361" fill="#afc6e9" d="m853.71787,208.15379v9.27525h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994h7.07659c0.21768-2.48453,0.00066-5.14751,0.0511-7.70068-0.0155-2.68116-0.0303-5.36233-0.0456-8.0435-2.10177-0.26129-4.38179-0.099-6.55178-0.19334l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3363" fill="#afc6e9" d="m702.92735,208.15932v8.3085c2.54351,0.232,5.26547,0.0332,7.87761,0.0994,2.14075-0.0663,4.3913,0.13254,6.4634-0.0994v-8.3085c-2.5435-0.232-5.26546-0.0332-7.87761-0.0994-2.13892,0.0659-4.3939-0.13203-6.4634,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3365" fill="#afc6e9" d="m718.13015,208.15932v9.26972h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.54351,0.232,5.26547,0.0332,7.87761,0.0994,2.37645-0.0663,4.86271,0.13255,7.17051-0.0994v-15.73312c-2.13118-0.23162-4.44067-0.0328-6.64018-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3367" fill="#afc6e9" d="m699.00512,208.09855c-0.94804,0.1927-2.47559-0.31663-3.06145,0.32593-0.028,5.156-0.0592,10.31199-0.0929,15.46796,2.48702,0.23056,5.1504,0.0353,7.70636,0.0994,1.84613-0.0662,3.80203,0.13253,5.57951-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.97163v-9.28077c-0.92483-0.21974-2.06408,0.00054-3.06045-0.0497z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3369" fill="#afc6e9" d="m637.51998,208.15379v9.27525h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.54351,0.232,5.26547,0.0332,7.87761,0.0994h7.0766c0.21768-2.48453,0.00065-5.14751,0.0511-7.70068-0.0155-2.68116-0.0303-5.36233-0.0456-8.0435-2.10177-0.26129-4.38179-0.099-6.55179-0.19334l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3371" fill="#afc6e9" d="m622.1404,208.15932v8.3085c2.51421,0.2316,5.20631,0.0337,7.78923,0.0994,2.22847-0.0679,4.56897,0.13473,6.72856-0.0994v-8.3085c-2.51421-0.2316-5.2063-0.0337-7.78922-0.0994-2.2266,0.0674-4.57164-0.13399-6.72857,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3373" fill="#afc6e9" d="m615.24611,208.15932v15.73312c2.51438,0.2312,5.20603,0.0344,7.78923,0.0994,1.75676-0.0686,3.62658,0.13575,5.31435-0.0994-0.0663-2.14075,0.13254-4.39129-0.0994-6.4634h-6.79485v-9.26972c-1.95426-0.23198-4.08695-0.0332-6.10985-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3375" fill="#afc6e9" d="m544.06035,208.10407c-2.37175,0.0147-4.74351,0.0295-7.11526,0.0442-0.26142,2.6172-0.0973,5.41281-0.19097,8.09836,0.44304,0.73129,2.04012,0.11935,2.92548,0.32063h11.49601c0.2319-2.51408,0.0328-5.2067,0.0994-7.78923,0.21954-1.36235-1.75994-0.45802-2.57425-0.70638-1.54682,0.0108-3.09363,0.0216-4.64045,0.0324z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3377" fill="#afc6e9" d="m552.13684,208.15932v9.26972h-8.20907c-0.23199,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994,2.37645-0.0663,4.8627,0.13255,7.17051-0.0994v-15.73312c-2.13119-0.23162-4.44068-0.0328-6.64018-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3379" fill="#afc6e9" d="m529.86297,208.15932v15.73312c2.51437,0.2312,5.20603,0.0344,7.78923,0.0994,1.75675-0.0686,3.62658,0.13575,5.31434-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.79486v-9.26972c-1.95425-0.23198-4.08694-0.0332-6.10984-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3381" fill="#afc6e9" d="m501.93226,208.15932v9.26972h-8.20907c-0.23199,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994,2.37645-0.0663,4.8627,0.13255,7.17051-0.0994v-15.73312c-2.13119-0.23162-4.44068-0.0328-6.64018-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3383" fill="#afc6e9" d="m486.72946,208.15932v8.3085c2.5435,0.232,5.26546,0.0332,7.87761,0.0994,2.14075-0.0663,4.39129,0.13254,6.4634-0.0994v-8.3085c-2.5435-0.232-5.26546-0.0332-7.87761-0.0994-2.13893,0.0659-4.3939-0.13203-6.4634,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3385" fill="#afc6e9" d="m482.80723,208.09855c-0.94805,0.1927-2.47559-0.31663-3.06145,0.32593-0.0281,5.156-0.0592,10.31199-0.0929,15.46796,2.48702,0.23056,5.1504,0.0353,7.70636,0.0994,1.84612-0.0662,3.80203,0.13253,5.57951-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.97163v-9.28077c-0.92482-0.21974-2.06407,0.00054-3.06044-0.0497z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3387" fill="#afc6e9" d="m411.77614,208.15379v9.27525h-8.20906c-0.23199,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994h7.07659c0.21768-2.48453,0.00066-5.14751,0.0511-7.70068-0.0155-2.68116-0.0303-5.36233-0.0456-8.0435-2.10177-0.26129-4.38179-0.099-6.55179-0.19334l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3389" fill="#afc6e9" d="m396.39657,208.15932v8.3085c2.51421,0.2316,5.20631,0.0337,7.78922,0.0994,2.22847-0.0679,4.56898,0.13473,6.72857-0.0994v-8.3085c-2.51421-0.2316-5.20631-0.0337-7.78923-0.0994-2.22659,0.0674-4.57164-0.13399-6.72856,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3391" fill="#afc6e9" d="m389.50228,208.15932v15.73312c2.51437,0.2312,5.20603,0.0344,7.78922,0.0994,1.75676-0.0686,3.62659,0.13575,5.31435-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.79486v-9.26972c-1.95425-0.23198-4.08694-0.0332-6.10984-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3393" fill="#afc6e9" d="m326.393,208.15932v9.26972h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994,2.37645-0.0663,4.8627,0.13255,7.1705-0.0994v-15.73312c-2.13118-0.23162-4.44067-0.0328-6.64017-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3395" fill="#afc6e9" d="m318.31652,208.10407c-2.37176,0.0147-4.74351,0.0295-7.11527,0.0442-0.26141,2.6172-0.0973,5.41281-0.19097,8.09836,0.44305,0.73129,2.04013,0.11935,2.92549,0.32063h11.49601c0.2319-2.51408,0.0328-5.2067,0.0994-7.78923,0.21955-1.36235-1.75993-0.45802-2.57425-0.70638-1.54681,0.0108-3.09363,0.0216-4.64044,0.0324z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3397" fill="#afc6e9" d="m304.11914,208.15932v15.73312c2.51437,0.2312,5.20603,0.0344,7.78922,0.0994,1.75676-0.0686,3.62659,0.13575,5.31435-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.79485v-9.26972c-1.95426-0.23198-4.08695-0.0332-6.10984-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3399" fill="#afc6e9" d="m276.18842,208.15932v9.26972h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994,2.37645-0.0663,4.8627,0.13255,7.1705-0.0994v-15.73312c-2.13118-0.23162-4.44067-0.0328-6.64017-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3401" fill="#afc6e9" d="m260.98563,208.15932v8.3085c2.5435,0.232,5.26546,0.0332,7.87761,0.0994,2.14075-0.0663,4.39129,0.13254,6.46339-0.0994v-8.3085c-2.5435-0.232-5.26546-0.0332-7.87761-0.0994-2.13892,0.0659-4.3939-0.13203-6.46339,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3403" fill="#afc6e9" d="m257.06339,208.09855c-0.94804,0.1927-2.47558-0.31663-3.06144,0.32593-0.0281,5.156-0.0591,10.31199-0.0929,15.46796,2.48702,0.23056,5.15041,0.0353,7.70636,0.0994,1.84613-0.0662,3.80203,0.13253,5.57952-0.0994-0.0663-2.14075,0.13254-4.39129-0.0994-6.4634h-6.97163v-9.28077c-0.92483-0.21974-2.06408,0.00054-3.06045-0.0497z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3405" fill="#afc6e9" d="m195.57825,208.15379v9.27525h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.5435,0.232,5.26546,0.0332,7.87761,0.0994h7.07659c0.21768-2.48453,0.00066-5.14751,0.0511-7.70068-0.0155-2.68116-0.0303-5.36233-0.0456-8.0435-2.10177-0.26129-4.38179-0.099-6.55178-0.19334l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3407" fill="#afc6e9" d="m180.19868,208.15932v8.3085c2.5142,0.2316,5.2063,0.0337,7.78922,0.0994,2.22847-0.0679,4.56897,0.13473,6.72856-0.0994v-8.3085c-2.5142-0.2316-5.2063-0.0337-7.78922-0.0994-2.22659,0.0674-4.57164-0.13399-6.72856,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3409" fill="#afc6e9" d="m173.30439,208.15932v15.73312c2.51437,0.2312,5.20603,0.0344,7.78922,0.0994,1.75676-0.0686,3.62659,0.13575,5.31435-0.0994-0.0663-2.14075,0.13255-4.39129-0.0994-6.4634h-6.79485v-9.26972c-1.95426-0.23198-4.08695-0.0332-6.10985-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3411" fill="#afc6e9" d="m110.19511,208.15932v9.26972h-8.20907c-0.23198,2.07211-0.0332,4.32265-0.0994,6.4634,2.54351,0.232,5.26547,0.0332,7.87762,0.0994,2.37644-0.0663,4.8627,0.13255,7.1705-0.0994v-15.73312c-2.13118-0.23162-4.44067-0.0328-6.64017-0.0994l-0.0994,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3413" fill="#afc6e9" d="m102.11862,208.10407c-2.371751,0.0147-4.743504,0.0295-7.115258,0.0442-0.261416,2.6172-0.09733,5.41281-0.190971,8.09836,0.443046,0.73129,2.040125,0.11935,2.925485,0.32063h11.496014c0.2319-2.51408,0.0328-5.2067,0.0994-7.78923,0.21955-1.36235-1.75994-0.45802-2.57425-0.70638-1.54681,0.0108-3.09363,0.0216-4.64045,0.0324z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3415" fill="#afc6e9" d="m87.921245,208.15932v15.73312c2.514372,0.2312,5.206029,0.0344,7.789223,0.0994,1.756759-0.0686,3.626587,0.13575,5.314352-0.0994-0.0663-2.14075,0.13254-4.39129-0.0994-6.4634h-6.794853v-9.26972c-1.954256-0.23198-4.086946-0.0332-6.109845-0.0994l-0.09944,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3417" fill="#afc6e9" d="m59.990528,208.15932v9.26972h-8.209067c-0.231984,2.07211-0.03317,4.32265-0.09944,6.4634,2.543503,0.232,5.265463,0.0332,7.877611,0.0994,2.376448-0.0663,4.862701,0.13255,7.170505-0.0994v-15.73312c-2.131183-0.23162-4.440673-0.0328-6.640175-0.0994l-0.09944,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3419" fill="#afc6e9" d="m44.787733,208.15932v8.3085c2.543503,0.232,5.265463,0.0332,7.877611,0.0994,2.140748-0.0663,4.391293,0.13254,6.463398-0.0994v-8.3085c-2.543503-0.232-5.265464-0.0332-7.877611-0.0994-2.138925,0.0659-4.3939-0.13203-6.463398,0.0994z" transform="translate(0.83852717,-313.62713)"/>
+  <path id="path3421" fill="#afc6e9" d="m40.8655,208.09855c-0.948045,0.1927-2.475585-0.31663-3.061445,0.32593-0.02805,5.156-0.05915,10.31199-0.09291,15.46796,2.487017,0.23056,5.150404,0.0353,7.706359,0.0994,1.846126-0.0662,3.80203,0.13253,5.579514-0.0994-0.06626-2.14075,0.132547-4.39129-0.09944-6.4634h-6.97163v-9.28077c-0.924826-0.21974-2.064077,0.00054-3.060447-0.0497z" transform="translate(0.83852717,-313.62713)"/>
+  <text id="text3289-44" style="letter-spacing:0px;word-spacing:0px;" font-weight="normal" xml:space="preserve" font-size="24px" font-style="normal" y="-91.173569" x="861.34363" font-family="Sans" line-height="125%" fill="#000000"><tspan id="tspan3291-08" font-size="20px" y="-91.173569" x="861.34363">Reduction in:</tspan></text>
+ </g>
+</svg>

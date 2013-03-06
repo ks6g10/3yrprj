@@ -694,10 +694,13 @@ $\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
       \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$
     \ENDIF
   \ENDFOR
+<<<<<<< HEAD
   \STATE $blockReduction()$
   \IF{$tid = 0$}
   \STATE $atomicUpdate()$
   \ENDIF
+=======
+>>>>>>> f437832b0900808f99e08bcf56236ee6c88592aa
   \STATE $x := x + nparallelconf$
 \ENDFOR
 \end{algorithmic}
@@ -755,7 +758,11 @@ every axis y label/.style={at={(current axis.above origin)},anchor=north west}
     xmin = 0.5,
     xtick = data,
     xmax = 7.5,
+<<<<<<< HEAD
     %every axis y label/.style={at={(rel axis cs:1,1)},anchor= north east}
+=======
+    every axis y label/.style={at={(rel axis cs:1,1)},anchor= north east}
+>>>>>>> f437832b0900808f99e08bcf56236ee6c88592aa
     ]
 \addplot[ mark = *,red, only marks] coordinates  
 {( 1, 16.56 )

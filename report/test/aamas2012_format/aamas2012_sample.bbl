@@ -1,35 +1,15 @@
 \begin{thebibliography}{1}
 
-\bibitem{bowman:reasoning}
-M.~Bowman, S.~K. Debray, and L.~L. Peterson.
-\newblock Reasoning about naming systems.
-\newblock {\em ACM Trans. Program. Lang. Syst.}, 15(5):795--825, November 1993.
+\bibitem{boyer2012solving}
+V.~Boyer, D.~El~Baz, and M.~Elkihel.
+\newblock Solving knapsack problems on gpu.
+\newblock {\em Computers \& Operations Research}, 39(1):42--47, 2012.
 
-\bibitem{braams:babel}
-J.~Braams.
-\newblock Babel, a multilingual style-option system for use with latex's
-  standard document styles.
-\newblock {\em TUGboat}, 12(2):291--301, June 1991.
-
-\bibitem{clark:pct}
-M.~Clark.
-\newblock Post congress tristesse.
-\newblock In {\em TeX90 Conference Proceedings}, pages 84--89. TeX Users Group,
-  March 1991.
-
-\bibitem{herlihy:methodology}
-M.~Herlihy.
-\newblock A methodology for implementing highly concurrent data objects.
-\newblock {\em ACM Trans. Program. Lang. Syst.}, 15(5):745--770, November 1993.
-
-\bibitem{Lamport:LaTeX}
-L.~Lamport.
-\newblock {\em LaTeX User's Guide and Document Reference Manual}.
-\newblock Addison-Wesley Publishing Company, Reading, Massachusetts, 1986.
-
-\bibitem{salas:calculus}
-S.~Salas and E.~Hille.
-\newblock {\em Calculus: One and Several Variable}.
-\newblock John Wiley and Sons, New York, 1978.
+\bibitem{eps265062}
+T.~Rahwan and N.~R. Jennings.
+\newblock An improved dynamic programming algorithm for coalition structure
+  generation.
+\newblock In {\em Proc 7th Int Conf on Autonomous Agents and Multi-Agent
+  Systems}, pages 1417--1420, 2008.
 
 \end{thebibliography}
