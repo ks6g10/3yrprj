@@ -757,6 +757,9 @@ that solving the problem on the GPU is highly beneficial. For 29 agents GPU-CSG 
 \end{figure}
 \section{Conclusion}
 This paper presented the first GPU-based solution for the combinatorial optimisation problem of Coalition Structure Generation. Our algorithm, GPU-CSG, is shown to efficiently use memory access and thread allocation on the GPU in order to speed up the computations performed by a dynamic program for the CSG problem. In so doing, it is able to outperform the DP algorithm by up to 55 times, reducing the time taken to solve the problem for 29 agents to 1.5 hours as compared to 83 hours previously. Given the promising results of this initial work, we aim to develop new solutions for other similar optimisation problems in the future.
+
+Further work would include incorporating the IDP technique and exploring further options to reduce memory bandwidth such as a more extensive collision detection.
+At the moment of writing an algorithm implementing IDP and extensive collision detection have a speedup factor of 314 times at 28 agents.
 \bibliographystyle{abbrv}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 \end{document}
