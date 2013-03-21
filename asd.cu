@@ -7,6 +7,10 @@
 #include <cuda.h>
 #include <cuda_profiler_api.h>
 
+
+//Not removing useless stuff that may have traces left in the code as I am on my laptop which can not compile cuda code.
+
+//LEGACY START - Could possibly be removed, do not listen to the comments here, it does not work
 /*Debug enabled gives more print statements of bids and how the "Matrix" gets evaluated*/
 #define DEBUG 0
 #define TRUE 1
@@ -17,7 +21,7 @@
 #define RANGE 10000
 #define ITEMS 25
 
-#define MAX (2 << (ITEMS-1))
+
 #if ITEMS < 8
 #define dint uint8_t
 #elif ITEMS < 16
@@ -27,11 +31,10 @@
 #undef dint
 #define dint uint32_t
 #endif
+//LEGACY END
 
 
-#define SETSUM(X)(f[setdiff(_conf,X)]+f[X])
-
-
+//Handle errors for cuda
 static void HandleError( cudaError_t err, const char *file,int line ) {
 	if (err != cudaSuccess) {
 		printf( "%s in %s at line %d\n", cudaGetErrorString( err ),file, line );
@@ -40,81 +43,42 @@ static void HandleError( cudaError_t err, const char *file,int line ) {
 }
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
-
-unsigned int pascal[30][30] =
-{{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,4,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,5,10,10,5,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,6,15,20,15,6,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,7,21,35,35,21,7,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,8,28,56,70,56,28,8,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,9,36,84,126,126,84,36,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,10,45,120,210,252,210,120,45,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,11,55,165,330,462,462,330,165,55,11,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,12,66,220,495,792,924,792,495,220,66,12,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,13,78,286,715,1287,1716,1716,1287,715,286,78,13,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,14,91,364,1001,2002,3003,3432,3003,2002,1001,364,91,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,15,105,455,1365,3003,5005,6435,6435,5005,3003,1365,455,105,15,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,16,120,560,1820,4368,8008,11440,12870,11440,8008,4368,1820,560,120,16,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,17,136,680,2380,6188,12376,19448,24310,24310,19448,12376,6188,2380,680,136,17,1,0,0,0,0,0,0,0,0,0,0,0,0},
- {1,18,153,816,3060,8568,18564,31824,43758,48620,43758,31824,18564,8568,3060,816,153,18,1,0,0,0,0,0,0,0,0,0,0,0},
- {1,19,171,969,3876,11628,27132,50388,75582,92378,92378,75582,50388,27132,11628,3876,969,171,19,1,0,0,0,0,0,0,0,0,0,0},
- {1,20,190,1140,4845,15504,38760,77520,125970,167960,184756,167960,125970,77520,38760,15504,4845,1140,190,20,1,0,0,0,0,0,0,0,0,0},
- {1,21,210,1330,5985,20349,54264,116280,203490,293930,352716,352716,293930,203490,116280,54264,20349,5985,1330,210,21,1,0,0,0,0,0,0,0,0},
- {1,22,231,1540,7315,26334,74613,170544,319770,497420,646646,705432,646646,497420,319770,170544,74613,26334,7315,1540,231,22,1,0,0,0,0,0,0,0},
- {1,23,253,1771,8855,33649,100947,245157,490314,817190,1144066,1352078,1352078,1144066,817190,490314,245157,100947,33649,8855,1771,253,23,1,0,0,0,0,0,0},
- {1,24,276,2024,10626,42504,134596,346104,735471,1307504,1961256,2496144,2704156,2496144,1961256,1307504,735471,346104,134596,42504,10626,2024,276,24,1,0,0,0,0,0},
- {1,25,300,2300,12650,53130,177100,480700,1081575,2042975,3268760,4457400,5200300,5200300,4457400,3268760,2042975,1081575,480700,177100,53130,12650,2300,300,25,1,0,0,0,0},
- {1,26,325,2600,14950,65780,230230,657800,1562275,3124550,5311735,7726160,9657700,10400600,9657700,7726160,5311735,3124550,1562275,657800,230230,65780,14950,2600,325,26,1,0,0,0},
- {1,27,351,2925,17550,80730,296010,888030,2220075,4686825,8436285,13037895,17383860,20058300,20058300,17383860,13037895,8436285,4686825,2220075,888030,296010,80730,17550,2925,351,27,1,0,0},
- {1,28,378,3276,20475,98280,376740,1184040,3108105,6906900,13123110,21474180,30421755,37442160,40116600,37442160,30421755,21474180,13123110,6906900,3108105,1184040,376740,98280,20475,3276,378,28,1,0},
- {1,29,406,3654,23751,118755,475020,1560780,4292145,10015005,20030010,34597290,51895935,67863915,77558760,77558760,67863915,51895935,34597290,20030010,10015005,4292145,1560780,475020,118755,23751,3654,406,29,1}};
-
-
-/*		           0 1 2 3 4 5 6 7 8			*/
+//useless
 uint32_t  * O;
-unsigned short  * f, * bids;
-// dint bids[MAX] ={0,2,3,6,4,7,6,9}; //conf 5 and 2
-//dint bids[MAX] =  {0,2,3,6,4,6,6,9}; //conf 3 and 4
-// dint bids[MAX] =  {0,20,3,6,4,6,10,9}; //conf 1 and 6
 
+//the bids and f array, why not make them global eh.
+unsigned short  * f, * bids;
+
+//Small stack implementation
 struct _stack {
 	dint conf;
 	struct _stack * next;
 } typedef stack;
 
 
-
-
-
 inline  dint cardinality( dint seta) {
 	return __builtin_popcount(seta);
 }
-int indexa =0;
+int indexa =0; //the joker coalition
 void gen_rand_bids(dint MAXVAL) {
 	register dint i = 0;
 #if TEST
+	unsigned int seed = (unsigned)time ( NULL );
+	srand(seed);
+	indexa++;
 	for(i = 1; i < MAXVAL;i++) {
-		bids[i] = 1;
+		bids[i] = 1;//rand()%10+1;
 		O[i] = i;
 	}
-//     unsigned int seed = (unsigned)time ( NULL );
-	//   srand(seed);
-	indexa++;
-	//indexa = rand() % MAXVAL;
-     bids[indexa] = 100;
-     printf("index %d \n",indexa);
-     if(indexa >= MAXVAL) {
-	     printf("No error\n");
-	     exit(0);
-     }
 
-//	bids[1] =0;
-//	bids[2] = 0;
-//	bids[32769] = 20;
+	//indexa = rand() % MAXVAL;
+	bids[indexa] = 100; //set the joker to something high
+	printf("index %d \n",indexa);
+	if(indexa >= MAXVAL) {
+		printf("No error\n");
+		exit(0);
+	}
+
 #else
 	for(i = 1; i < MAXVAL;i++) {
 		bids[i] = rand() % RANGE;
@@ -164,658 +128,416 @@ void printfo(dint MAXVAL) {
 	}
 }
 
+
 #define SUBSET(Y,X)(((~Y+1)+(X))&Y)
 
 #define setdiff(seta,setb) (seta & ~setb)
-
-#define I (threadIdx.x + blockDim.x * blockIdx.x)
-
-#define SET_TEST_FETCH(STEP,S1,S2) {					\
-									\
-		if( ispec < maxval) {					\
-			STEP = SUBSET(ispec);				\
-			ispec++;					\
-			S1 = f[(setdiff(_conf,STEP))];			\
-			S2 = f[(STEP)];					\
-		} else {						\
-			ispec++;					\
-			STEP = S1 = S2 = 0U;				\
-		}							\
-	}
-
-/* ispec += blockDim.x; change back if not working */
-
-#define COMP_SET(V1,S1,V2,S2) {			\
-		if(V1>V2) {			\
-			V2 = V1;		\
-			S2 = S1;		\
-		}				\
-	}
-
-
-//#define SET_VAL(I,X) (val1[I][X] = f[(setdiff(_conf[X],SUBSET(_conf[X],ispec)))] + f[SUBSET(_conf[X],ispec)])
-
-#define SET_VAL(I,X) {							\
-	(val1[I][X] = f[(setdiff(_conf[X],rstep[X]))] + f[rstep[X]]);	\
-	rstep[X] = SUBSET(_conf[X],rstep[X]);				\
-	}
-
-#define R_REDUCTION(I,X) {			\
-		if(val1[I][X] > max[X]) {	\
-			max[X] = val1[I][X];	\
-			rstep[X] = I;		\
-		}				\
-	}
-
-#define SET_RSTEP(X) {							\
-		ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x)+rstep[X]; \
-		rstep[X] = SUBSET(_conf[X],ispec);			\
-	}
-
-
-#define S_REDUCTION(X) {						\
-		if(share[tid][X] <= share[tid + i][X]) {		\
-			share[tid][X] = share[tid+i][X];		\
-		}							\
-	}
-
-//need to fix this fails at 16 and indexa ~392
-
-#define TID0_SET(X) {							\
-		max[X] = share[0U][X];					\
-		if(f[_conf[X]] < max[X]) {				\
-			if(atomicMax(&(lock[count+X]),max[X]) < max[X]) { \
-				O[_conf[X]] = sstep[X];			\
-				f[_conf[X]] = max[X];			\
-			}						\
-		}							\
-	}
-
-#define RESET_VALS(X) {				\
-		max[X] = 0;			\
-		rstep[X] =0;			\
-	}
-
-#define NEXT_PERM(X) {							\
-		_conf[X] = _conf[X-1];					\
-		t = _conf[X] | (_conf[X]-1);				\
-		_conf[X] = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf[X]))); \
-	}
-
-
-#define SBLOCK(PINDEX) SBLOCK2(PINDEX)
-#if (NPARALLELCONF > 2)
-#undef SBLOCK
-#define SBLOCK(PINDEX) SBLOCK4(PINDEX)
-#endif
-#if (NPARALLELCONF > 4)
-#undef SBLOCK
-#define SBLOCK(PINDEX) SBLOCK8(PINDEX)
-#endif
-
-#define SBLOCK2(PINDEX) {					\
-	S_REDUCTION(0,PINDEX);					\
-	S_REDUCTION(1,PINDEX);					\
-	}
-
-#define SBLOCK4(PINDEX) {					\
-	S_REDUCTION(0,PINDEX);					\
-	S_REDUCTION(1,PINDEX);					\
-	S_REDUCTION(2,PINDEX);					\
-	S_REDUCTION(3,PINDEX);					\
-	}
-
-#define SBLOCK8(PINDEX) {					\
-	S_REDUCTION(0,PINDEX);					\
-	S_REDUCTION(1,PINDEX);					\
-	S_REDUCTION(2,PINDEX);					\
-	S_REDUCTION(3,PINDEX);					\
-	S_REDUCTION(4,PINDEX);					\
-	S_REDUCTION(5,PINDEX);					\
-	S_REDUCTION(6,PINDEX);					\
-	S_REDUCTION(7,PINDEX);					\
-	}
-
-
-
-//256
-#define MAXBLOCKSIZE 256
-//0
-#define WARPSIZE = 32
-//0
-#define MIN_BLOCKS_PER_MP 0
-#define NAGENTS 23
+//maxreg 32
+// //You can touch this
+#define MAXBLOCKSIZE (1024)
 //32
-#define NSTREAMS 16
-//2
-#define NPERBLOCK 2
- 
-//16
-#define CONFPKERNEL 16
-//8
-#define NPARALLELCONF 8
+#define WARPSIZE (32)
+//0 //You can touch this
+#define MIN_BLOCKS_PER_MP 4
 
-#define PASCALSIZE 30
- 
-static __constant__ unsigned int pascl[PASCALSIZE][PASCALSIZE];
- 
-static __constant__ unsigned int cardindex[NAGENTS+1];
 
-__device__ unsigned int get_index(unsigned int set) {
-	const unsigned int card = __popc(set);
-	const unsigned int cardi = cardindex[card];
-	unsigned int sum = 0;
-	unsigned int tmp = set;
-	int i;
-#pragma unroll
-	for(i = 1;i<= card; i++) {
-		unsigned int fsb = __ffs(tmp) -1;
-		sum += pascl[fsb][i];
-		tmp &= ~(1 << fsb);
+//You can touch this
+#define NAGENTS (25)
+
+//32  //You can touch this
+#define NSTREAMS (32)
+
+//2 //You should probably not touch this
+#define NPERBLOCK (2)
+
+//DO NOT TOUCH THIS, IT IS NOT DYNAMIC
+#define confpwarp (2)
+
+//Cant touch this na na na na
+#define CONFPKERNEL ((MAXBLOCKSIZE/32)*confpwarp)
+
+//You can touch this
+#define parasplittings (8)
+
+//not used any more
+#define NPARALLELCONF (4)
+
+//have not inserted any timings in the code
+#define TIMING (0)
+
+#define CHECKPOINT(X) {							\
+		stop_time = clock();					\
+		if(tid == 0 && blockIdx.x == 0) {			\
+			total = stop_time - start_time;			\
+			printf(X,stop_time - start_time);		\
+		}							\
+		start_time =clock();					\
 	}
-	sum += cardi;
-	return sum;
-}
 
-template<unsigned int blockSize, unsigned int nparallelconf>
+#if (TIMING == 0)
+#undef CHECKPOINT
+#define CHECKPOINT(X) {}
+#endif
+
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
+
+template<int blockSize, int overlastval>
 __global__ void
-__launch_bounds__( MAXBLOCKSIZE, MIN_BLOCKS_PER_MP )
-subsetcomp22(
-	/*0*/	unsigned short * __restrict__ f, /*Bid value*/
-	/*1*/	unsigned int * __restrict__ O, /*The move array*/
-	/*2*/	unsigned int * __restrict__ lock,
-	/*5*/	unsigned int maxval,
-	/*6*/	unsigned short _count1,
-	unsigned int conf1,
-	unsigned int lastval,//the value a permutation can not exceed.
-	unsigned int card)
+__launch_bounds__(blockSize,MIN_BLOCKS_PER_MP)
+	subsetcomp33(
+		/*0*/	unsigned short * __restrict__ f, /*Bid value*/
+		/*5*/	const unsigned int splittings,		
+		const unsigned int lastval,//the value a permutation can not exceed.
+		const unsigned int card,
+		const unsigned int conf1,
+		const unsigned int conf2,
+		const unsigned int conf3,
+		const unsigned int conf4
+)
 {
-
-/*these arrays are shared between all threads in the same block */
-	__shared__ unsigned short share[MAXBLOCKSIZE][nparallelconf];
-
-//	__shared__ unsigned int share2[MAXBLOCKSIZE];
-	__shared__ unsigned int sstep[nparallelconf];
-//	__shared__ unsigned int sstep2;
-	unsigned int ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
+     //coalition structures  indexed [0-1][warpId]
+	__shared__ unsigned int conf[confpwarp][(blockSize/32)+1];
+	//values
+	__shared__ unsigned short value[confpwarp][(blockSize/32)+1];
+	//shift array for init split
+	__shared__  unsigned char shift [(blockSize/32)*confpwarp][NAGENTS];// the shift matrix/array
 	const unsigned int tid = threadIdx.x;
+	const unsigned int laneId = (tid%32);
+	const unsigned int warpId = tid/32;
+	//How many splittings can we do per thread
+	const unsigned int specsplittings = (!!(splittings%32))+(splittings/32);
+	//the first splitting
+	const unsigned int initsplit = tid*specsplittings;
+	//Holds splittings
+	unsigned int leafsplit[2];
+	//values in registers
+	unsigned int rvalue[confpwarp][parasplittings];
+	/*Thread 0 of each warp*/
+	if(!tid) {
+		unsigned int tmp;
+		unsigned int conftmp;
+		//assign right coalition to right block
+		if(blockIdx.x == 0) {
+			conftmp = conf[0][warpId] = conf1;
+		} else if(blockIdx.x == 1) {
+			conftmp = conf[0][warpId] = conf2;
+		} else if(blockIdx.x == 2) {
+			conftmp = conf[0][warpId] = conf3;
+		} else {
+			conftmp = conf[0][warpId] = conf4;
+		}
+		int x;
+		//genereate the next coalition structures
+		tmp = conftmp | (conftmp-1);
+		conftmp = (tmp + 1) | (((~tmp & -~tmp) - 1) >> (__ffs(conftmp)));
+		conf[1][warpId] = conftmp;
+		//genereate the next coalition structures
+		for(x =1; x < (blockSize/32);x++) {
+			tmp = conftmp | (conftmp-1);
+			conftmp = (tmp + 1) | (((~tmp & -~tmp) - 1) >> (__ffs(conftmp)));
+			conf[0][x] = conftmp;
 
-	int i,x;
-	__shared__ unsigned int _conf[CONFPKERNEL];// = conf1;
-	__shared__ unsigned int shift[32][CONFPKERNEL];
-	_conf[0] = conf1;
-//	unsigned int _conf2;
-	unsigned int count = _count1; // which index should start at in the lock
-	unsigned int max[nparallelconf] = {0}; //max value, parallell configurations
-	unsigned int rstep[nparallelconf] = {0}; // step, parallell configurations
-	unsigned int val1[NPERBLOCK][nparallelconf];//the value for one of the subset sums
-//	unsigned int max2 = 0;
-//	unsigned int rstep2 = 0;
-
-//	unsigned int val2[NPERBLOCK];//the value for the other subset sums
-//	unsigned int stept[NPERBLOCK]; // the step array
-
-
-	if(tid == 0) {
-#pragma unroll 32
-		for(x = 1;x < CONFPKERNEL; x++) { // generate the configurations
-			_conf[x] = _conf[x-1];
-			unsigned int t = _conf[x] | (_conf[x]-1);
-			_conf[x] = (t + 1) | (((~t & -~t) - 1) >> (__ffs(_conf[x])));
+			tmp = conftmp | (conftmp-1);
+			conftmp = (tmp + 1) | (((~tmp & -~tmp) - 1) >> (__ffs(conftmp)));
+			conf[1][x] = conftmp;
 		}
 	}
 	__syncthreads();
-
-	if(tid < CONFPKERNEL) { //generate the shift arrays
-		max[0] = _conf[tid]; // re-use registers tmpval
-		max[1] = 0;// re-use registers index
-		for(x = 0,i=0; x < card;x++) {
-			max[1] = __ffs(max[0]) - 1; //find which index is first bit
-			max[0] &= ~(1 << max[1]);//set nth bit to 0
-			shift[x][tid] = max[1];
-		}
+	//if coalition greater than what we can calculate, i.e. out of range, e.g. 24th bit set in a 23 sized problem
+	if(conf[0][warpId] > lastval) {
+		return;
 	}
 
+	//the collision detection, if |c & c'| == |c|-1 && |c| == |c'| then we can generate all splittings for both of c and c' using their intersection
+	// here we set up the shift array
+	if((__popc(conf[1][warpId] & conf[0][warpId]) == (card - 1)) && conf[1][warpId] < lastval) {
+	     //one thread
+		if(laneId == 0) {
+			unsigned int index;
+			unsigned int count = 0;
+			unsigned int conftmp = conf[0][warpId] & conf[1][warpId];
 
 
+			//fetch the coalitions values to shared memory
+			value[1][warpId] = f[conf[1][warpId]];
 
+			value[0][warpId] = f[conf[0][warpId]];
+
+			//look at the paper
+			while(conftmp) {
+				index = __ffs(conftmp) - 1; //find which index is first bit
+				conftmp &= ~(1 << index);//set nth bit to 0
+				shift[warpId][count] = index;
+				shift[warpId+1][count] = index;
+				count++;
+			}
+		}
+		//two threads
+	} else if(laneId < confpwarp) { //generate the shift arrays
+		unsigned int index;
+		unsigned int conftmp = conf[laneId][warpId];
+
+		if(conftmp < lastval) {
+			value[laneId][warpId] = f[conftmp];
+		}
+#pragma unroll
+		for(int x = 0; x < card;x++) {//could put card in template to unroll
+			index = __ffs(conftmp) - 1; //find which index is first bit
+			conftmp &= ~(1 << index);//set nth bit to 0
+			shift[warpId+laneId][x] = index;
+		}
+
+	}
+	//__syncthreads();
+
+
+	//Generate the initial splitting, if the second coalition is less than lastval do both else do the single one
+	if(conf[1][warpId] < lastval) {
+		unsigned int index;
+		unsigned int splittmp= initsplit;
+		leafsplit[0] = leafsplit[1] = 0;
+		while(splittmp) {
+			index = __ffs(splittmp)-1;
+			leafsplit[1] += (1 << shift[warpId+1][index]);
+			leafsplit[0] += (1 << shift[warpId][index]);//CHECK
+			splittmp &= ~(1 << index);
+		}
+		//as we base our index from zero, do one run with nextsplit
+		if((__popc(conf[1][warpId] & conf[0][warpId]) == (card - 1))) {
+			leafsplit[0] = leafsplit[1] = SUBSET((conf[1][warpId] & conf[0][warpId]),leafsplit[1]);
+		} else {
+			leafsplit[1] = SUBSET(conf[1][warpId],leafsplit[1]);
+			leafsplit[0] = SUBSET(conf[0][warpId],leafsplit[0]);
+		}
+	} else {
+		unsigned int index;
+		unsigned int splittmp= initsplit;
+		leafsplit[0] = 0;
+		while(splittmp) {
+			index = __ffs(splittmp)-1;
+			leafsplit[0] += (1 << shift[warpId][index]);//CHECK
+			splittmp &= ~(1 << index);
+		}
+		leafsplit[0] = SUBSET(conf[0][warpId],leafsplit[0]);
+	}
+
+	if(!specsplittings) {
+		return;
+	}
+
+	int x,y;
+
+	//fetch splittings
+	for(x = 0; x < specsplittings;x += parasplittings) {
+	     //if there is a collision
+		if((__popc(conf[1][warpId] & conf[0][warpId]) == (card - 1)) && (conf[1][warpId] < lastval)) {
 #pragma unroll 8
-	for(x = 0;x< CONFPKERNEL;x += nparallelconf) {
-
-		if(_conf[0] > lastval)  {
-			//printf("hello\n");
-			return;
-		}
-
-		if(ispec < maxval) {
-
-
-			for(i = 0; i < nparallelconf; i++) {
-				unsigned int tmp = ispec;
-				unsigned int car = __popc(ispec);
-				int z;
-				rstep[i] = 0;
-				for(z = 0; z < car; z++) {
-					unsigned int index = __ffs(tmp);
-					rstep[i] += shift[index][i+x];
-					tmp &= ~(1 << index);
+		     for(y = 0;y < parasplittings ;y++) {
+			  //reset value
+				rvalue[0][y] = 	rvalue[1][y] = 0;
+				if(x+y+initsplit < splittings) {
+				     //IDP
+					int tmp = __popc(leafsplit[0]);
+					if((NAGENTS-card) <= tmp && (NAGENTS-card) <= (card-tmp)) {
+					     //fetch the subset in common
+						rvalue[1][y] = rvalue[0][y] = f[leafsplit[0]];
+						//fetch the set difference
+						rvalue[0][y] += f[setdiff(conf[0][warpId],leafsplit[0])];
+						rvalue[1][y] += f[setdiff(conf[1][warpId],leafsplit[1])];
+					}
+					//nextsplit
+					leafsplit[1] = SUBSET((conf[1][warpId] & conf[0][warpId]),leafsplit[1]);
+					leafsplit[0] = SUBSET((conf[1][warpId] & conf[0][warpId]),leafsplit[0]);
 				}
 			}
 
-
-
-//			defbid = f[_conf]; // may impact performance
-/*Local for the thread, check all its bid and pick the biggest*/
-
-#pragma unroll 4
-			for(i = 0; i < NPERBLOCK; i++) {
-				val1[i][0] = 0U;
-				val1[i][1] = 0U;
-				if(nparallelconf >=4) {
-					val1[i][2] = 0U;
-					val1[i][3] = 0U;
-				}
-
-				if( ispec < maxval) {
-					SET_VAL(i,0);
-					if(_conf[1] <= lastval) {
-						SET_VAL(i,1);
-					}
-					if(nparallelconf >=4) {
-						if(_conf[2] <= lastval) {
-							SET_VAL(i,2);
+		} else {			
+#pragma unroll 8			
+			for(y = 0;y < parasplittings ;y++) {
+				rvalue[0][y] = rvalue[1][y] = 0;
+				if(x+y+initsplit < splittings) {
+				     //idp
+					int tmp = __popc(leafsplit[0]);
+					if((NAGENTS-card) <= tmp && (NAGENTS-card) <= (card-tmp)) {
+						rvalue[0][y] = f[leafsplit[0]];
+						rvalue[0][y] += f[setdiff(conf[0][warpId],leafsplit[0])];
+						//template optimisation in order to remove one if statement from kernel launches which does not exceed
+						//the maximum coalition structure
+						if(overlastval) {
+						if(conf[1][warpId] < lastval) {
+							rvalue[1][y] = f[leafsplit[1]];	
+							rvalue[1][y] += f[setdiff(conf[1][warpId],leafsplit[1])];
 						}
-						if(_conf[3] <= lastval) {
-							SET_VAL(i,3);
+						} else {
+							rvalue[1][y] = f[leafsplit[1]];	
+							rvalue[1][y] += f[setdiff(conf[1][warpId],leafsplit[1])];
 						}
 					}
-				}
-				ispec++;
-//				SET_TEST_FETCH(stept[i],val1[i],val2[i]);
-//				val1[i] += val2[i];
-			}
-#pragma unroll 4
-			for(i = 0; i < NPERBLOCK; i++) {
-				R_REDUCTION(i,0);
-				R_REDUCTION(i,1);
-				if(nparallelconf >=4) {
-					R_REDUCTION(i,2);
-					R_REDUCTION(i,3);
-				}
-			}
-			SET_RSTEP(0);
-			SET_RSTEP(1);
-			if(nparallelconf >=4) {
-				SET_RSTEP(2);
-				SET_RSTEP(3);
-			}
-		}
-
-
-//		step[threadIdx.x] = rstep;
-		share[threadIdx.x][0] = max[0];
-		share[threadIdx.x][1] = max[1];
-		if(nparallelconf >=4) {
-			share[threadIdx.x][2] = max[2];
-			share[threadIdx.x][3] = max[3];
-		}
-		i= blockDim.x >> 1;
-		/* i = (blockDim.x / 32 ) >> 1;  */
-//	__syncthreads();
-/*do max reduction on the shared array for all threads inside the block*/
-#pragma unroll
-		for (; i>0; i>>=1) {
-			__syncthreads();
-			if (tid < i /* && (ispec <= maxval) */) {
-//				SBLOCK(i);
-				S_REDUCTION(0);
-				S_REDUCTION(1);
-				if(nparallelconf >=4) {
-					S_REDUCTION(2);
-					S_REDUCTION(3);
-				}
-			}
-		}
-		__syncthreads();
-		if(share[0][0] == max[0]) {//may introduce bank conflict
-			sstep[0] = rstep[0];
-		}
-		if(share[0][1] == max[1]) {//may introduce bank conflict
-			sstep[1] = rstep[1];
-		}
-		if(nparallelconf >=4) {
-			if(share[0][2] == max[2]) {//may introduce bank conflict
-				sstep[2] = rstep[2];
-			}
-			if(share[0][3] == max[3]) {//may introduce bank conflict
-				sstep[3] = rstep[3];
-			}
-		}
-
-/*thread 0 will attempt to set to global memory the agreed maximum value inside the block,
- * if it is greater than the original bid and the bid in the lock array
- */
-		__syncthreads();
-		if(tid == 0) {
-			TID0_SET(0);
-			TID0_SET(1);
-			if(nparallelconf >=4) {
-				TID0_SET(2);
-				TID0_SET(3);
-			}
-		}
-		__syncthreads();
-		//_conf[0] = sconf;
-		RESET_VALS(0);
-		RESET_VALS(1);
-		if(nparallelconf >=4) {
-			RESET_VALS(2);
-			RESET_VALS(3);
-		}
-		count +=NPARALLELCONF;
-		ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
-	}
-}
-
-int gen_copy_base_index() {
-	unsigned int *tmpa =(unsigned int *) malloc(sizeof(unsigned int)*(NAGENTS+1));
-	if(tmpa == NULL) {
-		fprintf(stderr,"Can not allocate memory at line %s in %d\n",__LINE__,__FILE__);
-		exit(1);
-	}
-	int i;
-	int tmp = 0;
-	for(i = 1; i <= NAGENTS;i++) {
-		tmp += pascal[NAGENTS][i-1];
-		tmpa[i] = tmp;
-		//printf("tmp = %d for i %d\n",tmp,i);
-
-	}
-	HANDLE_ERROR(cudaMemcpyToSymbol(cardindex, tmpa, sizeof(unsigned int)*(NAGENTS+1), 0, cudaMemcpyHostToDevice));
-	HANDLE_ERROR(cudaMemcpyToSymbol(pascl, pascal, sizeof(unsigned int)*(PASCALSIZE*PASCALSIZE), 0, cudaMemcpyHostToDevice));
-	return 0;
-}
-
-
-template<int blockSize,int nparallelconf,int confpkernel,int nperblock>
-__global__ void
-__launch_bounds__( MAXBLOCKSIZE, MIN_BLOCKS_PER_MP )
-subsetcomp33(
-	/*0*/	unsigned short * __restrict__ f, /*Bid value*/
-	/*1*/	unsigned int * __restrict__ O, /*The move array*/
-	/*2*/	unsigned int * __restrict__ lock,
-	/*5*/	unsigned int maxval,
-	/*6*/	unsigned short count1,
-	unsigned int conf1,
-	unsigned int lastval,//the value a permutation can not exceed.
-	unsigned int card)
-{
-	//confpkernel = how many configurations the kernel will evaluate
-	//nparallelconf = how many configurations the kernel will evaluate at the same time
-	__shared__ volatile unsigned short shared_value[(blockSize >> 1)][nparallelconf];
-	__shared__ volatile unsigned int shared_conf[(blockSize >> 1)][nparallelconf];
-	__shared__ volatile unsigned int conf[confpkernel];// the configurations needed for the whole execution
-	__shared__ volatile unsigned short shift [confpkernel][NAGENTS];// the shift matrix/array
-	//__shared__ volatile unsigned int tmp [confpkernel][2];
-	unsigned short subset_value[nperblock][nparallelconf];//the value for one of the subset sums
-	unsigned int subset_conf[nperblock][nparallelconf];
-
-	unsigned int count = count1;
-	unsigned int const tid = threadIdx.x;
-//	__shared__ unsigned int
-	unsigned int ispec = nperblock*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
-	int x,i,z; //counter
-
-  
-	if(tid == 0) {
-
-		conf[0] = conf1;
-#pragma unroll	
-		for(x = 1;x < confpkernel; x++) { // generate the configurations
-			conf[x] = conf[x-1];
-			unsigned int t = conf[x] | (conf[x]-1);
-			conf[x] = (t + 1) | (((~t & -~t) - 1) >> (__ffs(conf[x])));
-		}
-	}
-	__syncthreads();
-	if(tid < confpkernel) { //generate the shift arrays
-		shared_conf[tid][0] = conf[tid]; // re-use registers tmpval
-		shared_conf[tid][1] = 0;// re-use registers index
-#pragma unroll		
-		for(x = 0,i=0; x < card;x++) {//could put card in template to unroll
-			shared_conf[tid][1] = __ffs(shared_conf[tid][0]) - 1; //find which index is first bit
-			shared_conf[tid][0] &= ~(1 << shared_conf[tid][1]);//set nth bit to 0
-			shift[tid][x] = shared_conf[tid][1];
-		}
-	}
-	__syncthreads();
-#pragma unroll	
-	for(x =0; x < confpkernel; x += nparallelconf) {
-
-		if(conf[0] > lastval) {//if the permutation is larger than the full set, c> (1 << NAGENTS)
-			return;
-		}
-#pragma unroll	
-		for(i = 0; i < nperblock; i++) {
-#pragma unroll	
-			for(z=0; z < nparallelconf;z++) {
-				subset_value[i][z] = 0U;
-			}
-		}
-
-		if(ispec < maxval) {
-#pragma unroll	
-			for(i = 0; i < nparallelconf; i++) {
-				unsigned int tmp = ispec;
-				unsigned int tcar = __popc(tmp);
-				subset_conf[0][i] = 0;
-				for(z = 0; z < tcar; z++) {
-					unsigned int index = __ffs(tmp)-1;
-					//		printf("index %u", index);
-					subset_conf[0][i] += (1 << shift[x+i][index]);//CHECK
-					tmp &= ~(1 << index);
-				}
-				//if(subset_conf[0][i] == 0) {
-				subset_conf[0][i] = SUBSET(conf[i+x],subset_conf[0][i]);
-				//}
-			}
-#pragma unroll	
-			for(i = 0; i < nperblock; i++) {
-
-				if(ispec >= maxval) {
-					ispec++;
-					continue;
-				}
-				if(i < nperblock-1) { //make sure subset_conf[z][i+1] does not overflow
-#pragma unroll
-					for(z = 0; z < nparallelconf; z++){
-						if(conf[z+x] <= lastval) {
-							subset_value[i][z] = f[(setdiff(conf[z+x],subset_conf[i][z]))] + f[subset_conf[i][z]];
-							subset_conf[i+1][z] = SUBSET(conf[z+x],subset_conf[i][z]);
-						
-						}	 					
-					}
-				} else {
-#pragma unroll	
-					for(z = 0; z < nparallelconf; z++){
-						if(conf[z+x] <= lastval) {
+					leafsplit[0] = SUBSET(conf[0][warpId],leafsplit[0]);
+					leafsplit[1] = SUBSET(conf[1][warpId],leafsplit[1]);
 					
-							subset_value[i][z] = f[(setdiff(conf[z+x],subset_conf[i][z]))] + f[subset_conf[i][z]];
-						}
-//						
-					}
-
-				}
-				ispec++;
-			}
-			//register MAX function
-#pragma unroll	
-			for(i = 0; i < nperblock; i++) {
-#pragma unroll	
-				for(z = 0; z < nparallelconf;z++) {
-					if(subset_value[i][z] > subset_value[0][z]) {
-						subset_value[0][z] = subset_value[i][z];
-						subset_conf[0][z] = subset_conf[i][z];
-					}
 				}
 			}
-		}
-			//shared memory max reduction, space efficient
-		i = blockDim.x >> 1;
-		if(tid >= i) {//put all values of threads with tid greater than the half of blockdim
-#pragma unroll	
-			for(z=0; z < nparallelconf;z++) {
-				shared_value[tid-i][z] = subset_value[0][z];
-				shared_conf[tid-i][z] = subset_conf[0][z];
-			}
-		}
-
-		__syncthreads();
-		if(tid<i) {//second half checks if it greater
-#pragma unroll	
-			for(z=0; z < nparallelconf;z++) {
-				if(shared_value[tid][z] < subset_value[0][z]) {
-					shared_value[tid][z] = subset_value[0][z];
-					shared_conf[tid][z] = subset_conf[0][z];
-				}
-			}
-		}
-		//do the rest
-		__syncthreads();
-// #pragma unroll	
-// 		for(z=0;z < nparallelconf;z++) {
-// 			shared_value[tid][z] = subset_value[0][z];
-// 			shared_conf[tid][z] = subset_conf[0][z];
-// 		}
-// 		__syncthreads();
-
-
-#pragma unroll	
-		for(i >>= 1; i > 0; i >>= 1) {
-			__syncthreads();
-			if(tid<i) {//reduction
-#pragma unroll	
-				for(z=0; z < nparallelconf;z++) {
-					if(shared_value[tid][z] < shared_value[tid+i][z]) {
-						shared_value[tid][z] = shared_value[tid+i][z];
-						shared_conf[tid][z] = shared_conf[tid+i][z];
-					}
-				}
-			}
-		}
-		__syncthreads();
-		if(tid == 0) {
-#pragma unroll	
-			for(z=0; z < nparallelconf;z++) {
-				if(f[conf[z+x]] < shared_value[0][z]) {
-					//	printf("lock val %u shared_val %s\n",lock[count+z] ,shared_value[0][z]);
-					if(atomicMax(&(lock[count+z]),shared_value[0][z]) < shared_value[0][z]) {
-
-						O[conf[z+x]] = shared_conf[0][z];
-						f[conf[z+x]] = shared_value[0][z];
-					}
-
-				}
-
-			}
-//			O[conf[z+x]] = 0;
-//			f[conf[z+x]] = 7;
 
 		}
 
-		count += nparallelconf;
-		ispec = NPERBLOCK*(threadIdx.x + blockDim.x * blockIdx.x);//I + offset;
+		//register reduction
+#pragma unroll	       
+		for(y = 1;y < parasplittings;y++) {
+			if(x+y+initsplit >= splittings) {
+				continue;
+			}
+			if(rvalue[0][0] < rvalue[0][y]) {
+				rvalue[0][0] = rvalue[0][y];
+			}
+			if(rvalue[1][0] < rvalue[1][y]) {
+				rvalue[1][0] = rvalue[1][y];
+			}
+		}
 
+		//if their values are less than the value in shared memory, continue onto the next loop
+		if(__ballot( ( (rvalue[0][0] > value[0][warpId]) || (rvalue[1][0] > value[1][warpId]) ) ) == 0) {
+			continue;
+		}
+
+		//if rvalue is gfreater than value in shared memory, do warp reduction, this is a unrolled version
+		if(__ballot( ( rvalue[0][0] > value[0][warpId] ) ) ) {
+			rvalue[0][1] = __shfl_xor((int)rvalue[0][0],16,32);
+			rvalue[0][0] = MAX(rvalue[0][0],rvalue[0][1]);
+			rvalue[0][1] = __shfl_xor((int)rvalue[0][0],8,32);
+			rvalue[0][0] = MAX(rvalue[0][0],rvalue[0][1]);
+			rvalue[0][1] = __shfl_xor((int)rvalue[0][0],4,32);
+			rvalue[0][0] = MAX(rvalue[0][0],rvalue[0][1]);
+			rvalue[0][1] = __shfl_xor((int)rvalue[0][0],2,32);
+			rvalue[0][0] = MAX(rvalue[0][0],rvalue[0][1]);
+			rvalue[0][1] = __shfl_xor((int)rvalue[0][0],1,32);
+			rvalue[0][0] = MAX(rvalue[0][0],rvalue[0][1]);
+		}
+		//same but different value
+		if(__ballot( ( rvalue[1][0] > value[1][warpId] ) ) ) {
+			if(conf[1][warpId] < lastval) {
+			rvalue[1][1] = __shfl_xor((int)rvalue[1][0],16,32);
+			rvalue[1][0] = MAX(rvalue[1][0],rvalue[1][1]);
+			rvalue[1][1] = __shfl_xor((int)rvalue[1][0],8,32);
+			rvalue[1][0] = MAX(rvalue[1][0],rvalue[1][1]);
+			rvalue[1][1] = __shfl_xor((int)rvalue[1][0],4,32);
+			rvalue[1][0] = MAX(rvalue[1][0],rvalue[1][1]);
+			rvalue[1][1] = __shfl_xor((int)rvalue[1][0],2,32);
+			rvalue[1][0] = MAX(rvalue[1][0],rvalue[1][1]);
+			rvalue[1][1] = __shfl_xor((int)rvalue[1][0],1,32);
+			rvalue[1][0] = MAX(rvalue[1][0],rvalue[1][1]);
+			}
+		}
+		//update shared memory
+		if(laneId == 0) {
+			if(rvalue[0][0] > value[0][warpId]) {
+				value[0][warpId] = rvalue[0][0];
+			}
+			if(rvalue[1][0] > value[1][warpId]) {
+				value[1][warpId] = rvalue[1][0];
+			}
+		}
 	}
+	//lastly update global memory, no need for atomics as there is no contender
+	if(laneId == 0) {
+		if(conf[0][warpId] < lastval) {
+			if(value[0][warpId] > f[conf[0][warpId]]) {
+				f[conf[0][warpId]] = value[0][warpId];
+			}
+		}
+		if(conf[1][warpId] < lastval) {
+			if(value[1][warpId] > f[conf[1][warpId]]) {
+				f[conf[1][warpId]] = value[1][warpId];
+			}
+		}
+	}
+	return;
 }
+
 
 
 #define COMBS(X) ((1 << cardinality(X)-1) - 1)
 
-int run_test(dint MAXVAL,dint items) {
-/*Setup the environment*/
-	//dint perm[MAXVAL];
+int run_test(unsigned int MAXVAL,dint items) {
 
 	register unsigned int i,c1,count =0;
- 	unsigned int *dev_o;
-	unsigned short *dev_f;
+	unsigned short *dev_bids;
 
 	count = 0;
 
-//	HANDLE_ERROR(cudaDeviceReset());
+	HANDLE_ERROR(cudaDeviceReset());
 	HANDLE_ERROR(cudaSetDeviceFlags(cudaDeviceScheduleYield));
-  	cudaDeviceSetCacheConfig( cudaFuncCachePreferShared );
+  	HANDLE_ERROR(cudaDeviceSetCacheConfig(cudaFuncCachePreferL1));
+	HANDLE_ERROR(cudaDeviceSetLimit(cudaLimitStackSize,0));
 	HANDLE_ERROR(cudaDeviceSetLimit(cudaLimitMallocHeapSize,0));
-
 	HANDLE_ERROR(cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte));
-	unsigned int * dev_lock1,*dev_lock2,*dev_ptr;
-	const	unsigned int devcount = 2048*CONFPKERNEL;// count;
+
 	register unsigned int streams = NSTREAMS;
-	register unsigned short lock_count = 0;
 	register unsigned int streamcount = 0;
 	register cudaStream_t stream[streams];
 	for(i = 0;i < streams; i++)
 		HANDLE_ERROR(cudaStreamCreate(&stream[i]));
-//	printf("count %u\n",devcount);
+
 	count = 0;
-	HANDLE_ERROR(cudaMalloc((void **)&dev_lock1,(10+devcount)*sizeof(int)));
-	HANDLE_ERROR(cudaMalloc((void **)&dev_lock2,(10+devcount)*sizeof(int)));
 
- 	HANDLE_ERROR(cudaMalloc((void **)&dev_f, MAXVAL*sizeof(short)));
- 	HANDLE_ERROR(cudaMalloc((void **)&dev_o, MAXVAL*sizeof(int)));
+ 	HANDLE_ERROR(cudaMalloc((void **)&dev_bids, MAXVAL*sizeof(short)));
 
- 	HANDLE_ERROR(cudaMemcpy(dev_f,bids,MAXVAL*sizeof(short),cudaMemcpyHostToDevice));
- 	HANDLE_ERROR(cudaMemcpy(dev_o,O,MAXVAL*sizeof(int),cudaMemcpyHostToDevice));
+ 	HANDLE_ERROR(cudaMemcpy(dev_bids,bids,MAXVAL*sizeof(short),cudaMemcpyHostToDevice));
 
-	HANDLE_ERROR(cudaMemset(dev_lock1,0,devcount*sizeof(int)));
-	HANDLE_ERROR(cudaMemset(dev_lock2,0,devcount*sizeof(int)));
-	gen_copy_base_index();
-	/*2.*/
-//	printfo(MAXVAL); printf("before\n");
-	dev_ptr = dev_lock1;
-	register unsigned int bsize = 0;
+	register unsigned int bsize = MAXBLOCKSIZE;
 	register int blocks;
 	int prev =0;
-	lock_count = 0;
+
 	time_t rstart,rend,rt;
 	rstart=clock();
 	for(i = 2; i <= items; i++) {
 		time_t start,end,t;
 
 		start=clock();
-		int splittings;
+		unsigned int splittings;
+		blocks =4;//(int)  ceil((threads/bsize));
 		double threads;
 		c1 = (1 << i) -1;
+		unsigned int c2 = c1;
+		unsigned int c3;
+		unsigned int ca[blocks];
+		unsigned int cacount;
 		splittings =  COMBS(c1);///NPERBLOCK;
 		threads = ((double) splittings)/ NPERBLOCK;
 		threads = ceil(threads);
+		
 		for(; c1 <= MAXVAL;) {
-			while( bsize < MAXBLOCKSIZE && threads > bsize) {
-				bsize += 32;
-			}
-			blocks =(int)  ceil((threads/bsize));
 
-			subsetcomp33 < MAXBLOCKSIZE , NPARALLELCONF , CONFPKERNEL , NPERBLOCK > <<<blocks,bsize,0,stream[streamcount]>>>(dev_f,dev_o,dev_ptr,splittings,lock_count,c1,MAXVAL,i);
-
-			for(int x = 0; x < CONFPKERNEL;x++) {
-				t = c1 | (c1-1);
-				c1 = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c1) + 1));
+			cacount = 1;
+			ca[0] = c1;			
+			for(int x = 0, cacount = 1; x < CONFPKERNEL*blocks;x++) {
+				t = c2 | (c2-1);
+				c2 = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctz(c2) + 1));
+				if(x%CONFPKERNEL == 0 && x > 1) {
+					ca[cacount] = c2;
+					cacount++;
+				}
 			}
-			count++;
-			lock_count += CONFPKERNEL;
+	
+			switch((c2 > MAXVAL)) {
+			case 1:
+				subsetcomp33 < MAXBLOCKSIZE , 1> <<<blocks,MAXBLOCKSIZE,0,stream[streamcount]>>>(dev_bids,splittings,MAXVAL,i,ca[0],ca[1],ca[2],ca[3]);
+				break;
+			case 0:
+				subsetcomp33 < MAXBLOCKSIZE , 0> <<<blocks,MAXBLOCKSIZE,0,stream[streamcount]>>>(dev_bids,splittings,MAXVAL,i,ca[0],ca[1],ca[2],ca[3]);
+				break;
+
+			}
+			c1 = c2;
+
 			streamcount++;
+			count++;
+
 			if(streamcount >= streams)
 				streamcount = 0;
-			if(lock_count < devcount)
-				continue;
-			HANDLE_ERROR(cudaMemset(dev_ptr,0,devcount*sizeof(int)));
-
-			if(dev_ptr == dev_lock1)
-				dev_ptr = dev_lock2;
-			else
-				dev_ptr = dev_lock1;
-			lock_count = 0;
 		}
+		
 
 		for (int t = 0; t < streams; ++t) {
 			HANDLE_ERROR(cudaStreamSynchronize(stream[t]));
@@ -826,40 +548,53 @@ int run_test(dint MAXVAL,dint items) {
 
 		end=clock();
 		t=(end-start)/(CLOCKS_PER_SEC/1000);
-		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu \t splittings %d\n",i,blocks,bsize,count-prev,t,splittings);
+		printf("ended card %d blocks\t %d threads/block %u, n kernels %u \t time %lu \t splittings %d time per kernel %u\n",i,blocks,bsize,count-prev,t,splittings,t/(count-prev));
 		prev =	count;
 
 	}
 	for (int i = 0; i < streams; ++i)
-	cudaStreamDestroy(stream[i]);
+		cudaStreamDestroy(stream[i]);
 
 	HANDLE_ERROR(cudaDeviceSynchronize());
 
 	rend=clock();
-	rt=(rend-rstart)/(CLOCKS_PER_SEC);
+	rt=(rend-rstart)/(CLOCKS_PER_SEC/1000);
 	printf("real time %lu\n",rt);
 
-	HANDLE_ERROR(cudaMemcpy(f,dev_f,MAXVAL*sizeof(short),cudaMemcpyDeviceToHost));
-	HANDLE_ERROR(cudaMemcpy(O,dev_o,MAXVAL*sizeof(int),cudaMemcpyDeviceToHost));
-	//int i;
-	HANDLE_ERROR(cudaFree(dev_f));
-	HANDLE_ERROR(cudaFree(dev_o));
-	HANDLE_ERROR(cudaFree(dev_lock1));
-	HANDLE_ERROR(cudaFree(dev_lock2));
+	HANDLE_ERROR(cudaMemcpy(f,dev_bids,MAXVAL*sizeof(short),cudaMemcpyDeviceToHost));
+
+	HANDLE_ERROR(cudaFree(dev_bids));
 
 	HANDLE_ERROR(cudaDeviceReset());
-//	printfo(MAXVAL);
+
 	return count;
 }
 
-int parse_wopt(dint MAXVAL) {
-	//printf("parse maxval = %u\n",MAXVAL);
-	//wopt at start contain MAX at wopt[0] which is the combination that goes in bids[wopt[n]]
-	stack * root =(stack *) malloc(sizeof(stack));
+dint max2(dint conf) {
+     register dint card = cardinality(conf)/2;
+     register dint combinations = (1 << cardinality(conf)-1)-1;
+     register dint max = f[conf];
+     register dint tmp = 0;
+     register dint subset = 0;
+     register const dint inverse = ~conf;
+     register dint i;
+     for(i = 1;i<=combinations; i++) {
+	     subset = ((inverse+1)+subset)&conf;
+	     tmp = f[setdiff(conf,subset)] + f[subset];
+	     if(max == tmp) {
+		     break;
+		     //  return subset;
+	     }
+
+     }
+     return subset;
+}
+
+int recur_parse_wopt(dint MAXVAL) {
+	stack * root = (stack *) malloc(sizeof(stack));
 	stack * sroot = NULL;
 	stack * scurr = NULL;
-	//DO N	OT REMOVE -1
-	root->conf = (MAXVAL)-1;
+		root->conf = (MAXVAL)-1;
 	int count = 0;
 	root->next = NULL;
 	stack * curr = root;
@@ -870,17 +605,17 @@ int parse_wopt(dint MAXVAL) {
 			return 1;
 		}
 		/*if something is wrong*/
-			if(count > 40) {
-				fprintf(stderr,"Something went wrong at line %d in %s\n",__LINE__,__FILE__);
-				return 1;
-			}
-		printf("curr %u\t\n",curr->conf);
-		if(conf != O[conf]) {
-
-			dint diff = setdiff(conf,O[conf]);
-			curr->conf = O[conf];
+		if(count > 40) {
+			fprintf(stderr,"Something went wrong at line %d in %s\n",__LINE__,__FILE__);
+			return 1;
+		}
+//		printf("curr %u\t\n",curr->conf);
+		if(f[conf] != bids[conf]) {
+			dint proper_subset = max2(conf);
+			dint diff = setdiff(conf,proper_subset);
+			curr->conf = proper_subset;
 			stack * tmp = (stack *) malloc(sizeof(stack));
-			printf("diff %u\t conf %u\t O[diff] %u\t O[conf] %u\t f %u\n",diff,conf,O[diff],O[conf],f[conf]);
+			//printf("diff %u\t conf %u\t O[diff] %u\t O[conf]\t f %u\n",diff,conf,O[diff],O[conf],f[conf]);
 			tmp->conf = diff;
 			tmp->next = curr;
 			root = tmp;
@@ -913,7 +648,7 @@ int parse_wopt(dint MAXVAL) {
 				tmp++;
 				return 0;
 			}
-			printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
+			//printf("conf %u value %u\n",curr->conf,bids[curr->conf]);
 
 		}
 		stack * tmp = curr;
@@ -922,7 +657,6 @@ int parse_wopt(dint MAXVAL) {
 	}
 	if(tmp < 1) {
 		printf("something is wrong, no bids\n");
-
 		return 1;
 
 	}
@@ -936,23 +670,24 @@ int main(void) {
 	dint MAXVAL = (2 << (from-1));
 
 	time_t start,end,t;
-	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
+//	O = (dint * ) malloc(sizeof(dint)*(2 << (from-1)));
 	bids = (unsigned short * ) malloc(sizeof(short)*(2 << (from-1)));
-	f = bids;
+	f = (unsigned short * ) malloc(sizeof(short)*(2 << (from-1)));
+//	f = bids;
 	int ret_val =0;
 	int count;
 	while(ret_val == 0) {
 
-	MAXVAL = (2 << (from-1));
-	gen_rand_bids(MAXVAL);
-	set_singleton_bid(MAXVAL);
-	printf("maxval %u from %u\n",MAXVAL,from);
-	start=clock();//predefined  function in c
-	 count = run_test(MAXVAL,from);
-	end=clock();
-	t=(end-start)/CLOCKS_PER_SEC;
-	ret_val= parse_wopt(MAXVAL);
-	printf("\nTime taken =%lu for n= %u with count %d average per count %lf\n", (unsigned long) t,from,count,(double)t/count);
+		MAXVAL = (2 << (from-1));
+		gen_rand_bids(MAXVAL);
+		set_singleton_bid(MAXVAL);
+		printf("maxval %u from %u\n",MAXVAL,from);
+		start=clock();//predefined  function in c
+		count = run_test(MAXVAL,from);
+		end=clock();
+		t=(end-start)/CLOCKS_PER_SEC;
+		ret_val= recur_parse_wopt(MAXVAL);// parse_wopt(MAXVAL);
+		printf("\nTime taken =%lu for n= %u with count %d average per count %lf\n", (unsigned long) t,from,count,(double)t/count);
 	}
 
 
@@ -961,3 +696,4 @@ int main(void) {
 
 	return 0;
 }
+
