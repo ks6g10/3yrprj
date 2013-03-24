@@ -1,4 +1,3 @@
-
 #define NGOODS (32)
 #define NBIDS (32)
 
@@ -19,11 +18,10 @@ struct allocation {
 	unsigned short quant[NGOODS];
 };
 
+#define SINGLETON (int)
 struct singleton {
-	unsigned int bid;
 	unsigned int good;
-	unsigned short quant;
-	float rev_p_quant;
+	unsigned int bid[];
 };
 
 struct sizebin {
@@ -38,4 +36,4 @@ struct good {
 
 unsigned short q[NGOODS];
 
-unsigned int * sizebin_ptr[NGOODS]
+struct sizebin * sizebin_ptr[NGOODS];
