@@ -8,10 +8,17 @@
 struct bid {
 	double offer;
 	unsigned int id;
+	unsigned int bin;
 	unsigned int conf[];
 };
 
-int main(void)   {
+struct bid2 {
+	double offer;
+	unsigned int id;
+	unsigned int conf[];
+};
+
+int main(int argc, char *argv[])   {
 	const char * s_goods = "goods";
 	const char * s_bids = "bids";
 	const char * s_dummy = "dummy";
@@ -23,13 +30,14 @@ int main(void)   {
 	unsigned int bids = 0;
 	unsigned int dummy = 0;
 	unsigned int all = 0;
-	unsigned int id;
+	
 	unsigned int ints =0;
 	unsigned int *tmp;
 	struct bid * bids_ptr;
 	unsigned int bids_count =0;
-	double value;
-	fp = fopen("/home/ks6g10/Desktop/cats/f1.txt", "r");
+	unsigned int * bin_count;
+	int x;
+	fp = fopen(argv[1], "r");
 	if (fp == NULL) {
 		printf("Could not open file\n");
 		exit(EXIT_FAILURE);
@@ -42,18 +50,22 @@ int main(void)   {
 		if(!all) {
 			if(strncmp(line,s_goods,strlen(s_goods)) == 0) {      
 				goods = atoi(line+strlen(s_goods)+1);
-				printf("Number of goods %u\n",goods);
-				ints = 1+(goods-1)/32;
-				tmp = malloc(sizeof(tmp)*ints);
+				printf("Number of goods %u\n",goods);				
 			} else
 			if(strncmp(line,s_bids,strlen(s_bids)) == 0) {
 				bids = atoi(line+strlen(s_bids)+1);
-				bids_ptr = calloc((sizeof(bids_ptr)+(1+(goods-1)/32)*sizeof(int)),bids);
+				bids_ptr = calloc((sizeof(bids_ptr)+(1+(goods-1+dummy)/32)*sizeof(int)),bids);
 				printf("Number of bids %u\n",bids);
 			} else
 			if(strncmp(line,s_dummy,strlen(s_dummy)) == 0) {
 				dummy = atoi(line+strlen(s_dummy)+1);
 				printf("Number of dummy %u\n",dummy);
+				ints = 1+(goods+dummy-1)/32;
+				tmp = malloc(sizeof(tmp)*ints);
+				bin_count = malloc(sizeof(bin_count)*(goods+dummy));
+				for(x =0;x < goods+dummy;x++) {
+					bin_count[x] = 0;
+				}
 			}
 			all = !!(goods && bids && dummy);
 		} else {
@@ -61,29 +73,48 @@ int main(void)   {
 				int x;
 				char * head;
 				char * tail;
-				int count = 0;
+				double value;
+				unsigned int id;
 				unsigned int tmp2;
+				int bool = 0;
 				for(x = 0; x < ints; x++) {
 					tmp[x] = 0;
 				}
-				sscanf(line,"%u\t%lf",&id,&value);	
 				head = tail = line;
-				while(count < 2 && *head != '\0') {
-					if(*head == '\t') {
-						count++;
-					}
+				while(*head != '\t' && *head != '\0') {
 					head++;
 				}
-				count =0;
-				tail = head--;
-	
-				while(*head != '#' && *head != '\0') {					
+				id = strtol(tail,&head,10);
+				tail = head;
+				head++;
+				while(*head != '\t' && *head != '\0') {
+					head++;
+				}
+				value = strtod(tail,&head);
+				tail = head;
+//				sscanf(line,"%u\t%lf",id,value);	
+				head++;
+				/* while(count < 2 && *head != '\0') { */
+				/* 	if(*head == '\t') { */
+				/* 		count++; */
+				/* 	} */
+				/* 	head++; */
+				/* } */
+				/* count =0; */
+				/* tail = head--; */
+				bool = 0;
+				while(*head != '#' && *head != '\0') {
 					if(*head == '\t') {
-						sscanf(tail,"\t%u\t",&tmp2);
-						if(tmp2 < goods) {
-							tmp[tmp2/32] |= (1 << tmp2);
-						}					
-						tail = head;	
+						tmp2 = strtol(tail,&head,10);
+						//sscanf(tail,"\t%u\t",tmp2);
+						tmp[tmp2/32] |= (1 << tmp2);
+						tail = head;
+						if(!bool) {
+							bin_count[tmp2]++;
+							bool = 1;
+							bids_ptr[bids_count].bin = tmp2;
+							
+						}
 					}
 					head++;
 				}
@@ -92,15 +123,31 @@ int main(void)   {
 				for(x=0;x<ints;x++) {
 					bids_ptr[bids_count].conf[x] = tmp[x];
 				}
-				printf("ID %u Value %f %u :\n", bids_ptr[bids_count].id,bids_ptr[bids_count].offer,bids_ptr[bids_count].conf[0]);
+				printf("ID %u Value %f %lu :\n", bids_ptr[bids_count].id,bids_ptr[bids_count].offer,bids_ptr[bids_count].conf[0]+((unsigned long)bids_ptr[bids_count].conf[1] << 32));
 				bids_count++;
 			}
 
 		}
 	}
-	free(tmp);
 	
-	if (line)
-		free(line);
+	struct bid2 **bin = calloc(sizeof(struct bin2 *),goods+dummy);
+	for(x = 0; x < goods+dummy;x++) {
+		calloc((sizeof(struct bid2)+(1+(goods-1+dummy)/32)*sizeof(int)),bin_count[x]);
+		bin_count[x]=0;
+	}
+
+	for(x = 0; x < bids;x++) {
+		unsigned int index = bids_ptr[x].bin;
+		bin[index][bin_count[index]].
+	}
+
+	/* free(tmp); */
+	/* int x; */
+	/* for(x=0;x<bids;x++) { */
+	/* 	free(&bids_ptr[x]); */
+	/* } */
+
+	/* if (line) */
+	/* 	free(line); */
 	exit(EXIT_SUCCESS);
 }
