@@ -15,7 +15,7 @@ struct bid {
 struct bid2 {
 	double offer;
 	unsigned int id;
-	unsigned int conf[];
+	unsigned int conf[20];
 };
 
 int main(int argc, char *argv[])   {
@@ -130,17 +130,27 @@ int main(int argc, char *argv[])   {
 		}
 	}
 	
-	struct bid2 **bin = calloc(sizeof(struct bin2 *),goods+dummy);
+	struct bid2 **bin = malloc(sizeof(struct bid2 *)*(goods+dummy));
 	for(x = 0; x < goods+dummy;x++) {
-		calloc((sizeof(struct bid2)+(1+(goods-1+dummy)/32)*sizeof(int)),bin_count[x]);
+		(bin)[x] = malloc((sizeof(struct bid2)*bin_count[x]));
 		bin_count[x]=0;
 	}
-
+	int y;
 	for(x = 0; x < bids;x++) {
 		unsigned int index = bids_ptr[x].bin;
-		bin[index][bin_count[index]].
+		struct bid2 * tmp = bin[index];
+		tmp[bin_count[index]].offer = 1;
+//		bin[index][bin_count[index]].offer = 1;
+			//	(bin[index]+bin_count[index])->offer = bids_ptr[x].offer;
+//		bin[index][bin_count[index]].id = bids_ptr[x].id;
+		for(y = 0; y < ints;y++) {
+//			(bin[index])[bin_count[index]].conf[y] = bids_ptr[x].conf[y];
+		}
+		//free(&bin[index][bin_count[index]]);
+		bin_count[index]++;
+		
 	}
-
+ 
 	/* free(tmp); */
 	/* int x; */
 	/* for(x=0;x<bids;x++) { */
