@@ -55,14 +55,22 @@ int main(int argc, char *argv[])   {
 			if(strncmp(line,s_bids,strlen(s_bids)) == 0) {
 				bids = atoi(line+strlen(s_bids)+1);
 				bids_ptr = calloc((sizeof(bids_ptr)+(1+(goods-1+dummy)/32)*sizeof(int)),bids);
+				if(!(bids_ptr)) {
+					printf("Could not allocate memory as line %d\n",__LINE__);
+					exit(1);
+				}
 				printf("Number of bids %u\n",bids);
 			} else
 			if(strncmp(line,s_dummy,strlen(s_dummy)) == 0) {
 				dummy = atoi(line+strlen(s_dummy)+1);
 				printf("Number of dummy %u\n",dummy);
 				ints = 1+(goods+dummy-1)/32;
-				tmp = malloc(sizeof(tmp)*ints);
-				bin_count = malloc(sizeof(bin_count)*(goods+dummy));
+				tmp = malloc(sizeof(tmp)*ints);				
+				bin_count = calloc(sizeof(bin_count)*(1+goods+dummy),1);
+				if(!(tmp) || !(bin_count)) {
+					printf("Could not allocate memory as line %d\n",__LINE__);
+					exit(1);
+				}
 				for(x =0;x < goods+dummy;x++) {
 					bin_count[x] = 0;
 				}
@@ -110,7 +118,8 @@ int main(int argc, char *argv[])   {
 						tmp[tmp2/32] |= (1 << tmp2);
 						tail = head;
 						if(!bool) {
-							bin_count[tmp2]++;
+							//*bin_count++;
+							printf("count %u at %u\n",bin_count[tmp2],tmp2);
 							bool = 1;
 							bids_ptr[bids_count].bin = tmp2;
 							
@@ -123,23 +132,30 @@ int main(int argc, char *argv[])   {
 				for(x=0;x<ints;x++) {
 					bids_ptr[bids_count].conf[x] = tmp[x];
 				}
-				printf("ID %u Value %f %lu :\n", bids_ptr[bids_count].id,bids_ptr[bids_count].offer,bids_ptr[bids_count].conf[0]+((unsigned long)bids_ptr[bids_count].conf[1] << 32));
+				//printf("ID %u Value %f %lu :\n", bids_ptr[bids_count].id,bids_ptr[bids_count].offer,bids_ptr[bids_count].conf[0]+((unsigned long)bids_ptr[bids_count].conf[1] << 32));
 				bids_count++;
 			}
 
 		}
 	}
 	
-	struct bid2 **bin = malloc(sizeof(struct bid2 *)*(goods+dummy));
+	struct bid2 **bin =(struct bid2 **) malloc(sizeof(struct bid2 **)*(goods+dummy));
 	for(x = 0; x < goods+dummy;x++) {
 		(bin)[x] = malloc((sizeof(struct bid2)*bin_count[x]));
+		if(!(bin[x])) {
+			printf("Could not allocate memory as line %d\n",__LINE__);
+			exit(1);
+		}
+		printf("count = %u\n",bin_count[x]);
 		bin_count[x]=0;
 	}
 	int y;
+
+	struct bid2 * tmp_ptr = *bin;
 	for(x = 0; x < bids;x++) {
-		unsigned int index = bids_ptr[x].bin;
-		struct bid2 * tmp = bin[index];
-		tmp[bin_count[index]].offer = 1;
+		//unsigned int index = bids_ptr[x].bin;
+		printf("hello\n");
+		(*tmp_ptr).offer = 1;
 //		bin[index][bin_count[index]].offer = 1;
 			//	(bin[index]+bin_count[index])->offer = bids_ptr[x].offer;
 //		bin[index][bin_count[index]].id = bids_ptr[x].id;
@@ -147,7 +163,7 @@ int main(int argc, char *argv[])   {
 //			(bin[index])[bin_count[index]].conf[y] = bids_ptr[x].conf[y];
 		}
 		//free(&bin[index][bin_count[index]]);
-		bin_count[index]++;
+		//bin_count[index]++;
 		
 	}
  
