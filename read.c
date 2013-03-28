@@ -4,19 +4,87 @@
 #include <string.h>
 #include <ctype.h>
 
-
 struct bid {
 	double offer;
 	unsigned int id;
 	unsigned int bin;
+	unsigned int goods;
 	unsigned int conf[];
 };
 
 struct bid2 {
 	double offer;
+	double average;
 	unsigned int id;
 	unsigned int conf[20];
 };
+
+struct linked_bids {
+	struct bid2 * this;
+	struct linked_bids * next;
+}
+
+struct allocation {
+	struct linked_bids * root;
+	unsigned int price;
+	unsigned int conf[INTS];
+
+};
+
+
+unsigned int ints =0;
+unsigned int * MASK = void;
+
+double h(struct allocation * pi) {
+	unsigned int u_bound = 0;
+	unsigned int free[ints];
+	unsigned int * pi_conf = pi->conf;
+	int x;
+	for(x = 0; x < ints; x++) {
+		free[x] = ~pi_conf[x] & MASK[x];
+	}
+	return u_bound;
+}
+
+oid init_mask(void) {
+	MASK = calloc(sizeof(int),ints);
+	int x;
+	unsigned int mod,tmp;
+	for(x =0; x < ints) {
+		if(x < (ints-1)) {
+			MASK[x] = ~0;
+		} else {
+			mod = NGOODS % (INT);
+			tmp = (1 << mod)-1;
+			MASK[x] = tmp;
+		}
+	}	       	
+}
+
+int do_not_intersect(struct bid2 * a_bid, unsigned int * conf) {
+	int x;
+	unsigned int tmp;
+	for(x = 0; x < ints; x++)  {
+		tmp = a_bid->conf[x] & conf[x];
+		if(tmp) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+double v(struct bid2 * bin,unsigned int * conf,unsigned int bin_count) {
+	if(!bin_count) {
+		return 0.0;
+	}
+	int x;
+	for(x =0; x < bin_count;x++) {
+		if(do_not_intersect( bin[x], conf )) {
+			return 
+		}
+	}
+}
+
 
 int main(int argc, char *argv[])   {
 	const char * s_goods = "goods";
@@ -31,7 +99,7 @@ int main(int argc, char *argv[])   {
 	unsigned int dummy = 0;
 	unsigned int all = 0;
 	
-	unsigned int ints =0;
+	
 	unsigned int *tmp = NULL;
 	struct bid * bids_ptr;
 	unsigned int bids_count =0;
@@ -90,6 +158,7 @@ int main(int argc, char *argv[])   {
 				char * head;
 				char * tail;
 				double value;
+				unsigned int goods_count = 0;
 				unsigned int id;
 				unsigned int tmp2;
 				int bool = 0;
@@ -99,7 +168,7 @@ int main(int argc, char *argv[])   {
 				head = tail = line;
 				while(*head != '\t' && *head != '\0') {
 					head++;
-				}
+				}  
 				id = strtol(tail,&head,10);
 				tail = head;
 				head++;
@@ -113,6 +182,7 @@ int main(int argc, char *argv[])   {
 				bool = 0;
 				while(*head != '#' && *head != '\0') {
 					if(*head == '\t') {
+						goods_count++;
 						tmp2 = strtol(tail,&head,10);
 						//sscanf(tail,"\t%u\t",tmp2);
 						tmp[tmp2/32] |= (1 << tmp2);
@@ -129,11 +199,14 @@ int main(int argc, char *argv[])   {
 				}
 				bids_ptr[bids_count].id = id;
 				bids_ptr[bids_count].offer = value;
+				bids_ptr[bids_count].goods = goods_count;
 				for(x=0;x<ints;x++) {
 					bids_ptr[bids_count].conf[x] = tmp[x];
 				}
 				printf("ID %u Value %f %lu :\n", bids_ptr[bids_count].id,bids_ptr[bids_count].offer,bids_ptr[bids_count].conf[0]+((unsigned long)bids_ptr[bids_count].conf[1] << 32));
 				bids_count++;
+				goods_count =0;
+
 			}
 
 		
@@ -160,7 +233,7 @@ int main(int argc, char *argv[])   {
 		dst_ptr = bin[src_ptr->bin];
 		(dst_ptr[index]).offer = src_ptr->offer;
 		(dst_ptr[index]).id = src_ptr->id;
-
+		(dst_ptr[index]).average =(double) src_ptr->offer/((double) src_ptr->goods);
 		for(y = 0; y < ints;y++) {
 			(dst_ptr[index]).conf[y] = src_ptr->conf[y];
 
