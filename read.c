@@ -35,13 +35,21 @@ struct allocation {
 unsigned int ints =0;
 unsigned int * MASK = void;
 
-double h(struct allocation * pi) {
+double h(struct allocation * pi,struct bid2 ** bins,unsigned int * bin_counts) {
 	unsigned int u_bound = 0;
-	unsigned int free[ints];
+//	unsigned int free[ints];
 	unsigned int * pi_conf = pi->conf;
 	int x;
+//	double * means[goods];
+	double upper_bound =0;
+	unsigned int tmp;
 	for(x = 0; x < ints; x++) {
-		free[x] = ~pi_conf[x] & MASK[x];
+		tmp  = ~pi_conf[x] & MASK[x];
+		while(tmp) {
+			unsigned int index = __builtin_ffs(tmp) -1;
+			tmp  &= ~(1 << index);
+			upper_bound +=  v(bins[x],pi_conf,bin_counts[x]);
+		}
 	}
 	return u_bound;
 }
@@ -64,6 +72,7 @@ oid init_mask(void) {
 int do_not_intersect(struct bid2 * a_bid, unsigned int * conf) {
 	int x;
 	unsigned int tmp;
+
 	for(x = 0; x < ints; x++)  {
 		tmp = a_bid->conf[x] & conf[x];
 		if(tmp) {
