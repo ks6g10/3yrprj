@@ -24,17 +24,17 @@ struct bid2 {
 struct linked_bids {
 	struct bid2 * this;
 	struct linked_bids * next;
-}
+};
 
 struct allocation {
 	struct linked_bids * root;
 	unsigned int price;
-	unsigned int conf[INTS];
+	unsigned int conf[20];
 
 };
 
 
-/* unsigned int ints =0; */
+ unsigned int ints =0;
 /* unsigned int * MASK = void; */
 
 /* double h(struct allocation * pi,struct bid2 ** bins,unsigned int * bin_counts) { */
@@ -129,7 +129,7 @@ double * calc_score(unsigned int total_goods,
 		src_ptr++;
 	}
 	for(x = 0;x < total_goods;x++) {
-		score[x] =((double) score_c[x])/((double) score_t[x]);
+		score[x] =((double) score_c[x])/((double) score_total[x]);
 	}
 	free(score_c);
 	free(score_total);
@@ -139,8 +139,9 @@ double * calc_score(unsigned int total_goods,
 struct bid2 ** assign_bids_to_bins(unsigned int total_goods,
 				   unsigned int bids,
 				   unsigned int ints,
-				   struct bid * src_ptr) {
-
+				   unsigned int* bin_count,
+				   const struct bid* bids_ptr) {
+	int x,y;
 	struct bid2 **bin =(struct bid2 **) malloc(sizeof(struct bid2 **)*(total_goods));
 	for(x = 0; x < total_goods;x++) {
 		(bin)[x] = malloc((sizeof(struct bid2)*bin_count[x]));
@@ -151,10 +152,9 @@ struct bid2 ** assign_bids_to_bins(unsigned int total_goods,
 		printf("count = %u, bin %u\n",bin_count[x],x);
 		bin_count[x]=0;
 	}
-	int y;
 
 	struct bid2 * dst_ptr;// = *bin;
-	struct bid * src_ptr = bids_ptr;//NULL;// = *bin;
+	const struct bid * src_ptr = bids_ptr;//NULL;// = *bin;
 	for(x = 0; x < bids;x++) {
 		//*src_ptr = bids_ptr[x];
 		unsigned int index = bin_count[src_ptr->bin];
@@ -299,42 +299,17 @@ int main(int argc, char *argv[])   {
 		
 	}
 	
-	struct bid2 **bin =(struct bid2 **) malloc(sizeof(struct bid2 **)*(total_goods));
-	for(x = 0; x < total_goods;x++) {
-		(bin)[x] = malloc((sizeof(struct bid2)*bin_count[x]));
-		if(!(bin[x])) {
-			printf("Could not allocate memory as line %d\n",__LINE__);
-			exit(1);
-		}
-		printf("count = %u, bin %u\n",bin_count[x],x);
-		bin_count[x]=0;
-	}
-	int y;
-
-	struct bid2 * dst_ptr;// = *bin;
-	struct bid * src_ptr = bids_ptr;//NULL;// = *bin;
-	
-	for(x = 0; x < bids;x++) {
-		//*src_ptr = bids_ptr[x];
-		unsigned int index = bin_count[src_ptr->bin];
-		bin_count[src_ptr->bin]++;
-		dst_ptr = bin[src_ptr->bin];
-		(dst_ptr[index]).offer = src_ptr->offer;
-		(dst_ptr[index]).id = src_ptr->id;
-		(dst_ptr[index]).average =(double) src_ptr->offer/((double) src_ptr->goods);
-		for(y = 0; y < ints;y++) {
-			(dst_ptr[index]).conf[y] = src_ptr->conf[y];
-		}
-		src_ptr++;
-		printf("id %u val %lf\n",(dst_ptr[index]).id,(dst_ptr[index]).offer);		
-	}
-	
+	struct bid2 **bin = assign_bids_to_bins(total_goods,bids,ints,bin_count,bids_ptr);	
 	double * score = calc_score(total_goods,bids,ints,bids_ptr);
 	free(bids_ptr);
 	//bids_ptr++;
 //	free(bids_ptr);
+	for(x= 0;x< total_goods;x++){ 
+		printf("bin %d score %lf\n",x,score[x]);
+	}
+
 	for(x = 0; x < bin_count[0];x++) {
-		dst_ptr = bin[0];
+		const struct bid2 * dst_ptr = bin[0];
 		printf("id %u val %lf\n",(dst_ptr[x]).id,(dst_ptr[x]).offer);
 	}
  
