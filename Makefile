@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -O3 -msse4.2 -mpopcnt -march=corei7
+CFLAGS = -g -msse4.2 -mpopcnt -march=corei7 -Wall
 
 all: read
 
