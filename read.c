@@ -287,6 +287,11 @@ int main(int argc, char *argv[])   {
 	struct configuration * conf = get_configuration(fp);	
 	unsigned int * bin_count = get_bincount(fp,conf);
 	fclose(fp);
+	fp = fopen(argv[1], "r");
+	if (fp == NULL) {
+		printf("Could not open file\n");
+		exit(EXIT_FAILURE);
+	}
 /* 	bin_count = malloc(sizeof(bin_count)*total_goods); */
 /* 	tmp = malloc(sizeof(tmp)*ints);			 */
 /* 	if(!(tmp) || !(bin_count)) { */
