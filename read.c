@@ -249,6 +249,30 @@ unsigned int * get_bincount(FILE * fp,struct configuration * conf) {
 		bin_count[x] = 0;
 	}
 	
+	char * head, * tail,*line;
+	size_t len =0;
+	ssize_t read;
+	while ((read = getline(&line, &len, fp)) != -1) {
+		if(!isdigit(line[0])){ continue;}		
+		head = tail = line;
+		int tab_count = 0;
+		head++;
+		while(tab_count < 3) {
+			if(*head == '\t') {
+				tab_count++;
+				if(tab_count <= 2) {
+					tail = head;
+					head++;
+				}
+			} else {
+				head++;
+			}
+		}
+		int which_bin = strtol(tail,&head,10);
+		bin_count[which_bin]++;
+		printf("Bin %d count %u\n",which_bin,bin_count[which_bin]);
+	}
+	return bin_count;       
 }
 
 int main(int argc, char *argv[])   {
