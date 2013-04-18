@@ -26,6 +26,7 @@ struct bid2 {
 struct bid_bin {
 	unsigned int size;
 	unsigned int good;
+	double score;
 	struct bid2 * bids;
 };
 
@@ -270,10 +271,109 @@ unsigned int * get_bincount(FILE * fp,struct configuration * conf) {
 		}
 		int which_bin = strtol(tail,&head,10);
 		bin_count[which_bin]++;
-		printf("Bin %d count %u\n",which_bin,bin_count[which_bin]);
+//		printf("Bin %d count %u\n",which_bin,bin_count[which_bin]);
 	}
 	return bin_count;       
 }
+
+struct bid_bin * allocate_bid_bin(FILE * fp,
+				  unsigned int * bin_count,				  
+				  struct configuration * conf) {
+	struct bid_bin * bins = malloc(sizeof(struct bid_bin)*conf->goods);	
+	char * head, * tail,*line; 
+	unsigned long total_goods_count[conf->goods];
+	unsigned int numbids_count[conf->goods];
+	unsigned int goods[conf->goods];	
+	unsigned int tmp_count[conf->goods];
+	size_t len =0;
+	ssize_t read;
+	int x;
+	for(x = 0; x< conf->goods;x++) {
+		tmp_count[x] = 0;
+		bins[x].bids = malloc(sizeof(struct bid2)*bin_count[x]);
+		total_goods_count[x] = 0;
+		numbids_count[x] = 0;
+	}
+	while ((read = getline(&line, &len, fp)) != -1) {		
+		if(!isdigit(line[0])) {continue;}
+		head = tail = line;
+		while(*head != '\t') {head++;}
+
+
+		while(*head != '\t' && *head != '\0') {
+			head++;
+		}
+		int id = strtol(tail,&head,10);
+		tail = head;
+		head++;
+		//get offer or value
+		while(*head != '\t' && *head != '\0') {
+			head++;
+		}
+		float value = strtod(tail,&head);
+		tail = head;
+		head++;
+
+		unsigned int dummy_good = 0; 
+		unsigned int goods_count = 0;
+		unsigned int bin_for_bid = 0;
+		unsigned int good = 0;
+		unsigned int tmp_conf[20] = {0};
+		for(x = 0;x<20;x++) {
+			tmp_conf[x] = 0;
+		}
+		//reset the temporary goods array, used to determin the score
+		goods_count = 0;
+		for(x = 0;x<conf->goods;x++) {
+			goods[x] = 0;
+		}
+
+		while(*head != '#' && *head != '\0') {
+			if(*head == '\t') {
+				good = strtol(tail,&head,10);
+				//sscanf(tail,"\t%u\t",tmp2);
+				if(good < conf->goods) {
+					tmp_conf[good/32] |= (1 << good);
+					goods[goods_count] = good;
+				} else {
+					dummy_good = good;
+				}
+				tail = head;
+				if(goods_count == 1) {					
+					bin_for_bid = good;
+				}
+				goods_count++;
+			}
+			head++;
+		}
+		
+		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].offer = value;
+		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].id = id;
+		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].dummy = dummy_good;
+		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].average = value/((double)goods_count);
+		for(x = 0;x < 20; x++) {
+			bins[bin_for_bid].bids[tmp_count[bin_for_bid]].conf[x] = tmp_conf[x];
+		}
+		for(x=0;x<goods_count;x++) {
+			total_goods_count[goods[x]] += goods_count;
+			numbids_count[goods[x]]++;
+		}
+		tmp_count[bin_for_bid] +=1;
+		printf("id %d bin %u count %u\n",id,bin_for_bid,tmp_count[bin_for_bid]);
+	}
+	for(x =0;x< conf->goods;x++) {
+		double score =0;
+		double avg;
+		if(numbids_count[x]) {
+		avg = ((double)total_goods_count[x])/((double)numbids_count[x]);
+		score = ((double)numbids_count[x])/avg;
+		}
+		bins[x].score = score;
+		printf("bin %d score %.3lf\n",x,score);
+	}
+	return bins;
+}
+
 
 int main(int argc, char *argv[])   {
 
@@ -286,12 +386,17 @@ int main(int argc, char *argv[])   {
 	printf("hello\n");
 	struct configuration * conf = get_configuration(fp);	
 	unsigned int * bin_count = get_bincount(fp,conf);
+	int x;
+	for(x =0; x < conf->goods;x++) {
+		printf("bin %d count %u\n",x,bin_count[x]);
+	}
 	fclose(fp);
 	fp = fopen(argv[1], "r");
 	if (fp == NULL) {
 		printf("Could not open file\n");
 		exit(EXIT_FAILURE);
 	}
+	struct bid_bin * bins = allocate_bid_bin(fp,bin_count,conf);
 /* 	bin_count = malloc(sizeof(bin_count)*total_goods); */
 /* 	tmp = malloc(sizeof(tmp)*ints);			 */
 /* 	if(!(tmp) || !(bin_count)) { */
