@@ -348,22 +348,41 @@ void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned i
 	unsigned int allocation_dummy[goods];
 	double value = 0;;
 	double max = 0;
-	int x;
+	int x;	
+	int bin_index = goods;
+	int order_count = 0;
 	for(x = 0; x < goods; x++){
 		allocation_count[x] = 0;
 		allocation_dummy[x] = 0;
+		if(order_count == order[x]) {
+		     bin_index = x;
+		}	     
 	}
-	int order_count = 0;
-	while(1) {
-		int order_index = order_count/WORDSIZE;
-		int order_bit = order_count%WORDSIZE;
-		if((allocation[order_index] & (1<<order_bit)) == 0 && bin_count[order_count]) {
+	
 
+	for(x=0;x<conf->words;x++) {
+	     allocation[x] = 0;
+	}
+	printf("Order count index %u alloc %u\n",bin_index,allocation[0]);
+	if(!(bin_index < goods)) {
+	     printf("errorrr\n");
+	     return;
+	}
+	while(1) {
+	     	for(x = 0; x < goods; x++){
+		     if(order_count == order[x]) {
+			  bin_index = x;
+		     }	     
+		}
+		int word_index = bin_index/WORDSIZE;
+		int word_bit = bin_index%WORDSIZE;
+		if((allocation[word_index] & (1<<word_bit)) == 0 && bin_count[bin_index]) {
 			int status =0;			
 			struct bid2 *bid;
 		lbl_retry:
 			status = 0;
-			*bid = bins[order_index].bids[allocation_count[order_index]];
+			bid = &(bins[bin_index].bids[allocation_count[bin_index]]);
+			printf("bin %u id %u order count %u bin count %u\n",bin_index,bid->id,order_count,allocation_count[bin_index]);
 			for(x=0;x<conf->words && !status;x++) {
 				status |= bid->conf[x] & allocation[x];
 			}
@@ -373,8 +392,8 @@ void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned i
 				}
 			}
 			if(status) {
-				allocation_count[order_index]++;
-				if(allocation_count[order_index] < bin_count[order_index]) {
+				allocation_count[bin_index]++;
+				if(allocation_count[bin_index] < bin_count[bin_index]) {
 					goto lbl_retry;
 				} else {
 					order_count++;
@@ -386,20 +405,23 @@ void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned i
 				}
 				value += bid->offer;
 				allocation_dummy[allocation_id_index] = bid->dummy;
-				allocation_id[allocation_id_index][BIN] = order_index;
-				allocation_id[allocation_id_index][INDEX] = allocation_count[order_index];
+				allocation_id[allocation_id_index][BIN] = bin_index;
+				allocation_id[allocation_id_index][INDEX] = allocation_count[bin_index];
 				allocation_id_index++;
+				order_count++;
 				if(value > max) {
 					max = value;
-					printf("new max %0.2lf");
+					printf("new max %0.2lf",max);
 				}
 			}
 
 		} else {
-			order_count++;
+//		     printf("increment order count\n");
+		     order_count++;
 		}
 		if(order_count > goods) {
 			//backtrack
+		     return;
 		}
 
 	}
