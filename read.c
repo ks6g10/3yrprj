@@ -27,7 +27,6 @@ struct bid2 {
 	unsigned int id;
 //	unsigned int index;
 	unsigned int dummy;
-	unsigned int conf[];
 };
 
 struct bid_bin {
@@ -48,6 +47,7 @@ struct configuration {
 	unsigned int bids;
 	unsigned int dummy;
 	unsigned int words;
+	unsigned int singletons;
 };
 
 struct linked_bids {
@@ -168,7 +168,9 @@ struct configuration * get_configuration(FILE * fp) {
 	return ret;
 }
 
-unsigned int * get_bincount(FILE * fp,struct configuration * conf) {
+unsigned int * get_bincount(FILE * fp,
+			    struct configuration * conf,
+			    unsigned int * have_singelton) {
 	unsigned int * bin_count = malloc(sizeof(int)*conf->goods);
 	int x;
 	for(x=0;x<conf->goods;x++) {
@@ -195,7 +197,19 @@ unsigned int * get_bincount(FILE * fp,struct configuration * conf) {
 			}
 		}
 		int which_bin = strtol(tail,&head,10);
+		head++;
 		bin_count[which_bin]++;
+		int goods_count =1;
+		while(*head != '#' && *head != '\0') {
+			if(*head == '\t') {
+				tail = head;
+				goods_count++;
+			}
+			head++;
+		}
+		if(goods_count == 1) {			
+			have_singelton[which_bin] = 1;
+		}
 //		printf("Bin %d count %u\n",which_bin,bin_count[which_bin]);
 	}
 	return bin_count;       
@@ -203,7 +217,9 @@ unsigned int * get_bincount(FILE * fp,struct configuration * conf) {
 
 struct bid_bin * allocate_bid_bin(FILE * fp,
 				  unsigned int * bin_count,				  
-				  struct configuration * conf){
+				  struct configuration * conf,				
+				  unsigned int (* bid_conf)[conf->words],
+				  unsigned int * have_singelton){
 				  
 	struct bid_bin * bins = malloc(sizeof(struct bid_bin)*conf->goods);	
 	char * head, * tail,*line; 
@@ -214,9 +230,9 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 	size_t len =0;
 	ssize_t read;
 	int x;
-	for(x = 0; x< conf->goods;x++) {
+	for(x = 0; x< conf->goods;x++) { 
 		tmp_count[x] = 0;
-		bins[x].bids = malloc((sizeof(struct bid2)+sizeof(unsigned int)*conf->words)*bin_count[x]);
+		bins[x].bids = malloc((sizeof(struct bid2))*bin_count[x]);
 		total_goods_count[x] = 0;
 		bins[x].average = 0;
 		numbids_count[x] = 0;
@@ -240,7 +256,7 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 		float value = strtod(tail,&head);
 		tail = head;
 		head++;
-
+		
 		unsigned int dummy_good = 0; 
 		unsigned int goods_count = 0;
 		unsigned int bin_for_bid = 0;
@@ -266,10 +282,10 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 					dummy_good = good;
 				}
 				tail = head;
+				goods_count++;
 				if(goods_count == 1) {					
 					bin_for_bid = good;
 				}
-				goods_count++;
 			}
 			head++;
 		}
@@ -282,8 +298,14 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 		if(tmp_average > bins[bin_for_bid].average) {
 			bins[bin_for_bid].average = tmp_average;
 		}
+
+		for(x=0;x< conf->words;x++) {
+			bid_conf[id][x] = 0;
+		}
+
 		for(x = 0;x < conf->words; x++) {
-			bins[bin_for_bid].bids[tmp_count[bin_for_bid]].conf[x] = tmp_conf[x];
+			bid_conf[id][x] = tmp_conf[x];
+//			bins[bin_for_bid].bids[tmp_count[bin_for_bid]].conf[x] = tmp_conf[x];
 		}
 		for(x=0;x<goods_count;x++) {
 			total_goods_count[goods[x]] += goods_count;
@@ -292,7 +314,22 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 		tmp_count[bin_for_bid] +=1;
 		printf("id %d bin %u count %u\n",id,bin_for_bid,tmp_count[bin_for_bid]);
 	}
+	int singleton_count = conf->bids-conf->singletons;
+	int y;
 	for(x =0;x< conf->goods;x++) {
+		if(!have_singelton[x]) {
+			bins[x].bids[tmp_count[x]].offer = 0;
+			bins[x].bids[tmp_count[x]].id = singleton_count;
+			bins[x].bids[tmp_count[x]].dummy = 0;
+			bins[x].bids[tmp_count[x]].average = 0;
+			for(y=0;y< conf->words;y++) {
+				bid_conf[singleton_count][y] = 0;
+			}
+			int tmp_index = x/32;
+			int tmp_bit = x%32;
+			bid_conf[singleton_count][tmp_index] = (1<<tmp_bit);
+			singleton_count++;
+		}
 		double score =0;
 		double avg;
 		if(numbids_count[x]) {
@@ -338,7 +375,10 @@ unsigned int * get_bin_order(struct bid_bin * bins,struct configuration * conf,u
 #define BIN (0)
 #define INDEX (1)
 
-void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned int * order, struct bid_bin * bins) {
+void calc_best(struct configuration * conf,
+	       unsigned int * bin_count,
+	       unsigned int * order,
+	       struct bid_bin * bins) {
 	const unsigned int goods = conf->goods;
 	unsigned int allocation_count[goods];
 	unsigned int allocation[conf->words];
@@ -384,7 +424,7 @@ void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned i
 			bid = &(bins[bin_index].bids[allocation_count[bin_index]]);
 			printf("bin %u id %u order count %u bin count %u\n",bin_index,bid->id,order_count,allocation_count[bin_index]);
 			for(x=0;x<conf->words && !status;x++) {
-				status |= bid->conf[x] & allocation[x];
+				//	status |= bid->conf[x] & allocation[x];
 			}
 			for(x = 0; x < allocation_id_index;x++) {
 				if(allocation_dummy[x]) {
@@ -401,7 +441,7 @@ void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned i
 			} else {
 				
 				for(x=0; x < conf->words;x++) {
-					allocation[x] |= bid->conf[x];
+					//	allocation[x] |= bid->conf[x];
 				}
 				value += bid->offer;
 				allocation_dummy[allocation_id_index] = bid->dummy;
@@ -432,7 +472,7 @@ void calc_best(struct configuration * conf, unsigned int * bin_count, unsigned i
 double pi_max;
 
 int main(int argc, char *argv[])   {
-
+	int x;
 	FILE * fp;
 	fp = fopen(argv[1], "r");
 	if (fp == NULL) {
@@ -441,23 +481,41 @@ int main(int argc, char *argv[])   {
 	}
 	printf("hello\n");
 	struct configuration * conf = get_configuration(fp);
-	unsigned int * bin_count = get_bincount(fp,conf);
-	int x;
+	conf->singletons =0;
+	unsigned int * have_singleton =  malloc(sizeof(int)*conf->goods);
 	for(x =0; x < conf->goods;x++) {
+		have_singleton[x] = 0;
+	}
+	unsigned int * bin_count = get_bincount(fp,conf,have_singleton);
+	     
+	for(x =0; x < conf->goods;x++) {
+		if(!have_singleton[x]) {
+			conf->singletons++;
+			conf->bids++;
+			bin_count[x]++;
+		}
 		printf("bin %d count %u\n",x,bin_count[x]);
 	}
+
+	unsigned int (*bid_conf)[conf->bids] = malloc(sizeof(int[conf->bids][conf->words]));	
+	
 	fclose(fp);
 	fp = fopen(argv[1], "r");
 	if (fp == NULL) {
 		printf("Could not open file\n");
 		exit(EXIT_FAILURE);
 	}
-	struct bid_bin * bins = allocate_bid_bin(fp,bin_count,conf);
+	struct bid_bin * bins = allocate_bid_bin(fp,bin_count,conf,bid_conf,have_singleton);
 	fclose(fp);
 	unsigned int * order = get_bin_order(bins,conf,bin_count);
 	for(x=0;x<conf->goods;x++) {
 		double score = bins[x].score;
 		printf("bin %d score %.3lf order %u count %u average %.3lf\n",x,score,order[x],bin_count[x],bins[x].average);
+		int y;
+		for(y =0; y < bin_count[x];y++) {
+			unsigned int id = bins[x].bids[y].id;
+			printf("Bin %d index %d id %u\n",x,y,id);
+		}
 	}
 
 	calc_best(conf, bin_count,order,  bins);
