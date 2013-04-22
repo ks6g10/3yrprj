@@ -322,13 +322,15 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 			bins[x].bids[tmp_count[x]].id = singleton_count;
 			bins[x].bids[tmp_count[x]].dummy = 0;
 			bins[x].bids[tmp_count[x]].average = 0;
+			total_goods_count[x] +=1; //add one more to the score stat
+			numbids_count[x] +=1; // also add one more to the number of bids to the score stat
 			for(y=0;y< conf->words;y++) {
 				bid_conf[singleton_count][y] = 0;
 			}
 			int tmp_index = x/32;
 			int tmp_bit = x%32;
 			bid_conf[singleton_count][tmp_index] = (1<<tmp_bit);
-			singleton_count++;
+			singleton_count++; // next singleton bid will have an consecutive bid id
 		}
 		double score =0;
 		double avg;
@@ -341,18 +343,21 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 	return bins;
 }
 
-unsigned int * get_bin_order(struct bid_bin * bins,struct configuration * conf,unsigned int * bin_count) {
+unsigned int ** get_bin_order(struct bid_bin * bins,struct configuration * conf,unsigned int * bin_count) {
 	double score[conf->goods];
-	unsigned int * order = malloc(sizeof(int)*conf->goods);	
+	unsigned int ** order = malloc(sizeof(int *)*2);	
+	order[0] = malloc(sizeof(int)*conf->goods);
+	order[1] = malloc(sizeof(int)*conf->goods);
 	int x,y;
 	for(x=0;x<conf->goods;x++) {
 		score[x] = bins[x].score;
-		order[x] = conf->goods;
+		order[0][x] = conf->goods;
 	}
 	double max = 0;
 	unsigned int max_index =0;
 	
 	for(x = 0;x<conf->goods;x++) {
+	     
 		max_index = conf->goods;
 		max = 0;
 		for(y=0;y<conf->goods;y++){
@@ -363,8 +368,9 @@ unsigned int * get_bin_order(struct bid_bin * bins,struct configuration * conf,u
 			
 		}
 		if(max_index < conf->goods) {
-			score[max_index] = 0;		
-			order[max_index] = x;
+			score[max_index] = 0;	
+			order[0][max_index] = x;
+			order[1][x] = max_index;
 		}
 	}
 	return order;
@@ -377,7 +383,7 @@ unsigned int * get_bin_order(struct bid_bin * bins,struct configuration * conf,u
 
 void calc_best(struct configuration * conf,
 	       unsigned int * bin_count,
-	       unsigned int * order,
+	       unsigned int ** order,
 	       struct bid_bin * bins) {
 	const unsigned int goods = conf->goods;
 	unsigned int allocation_count[goods];
@@ -394,7 +400,7 @@ void calc_best(struct configuration * conf,
 	for(x = 0; x < goods; x++){
 		allocation_count[x] = 0;
 		allocation_dummy[x] = 0;
-		if(order_count == order[x]) {
+		if(order_count == order[0][x]) {
 		     bin_index = x;
 		}	     
 	}
@@ -410,7 +416,7 @@ void calc_best(struct configuration * conf,
 	}
 	while(1) {
 	     	for(x = 0; x < goods; x++){
-		     if(order_count == order[x]) {
+		     if(order_count == order[0][x]) {
 			  bin_index = x;
 		     }	     
 		}
@@ -507,10 +513,10 @@ int main(int argc, char *argv[])   {
 	}
 	struct bid_bin * bins = allocate_bid_bin(fp,bin_count,conf,bid_conf,have_singleton);
 	fclose(fp);
-	unsigned int * order = get_bin_order(bins,conf,bin_count);
+	unsigned int ** order = get_bin_order(bins,conf,bin_count);
 	for(x=0;x<conf->goods;x++) {
 		double score = bins[x].score;
-		printf("bin %d score %.3lf order %u count %u average %.3lf\n",x,score,order[x],bin_count[x],bins[x].average);
+		printf("bin %d score %.3lf order %u count %u average %.3lf\n",x,score,order[0][x],bin_count[x],bins[x].average);
 		int y;
 		for(y =0; y < bin_count[x];y++) {
 			unsigned int id = bins[x].bids[y].id;
