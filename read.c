@@ -25,7 +25,6 @@ struct bid2 {
 	double offer;
 	double average;
 	unsigned int id;
-//	unsigned int index;
 	unsigned int dummy;
 };
 
@@ -381,7 +380,75 @@ unsigned int ** get_bin_order(struct bid_bin * bins,struct configuration * conf,
 #define BIN (0)
 #define INDEX (1)
 
+int is_compatible(struct configuration * conf,
+		  unsigned int id,
+		  unsigned int (* bid_conf)[conf->words],
+		  unsigned int * allocation) {
+	int x;
+	int ret = 1;
+	for(x=0;(x<conf->words) && (ret);x++)  {
+		ret = !(allocation[x] & bid_conf[id][x]);
+	}
+	return !(ret);
+}
+
+int is_not_empty(struct configuration * conf,
+		 unsigned int * allocation) {
+	int x;
+	int status = 0;
+	for(x=0;(x<conf->words) && !(status);x++) {
+		status |= (allocation[x]);
+	}
+	return status;
+}
+
 void calc_best(struct configuration * conf,
+	       unsigned int * bin_count,
+	       unsigned int ** order,
+	       unsigned int (* bid_conf)[conf->words],
+	       struct bid_bin * bins) {
+	const unsigned int goods = conf->goods;
+	const unsigned int words = conf->words;
+	unsigned int allocation_count[goods];
+	unsigned int allocation[conf->words];
+	//0 = bin, 1 index
+	unsigned int allocation_id[goods][2];
+	unsigned int allocation_id_index = 0;
+	unsigned int allocation_dummy[goods];
+	double value = 0;;
+	double max = 0;
+	int x;	
+	int bin_index = goods;
+	int order_count = 0;
+	//initilize to 0	
+	for(x = 0; x < goods; x++){
+		allocation_count[x] = 0;
+		allocation_dummy[x] = 0;     
+	}
+	for(x = 0;x < words;x++) {
+		allocation[x] = 0;
+	}
+#define _BID(X,Y) (bins[X].bids[Y])
+#define BID (_BID(low_order_good,bincount_to_allocate))
+	int low_order_good = order[1][0]; //initiate at the lowest order good;
+	int bincount_to_allocate = 0;
+	int id_to_allocate = BID.id;
+	double allocation_value = BID.offer;
+
+	for(x=0;x<words;x++) {
+		allocation[x] = bid_conf[id_to_allocate][x];
+	}
+
+
+
+	while(is_not_empty(conf,allocation)) {
+		;
+	}
+
+
+}
+
+void calc_best1(struct configuration * conf,
 	       unsigned int * bin_count,
 	       unsigned int ** order,
 	       struct bid_bin * bins) {
@@ -524,7 +591,7 @@ int main(int argc, char *argv[])   {
 		}
 	}
 
-	calc_best(conf, bin_count,order,  bins);
+	calc_best(conf, bin_count,order,  bid_conf,bins);
 	printf("Bye\n");
 exit(EXIT_SUCCESS);
 }
