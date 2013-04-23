@@ -27,7 +27,6 @@ struct bid2 {
 	unsigned int id;
 	unsigned int dummy;
 };
-
 struct bid_bin {
 	unsigned int size;
 	unsigned int good;
@@ -380,16 +379,36 @@ unsigned int ** get_bin_order(struct bid_bin * bins,struct configuration * conf,
 #define BIN (0)
 #define INDEX (1)
 
-int is_compatible(struct configuration * conf,
+int is_conflict(struct configuration * conf,
 		  unsigned int id,
 		  unsigned int (* bid_conf)[conf->words],
-		  unsigned int * allocation) {
+		  unsigned int (* allocation)) {
 	int x;
-	int ret = 1;
-	for(x=0;(x<conf->words) && (ret);x++)  {
-		ret = !(allocation[x] & bid_conf[id][x]);
+	int ret = 0;
+	for(x=0;(x<conf->words);x++)  {
+		if(allocation[x] & bid_conf[id][x]) {
+			ret = 1;
+			break;
+		}
 	}
-	return !(ret);
+	return (ret);
+}
+
+int is_dummy_conflict(unsigned int dummy,
+		unsigned int (* dummies),
+		unsigned int size) {
+	int x;
+	int ret = 0;
+	//special case if there is no dummy good
+	if(!dummy) {return ret;}
+
+	for(x=0;x<size;x++) {
+		if(dummy == dummies[x]) {
+			ret = 1;
+			break;
+		}
+	}
+	return ret;
 }
 
 int is_not_empty(struct configuration * conf,
@@ -415,7 +434,7 @@ void calc_best(struct configuration * conf,
 	unsigned int allocation_id[goods][2];
 	unsigned int allocation_id_index = 0;
 	unsigned int allocation_dummy[goods];
-	double value = 0;;
+	double value = 0;
 	double max = 0;
 	int x;	
 	int bin_index = goods;
@@ -434,14 +453,79 @@ void calc_best(struct configuration * conf,
 	int bincount_to_allocate = 0;
 	int id_to_allocate = BID.id;
 	double allocation_value = BID.offer;
-
+	if(allocation_value > max) {
+		max = allocation_value;
+	}
+	//sets which allocation we added with reference to the bin and the index in the bin
+	allocation_dummy[allocation_id_index] = BID.dummy;
+	allocation_id[allocation_id_index][BIN] = low_order_good;
+	allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
+	//how many allocation we have, decrement when we backtrack
+	allocation_id_index++;
+	//increment the counter for that good so when we backtrack we know which next we should take
+	//should probably everytime we allocate set the future goods to zero;
+	allocation_count[low_order_good]++;
+	
+	//allocate bid
 	for(x=0;x<words;x++) {
-		allocation[x] = bid_conf[id_to_allocate][x];
+		allocation[x] |= bid_conf[id_to_allocate][x];
 	}
 
+	order_count++; // should be one
 
+	while(allocation_id_index) {//is_not_empty(conf,allocation)) {
+		//now do ordercount++ until you find an unallocated good
+		//order count should not decreese until you backtrack where you either go backwards
+		// or reset to zero
+		
+		int current_low_order_good = order[1][order_count];
+		// which word the good is located in
+		int word_index = current_low_order_good/WORD; 
+		// which bit position in the word the good represent
+		int bit_index = current_low_order_good % WORD; 
+		while((allocation[word_index] & (1 << bit_index)) && (order_count < goods)) {
+			order_count++;
+			current_low_order_good = order[1][order_count];
+			word_index = current_low_order_good/WORD;
+			bit_index = current_low_order_good % WORD;
+		}
 
-	while(is_not_empty(conf,allocation)) {
+		if(!(order_count < goods)) {
+			goto backtrack;
+		};
+		low_order_good = current_low_order_good;
+		bincount_to_allocate = allocation_count[low_order_good];
+		id_to_allocate = BID.id;
+		while(is_conflict(conf,id_to_allocate,bid_conf,allocation) ||
+		      is_dummy_conflict(BID.dummy,allocation_dummy,allocation_id_index) ) {
+			allocation_count[low_order_good]++;
+			bincount_to_allocate = allocation_count[low_order_good];
+			id_to_allocate = BID.id;
+		}
+
+		//allocate bid
+		for(x=0;x<words;x++) {
+			allocation[x] |= bid_conf[id_to_allocate][x];
+		}
+		printf("low_order_good %u,bincount_to_allocate %u\n",low_order_good,bincount_to_allocate);
+		double bid_value = BID.offer;
+		allocation_value += bid_value;
+
+		if(allocation_value > max) {
+			max = allocation_value;
+			printf("New max of %.3lf \n",max);
+		}
+		
+		allocation_dummy[allocation_id_index] = BID.dummy;
+		//sets which allocation we added with reference to the bin and the index in the bin
+		allocation_id[allocation_id_index][BIN] = low_order_good;
+		allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
+		//how many allocation we have, decrement when we backtrack
+		allocation_id_index++;	       	       
+		allocation_count[low_order_good]++;
+	
+		
+	backtrack:
 		;
 	}
 
