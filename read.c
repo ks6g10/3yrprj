@@ -24,9 +24,11 @@ struct bid_ptr {
 struct bid2 {
 	double offer;
 	double average;
+	unsigned int bin;
 	unsigned int id;
 	unsigned int dummy;
 };
+
 struct bid_bin {
 	unsigned int size;
 	unsigned int good;
@@ -291,6 +293,7 @@ struct bid_bin * allocate_bid_bin(FILE * fp,
 		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].offer = value;
 		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].id = id;
 		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].dummy = dummy_good;
+		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].bin = bin_for_bid;
 		double tmp_average = value/((double)goods_count);
 		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].average = tmp_average;
 		if(tmp_average > bins[bin_for_bid].average) {
@@ -431,7 +434,7 @@ void calc_best(struct configuration * conf,
 	unsigned int allocation_count[goods];
 	unsigned int allocation[conf->words];
 	//0 = bin, 1 index
-	unsigned int allocation_id[goods][2];
+	struct bid2 * allocation_id[goods];
 	unsigned int allocation_id_index = 0;
 	unsigned int allocation_dummy[goods];
 	double value = 0;
@@ -458,8 +461,8 @@ void calc_best(struct configuration * conf,
 	}
 	//sets which allocation we added with reference to the bin and the index in the bin
 	allocation_dummy[allocation_id_index] = BID.dummy;
-	allocation_id[allocation_id_index][BIN] = low_order_good;
-	allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
+	allocation_id[allocation_id_index] = &BID;
+//	allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
 	//how many allocation we have, decrement when we backtrack
 	allocation_id_index++;
 	//increment the counter for that good so when we backtrack we know which next we should take
@@ -477,7 +480,8 @@ void calc_best(struct configuration * conf,
 		//now do ordercount++ until you find an unallocated good
 		//order count should not decreese until you backtrack where you either go backwards
 		// or reset to zero
-		
+	lbl_continue:
+		;
 		int current_low_order_good = order[1][order_count];
 		// which word the good is located in
 		int word_index = current_low_order_good/WORD; 
@@ -518,14 +522,26 @@ void calc_best(struct configuration * conf,
 		
 		allocation_dummy[allocation_id_index] = BID.dummy;
 		//sets which allocation we added with reference to the bin and the index in the bin
-		allocation_id[allocation_id_index][BIN] = low_order_good;
-		allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
+		allocation_id[allocation_id_index] = &BID;
+//		allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
 		//how many allocation we have, decrement when we backtrack
 		allocation_id_index++;	       	       
 		allocation_count[low_order_good]++;
 	
-		
+		goto lbl_continue;
 	backtrack:
+
+		allocation_id_index--;
+		allocation_value -=allocation_id[allocation_id_index]->offer;
+		id_to_allocate = allocation_id[allocation_id_index]->id;
+		for(x=0;x<words;x++) {
+			allocation[x] ^= bid_conf[id_to_allocate][x];
+		}
+		low_order_good = allocation_id[allocation_id_index]->bin;
+		if(allocation_count[low_order_good] > bin_count[low_order_good]) {
+			goto backtrack;
+		}
+//		goto lbl_continue;
 		;
 	}
 
