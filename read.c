@@ -395,8 +395,11 @@ int is_conflict(struct configuration * conf,
 	int x;
 	int ret = 0;
 	for(x=0;(x<conf->words);x++)  {
-		if(allocation[x] & bid_conf[id][x]) {
+		if((allocation[x] & bid_conf[id][x]) !=0) {
 			ret = 1;
+			if(id == 0) {
+				printf("alloc %u bid0 %u and %u\n",allocation[x] , bid_conf[id][x],allocation[x] & bid_conf[id][x]);
+			}
 			break;
 		}
 	}
@@ -409,7 +412,7 @@ int is_dummy_conflict(unsigned int dummy,
 	int x;
 	int ret = 0;
 	//special case if there is no dummy good
-	if(!dummy) {return ret;}
+	if(dummy ==0) {return ret;}
 
 	for(x=0;x<size;x++) {
 		if(dummy == dummies[x]) {
@@ -435,6 +438,7 @@ void print_debug(struct configuration * conf,
 		 unsigned int allocation_id_index,
 		 unsigned int low_order_good,
 		 unsigned int * bin_count) {
+	return;
 	printf("low order good %u allocation_id_index %u\n",low_order_good,allocation_id_index);
 	int x;
 	printf("allocation:\n");
@@ -453,7 +457,7 @@ void calc_best(struct configuration * conf,
 	       struct bid_bin * bins) {
 	const unsigned int goods = conf->goods;
 	const unsigned int words = conf->words;
-	unsigned int allocation_count[goods];
+	unsigned int allocation_count[goods]; 
 	unsigned int allocation[conf->words];
 	//0 = bin, 1 index
 	struct bid2 * allocation_id[goods];
@@ -520,19 +524,14 @@ void calc_best(struct configuration * conf,
 		if(!(order_count < goods)) {
 			goto backtrack;
 		};
-		bincount_to_allocate = allocation_count[low_order_good];
-		id_to_allocate = BID.id;
 
-		while(is_conflict(conf,id_to_allocate,bid_conf,allocation) ||
-		      is_dummy_conflict(BID.dummy,allocation_dummy,allocation_id_index) ) {		
-			allocation_count[low_order_good]++;
+		do{
 			bincount_to_allocate = allocation_count[low_order_good];
-			if(allocation_count[low_order_good] >= bin_count[low_order_good]) {
-				goto backtrack;
-			}
-			id_to_allocate = BID.id;			
+			id_to_allocate = BID.id;
+			allocation_count[low_order_good]++;
 			
-		}
+		}while(is_conflict(conf,id_to_allocate,bid_conf,allocation) ||
+		       is_dummy_conflict(BID.dummy,allocation_dummy,allocation_id_index));
 //		printf("enter alloc\n");
 		//allocate bid
 		for(x=0;x<words;x++) {
@@ -541,8 +540,7 @@ void calc_best(struct configuration * conf,
 //		printf("allocating id %u\n",id_to_allocate);
 
 //		printf("low_order_good %u,bincount_to_allocate %u\n",low_order_good,bincount_to_allocate);
-		double bid_value = BID.offer;
-		allocation_value += bid_value;
+		allocation_value += BID.offer;// bid_value;
 
 		if(allocation_value > max) {
 			max = allocation_value;
@@ -554,30 +552,40 @@ void calc_best(struct configuration * conf,
 		allocation_id[allocation_id_index] = &BID;
 //		allocation_id[allocation_id_index][INDEX] = bincount_to_allocate;
 		//how many allocation we have, decrement when we backtrack
-		allocation_id_index++;	       	       
-		allocation_count[low_order_good]++;
+		allocation_id_index++;
+//		allocation_count[low_order_good]++;
 		print_debug(conf,&allocation_count,allocation_id_index,low_order_good,bin_count);
 		goto lbl_continue;
 	backtrack:
 		print_debug(conf,&allocation_count,allocation_id_index,low_order_good,bin_count);
-		allocation_id_index--;
-		allocation_value -=allocation_id[allocation_id_index]->offer;
-		id_to_allocate = allocation_id[allocation_id_index]->id;
-		low_order_good = allocation_id[allocation_id_index]->bin;
+		int backtrack;
+		do {
+			backtrack = 0;
+			allocation_id_index--;
+			allocation_dummy[allocation_id_index] = 0;
+			allocation_value -=allocation_id[allocation_id_index]->offer;
+			id_to_allocate = allocation_id[allocation_id_index]->id;
+			low_order_good = allocation_id[allocation_id_index]->bin;
 //		printf("dealloc id %u bin %u\n",id_to_allocate,low_order_good);
+			
+			for(x=0;x<words;x++) {
+				allocation[x] &= ~(bid_conf[id_to_allocate][x]);
+			}
 		
-		for(x=0;x<words;x++) {
-			allocation[x] ^= bid_conf[id_to_allocate][x];
-		}
-		
-		order_count = 0;//order[0][low_order_good];
+			order_count = 0;//order[0][low_order_good];
 //		printf("alloc %u max %u\n",allocation_count[low_order_good], bin_count[low_order_good]);
-		if(allocation_count[low_order_good] >= bin_count[low_order_good]) {
-			allocation_count[low_order_good] =0;
+			if(allocation_count[low_order_good] >= bin_count[low_order_good]) {
+				if(order[0][low_order_good] == 0) {
+					return;
+				}
+				allocation_count[low_order_good] =0;
+				backtrack = 1;
+			}
+
+		}while(backtrack);
 //			printf("dealloc more\n");
 
-			goto backtrack;
-		}
+//		goto backtrack;		
 		print_debug(conf,&allocation_count,allocation_id_index,low_order_good,bin_count);
 //		goto lbl_continue;
 		;
