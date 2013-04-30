@@ -274,6 +274,99 @@ which consists of generating pairwise disjoint subsets from a given set, and the
 %\begin{algorithm}
 %\caption{Calculate the }asd
 \subsection{Algorithm}
+
+\begin{algorithm*}[!t]
+\caption{The GPU-CSG Algorithm\label{gpudp}}
+\textbf{Input}
+
+$f$\hfill The array which holds the values
+
+$C_0$\hfill The first coalition structure to do evaluation on
+
+$\Psi$\hfill The maximum number of splittings
+
+$\Omega$ \hfill The full coalition structure
+
+\textbf{Constants}
+
+$\lambda$ \hfill How many splittings should be evaluated per thread
+
+$\alpha$ \hfill The total number of coalition structures that are being evaluated
+
+$\beta$ \hfill The number of coalition structures that are evaluated per batch
+
+\textbf{Variables} 
+
+$\Upsilon$ \hfill A shared array containing warps maximum values
+
+$\upsilon$ \hfill A local array containing one of the threads value
+
+$\Delta$ \hfill Holds all the coalition structures that will be evaluated
+
+$tid = threadIdx.x$ \hfill The thread index inside the block
+
+$laneId = threadIdx.x \% 32$ \hfill The thread index inside the warp
+
+$\psi := \lambda*(tid+blockdim.x*blockIdx.x)$ \hfill Initial subset construction index
+
+\textbf{Start of algorithm}
+\begin{algorithmic}[1]
+\IF{$tid = 0$}
+  \STATE $\Delta_0 := C_0$ \hfill Thread 0 sets the first coalition from input
+  \FOR {$i := 1$ to $\alpha$}
+    \STATE $\Delta_i := nextCoalition(\Delta_{i-1})$ \hfill Generate the next coalitions to evaluate
+  \ENDFOR \hfill Checkpoint 1
+\ENDIF
+\STATE $syncthreads()$ \hfill Synchronise the threads inside the block 
+\IF{$laneId < \alpha$}
+  \STATE $initShift(\Delta_{tid},tid)$ \hfill First few threads of each warp initialises the shift array
+\ENDIF
+\hfill Checkpoint 2
+\FOR{$x := 0$ to $\alpha$}\label{lst:line:bigfetch}
+  \STATE Set all values in $\upsilon$ to 0 \hfill Reset the values to 0
+
+  \IF{$\psi \geq \Psi$}
+    \STATE goto line \ref{lst:line:reductionstart} \hfill The threads subset index is larger than the number of splittings
+  \ENDIF
+\hfill Checkpoint 3
+  \FOR{$z := 0$ to $\beta$}
+    \IF{$\Delta_{z+x} \geq \Omega$}\label{lst:line:gotoif}
+      \STATE goto line \ref{lst:line:reductionstart} \hfill The coalition is outside the range of the calculation
+    \ENDIF
+    \STATE $S := initialSplit(\psi,\Delta_{z+x})$ \hfill Generate the $\psi$th splitting from a coalition 
+    \STATE $\upsilon_{0,z} := f(\Delta_{z+x}\backslash S)+f(S)$ \hfill Fetch the splittings value
+    \STATE $S := nextSplit(S)$ \hfill Generate the next splitting of the coalition
+    \STATE $\upsilon_{1,z} := f(\Delta_{z+x}\backslash S)+f(S)$ \hfill Fetch the splittings value
+    \STATE $z := z + 1$ \hfill Increment counter and move on the next coalition
+  \ENDFOR
+\hfill Checkpoint 4
+\STATE $syncthread()$
+  \FOR{$z:=0$ to $\beta$}\label{lst:line:reductionstart}
+  
+    \IF{$\upsilon_{1,z} > \upsilon_{0,z}$}\label{lst:line:checkif}
+      \STATE $\upsilon_{0,z} := \upsilon_{1,z}$ \hfill Sets the biggest value
+    \ENDIF
+    
+    \STATE $\upsilon_{0,z} := warpReduction(\upsilon_{0,z})$ \hfill Finds maximum value in scope of warp
+
+    \IF{$tid \% 32 = 0$}
+      \STATE $i := tid / 32$ \hfill Which nth warp does the thread belong to
+      \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$ \hfill First thread in each warp writes maximum value
+    \ENDIF
+  \ENDFOR   \hfill Checkpoint 5
+  \STATE $blockReduction()$\label{lst:line:blockReduction} \hfill Finds maximum value in scope of block
+  \hfill Checkpoint 6
+  \IF{$tid = 0$}
+  \STATE $atomicUpdate()$\label{lst:line:reductionend} \hfill First thread does an atomic update on global memory
+  \ENDIF  \hfill Checkpoint 7
+  \STATE $x := x + \beta$
+\ENDFOR
+\RETURN $f$
+\end{algorithmic}
+\end{algorithm*}
+
+
+
 \textbf{Input}
 
 $f$\hfill The array which holds the bids

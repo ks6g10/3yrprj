@@ -1,0 +1,34 @@
+\begin{thebibliography}{1}
+
+\bibitem{boyer2012solving}
+V.~Boyer, D.~El~Baz, and M.~Elkihel.
+\newblock Solving knapsack problems on gpu.
+\newblock {\em Computers \& Operations Research}, 39(1):42--47, 2012.
+
+\bibitem{michalak2010distributed}
+T.~Michalak, J.~Sroka, T.~Rahwan, M.~Wooldridge, P.~McBurney, and N.R.
+  Jennings.
+\newblock A distributed algorithm for anytime coalition structure generation.
+\newblock In {\em Proceedings of the 9th International Conference on Autonomous
+  Agents and Multiagent Systems: volume 1-Volume 1}, pages 1007--1014.
+  International Foundation for Autonomous Agents and Multiagent Systems, 2010.
+
+\bibitem{rahwan2008improved}
+T.~Rahwan and N.R. Jennings.
+\newblock An improved dynamic programming algorithm for coalition structure
+  generation.
+\newblock In {\em Proceedings of the 7th international joint conference on
+  Autonomous agents and multiagent systems-Volume 3}, pages 1417--1420.
+  International Foundation for Autonomous Agents and Multiagent Systems, 2008.
+
+\bibitem{rothkopf1998computationally}
+M.H. Rothkopf, A.~Peke{\v{c}}, and R.M. Harstad.
+\newblock Computationally manageable combinational auctions.
+\newblock {\em Management science}, 44(8):1131--1147, 1998.
+
+\bibitem{sandholm2002algorithm}
+T.~Sandholm.
+\newblock Algorithm for optimal winner determination in combinatorial auctions.
+\newblock {\em Artificial Intelligence}, 135(1):1--54, 2002.
+
+\end{thebibliography}
