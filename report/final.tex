@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt]{report}
+  \documentclass[a4paper, 12pt]{report}
 
 \usepackage{amsfonts} % if you want blackboard bold symbols e.g. for real numbers
 \usepackage{graphicx} % if you want to include jpeg or pdf pictures
@@ -122,6 +122,9 @@ researchers have used GPUs to run concurrent algorithms faster than the equivale
 This advance in computer science can allow for large computations that were previously unfeasible by leveraging the parallel nature of GPUs. 
 In combinatorial optimization the problem consist of finding the optimal solution for a problem, 
 which for a large set of data can be unfeasable if the problem is NP-hard.
+
+
+
 \section{Background}
 \subsection{Combinatorial Auctions}
 Sometimes auctioneers may sell out several of their assets at the same time such as the government selling parts of the radio spectrum. The bidder may then make offers on subsets of the assets. The problem occurs when there is a large amount of assets being sold while the amount of bids are non-trivial. As for each bid, 
@@ -177,7 +180,7 @@ an agent can be described as a entity that act on its own, be it a person or a n
 A set of assets subjected to a bid is called a coalition formation, 
 in short when two or more agents form a coalition to be regarded as one entity.
 The auction bid will be translated to coalition value, 
-which means the value gained when two ore more agents form a coalition.
+which means the value gained when two or more agents form a coalition.
 Analogous to the previous example, given N agents, 
 generate a set of coalition formations such that the outcome is optimal in regards to the coalition formation value.
 This however will be an extreme challenge as the number of possible partitions grows exponential with $n$, specifically $O(n^n)$~\cite{rahwan2008improved}.
@@ -207,24 +210,91 @@ $O$ a function that maps from a subset $C \subseteq A$ to the subset that maximi
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{NVIDIA CUDA}
-CUDA (formerly known as Compute Unified Device Architecture) is a framework by NVIDIA equivalent to OpenCL 
-which allows for C,C++ and FORTRAN code to be compiled and run on its Graphics Processing Units (GPUs).
-As GPUs are many-core processors designed to handle large amount of independent data when running a graphics program, 
-it is advantageous to utilize such architecture to handle general purpose algorithms to solve complex problems with parallel nature.
-This architecture is described as Single Instruction Multiple Threads (SIMT) which could be seen similar to the Single instruction, 
-multiple data (SIMD) architecture.
-The fundamental difference is that with SIMT, branch divergence is allowed.
+\subsection{Previous Work}
+Solving data-independent and parallel problems will always have a benefit when run on a GPU, 
+whether it is computing on MRI scans, which gave a significantly large speedup factor of 431 using the GPU, 
+or generating hashes and getting a comparably modest speedup of times 11~\cite{ryoo2008optimization}.  
+This is particularly the case whenever the algorithm has data-independent sub-routines which may be run concurrently. 
+If so the GPU will most likely perform better. 
+Combining the GPU together with dynamic programming has been used before to solve similar combinatorial optimisation problems.  
+Boyer, et al. successfully implemented and solved the knapsack problem with a factor speedup of 26~\cite{boyer2012solving}.  
+They also introduced ways to reduce memory usage and thus enable computation of much larger data sets, as well as reduce the  bandwidth utilised. 
+In so doing, they also reduce computation time by being able to fetch more data points at an faster rate. 
+Thus, they fully exploit the key features of GPU programming whereby, with limited amount of memory available on a GPU,  
+they are able to maximise the effective bandwidth of the algorithm.
 
-The CUDA architecture consist of a scaled array of Streaming Multiprocessors (SM), 
-where each SM contains from 8 cores to 192 programmable cores depending on the GPU version.
-Where one GPU can have several SMs.
-When launching a kernel which can be seen as a function call, the threads assigned are divided up into blocks of threads.
-Each block gets assigned to an SM to be processed resulting in two blocks from the same kernel can be running concurrently on two different SMs.
-If there is no SM freely available the block will be put into a queue.
-The next thing to note is that each block is divided into warps of 32 threads which is scheduled by the warp scheduler.
-The reason is to hide memory read and write latency as while one warp is blocked waiting for data, another warp can run its instructions.
-Therefore the size of each threadblock should be a multiple of 32 threads to allow full utilisation of the warp.
+Now, turning to the CSG problem, in terms of parallel programming approaches, 
+we note the work of Michalak et. al. that uses a distributed variant of the anytime IP algorithm called 
+D-IP to solve the Coalition Structure Generation~\cite{michalak2010distributed}. 
+They use 14 dual-core workstations to distribute the workload to speed up their run-time. 
+Their algorithm  shows it is possible to distribute the solutions for the CSG problem and that there may be
+significant from distributing computation (taking only 11\% to 4\% of the time, compared to the centrilised and serialised IP). 
+However, while their algorithm use traditional programming strategies effective on powerful single-threaded systems, 
+it does require data to be shared between computational nodes over potentially slow Ethernet links and also sharing 
+redundant copies of the input across each. Finally, their algorithm also suffers from the same weaknesses as IP, that is, 
+no deterministic completion time (in the worst case ($O(n^n))$ as it is dependent on the coalition value function. 
+In contrast, GPU-CSG has a deterministic completion time ($O(3^n)$) and relies on much faster GPU memory access.
+
+As shown, GPUs have assisted largely while solving problems rangeing from relatively data-independant algorithms to more complex problems in the field of
+combinatorial optimisation, whilst researchers have only tackled the combinatorial auction problems only with the use of a handfull of machines trying to spread
+the workload. No one have to this date tackled the coalition structure generation problem using GPUs.
+
+In what follows, we first describe the CUDA architecture (the GPU architecture provided by NVIDIA) to clarify what 
+are the key features and issues of using GPUs to solve large combinatorial problems.
+We then describe the DP algorithm and the data structures we use to implement it on the CUDA architecture.
+
+\subsection{The CUDA Architecture} \label{Cuda} %done
+Graphics Processing Units (GPUs) from NVIDIA and AMD are highly multi-threaded, many-core architectures primarily 
+aimed at highly parallel image processing and rendering. In recent years, however, 
+there has been a move to use these to support more general-purpose computing through the OpenCL and NVIDIA CUDA framework.
+This was achieved by devoting a larger amount of transistors towards many computational units rather than data caching and advanced 
+flow control more often seen in CPU architectures. NVIDIA describes their general-purpose GPU CUDA architecture as a Single Instruction 
+Multiple Threads (SIMT) architecture, meaning groups of multiple threads execute the same instructions concurrently and is proportional to SIMD architectures. 
+This enables their GPUs to be highly advantageous when performing data-independent and non-divergent tasks. 
+To understand this further the grouping of the threads need to be explained and is outlined in figure \ref{fig:reduction}.
+\begin{figure*}
+\centering
+\includegraphics[width=\linewidth]{reduction}
+\caption{Outline of reduction across thread, warp, block and kernel \label{fig:reduction}. The kernel is a function called by the CPU.}
+\end{figure*}
+The kernel is a device-specific CUDA function that is called by the sequential host code(CPU), 
+which will request a specified number of blocks in a grid of blocks. 
+Each block may to this date consist of up to 1024 threads depending on the compatibility of the card, 
+with a maximum block grid size of $2^{31}-1$ blocks subjected to compatibility. 
+When run, the blocks will be distributed onto available multiprocessors, which then independently schedule the run-time of the block. 
+Note that blocks may be executed concurrently or sequential depending on the current workload and the number of available multiprocessors. 
+The block is split into smaller units of 32 threads called warps, all threads within the same warp are always scheduled the same instruction 
+to be run and this is what embodies the SIMT \footnote{Single Instruction Multiple Threads (SIMT) architecture, All threads inside a warp execute the same instruction} paradigm. 
+Therefore, branching threads causing intra-warp divergence means a warp will have inactive threads not executing any instructions,  which may lead to poor efficiency with worst case of sequential performance. 
+Further, warps are scheduled independently of each other meaning possibility of concurrent warp execution.
+
+The threads communicate with each other through writes to various types of memory outlined in table \ref{mem}. 
+There are three types of thread writable memory in the architecture; registers and local memory are each threads coupled memory, 
+which is not volatile and may be shared with other threads inside the same warp as described in Section \ref{reduction}. 
+Shared memory is as its name tells is shared between all threads within the same block, as it may be written to by any thread 
+within the block it should be treated as volatile, thus synchronization inside the block have to be consider whilst dealing with shared memory.
+Finally, global memory is the only persistent memory, which will persist between each kernel call, it may be manipulated by the host, 
+but also by any thread, and is the only means of communication in between kernels, blocks, and the host.
+
+Now, an important element of GPU programming is to manage the access to global memory effectively as it is very slow compared to memory access 
+of the on-chip memory on the GPU. In more detail, each load request from memory will fetch in cache-lines of size $32*wordsize$, meaning 
+cache-lines of 32, 64, and 128 bytes each when pulling the primitives char, short and int respectively. 
+This is because, as mentioned earlier, all 32 threads within the same warp issue the same instruction. 
+Thus each warp fetches 32 entities of a specific word type, if the memory reads within a warp is not coalesced (grouped within the same cache-line)
+within consecutive words, the effective bandwidth will drop immediately. 
+Table \ref{mem} summarises the key features of GPU memory access speeds and shows why it is important to avoid loading data from the global memory.
+
+\begin{table}
+\centering
+\caption{Memory scope, lifetime, and speed \label{mem}}
+\begin{tabular}{|l|l|l|l|} \hline
+Type&Scope&Lifetime&Relative Speed \\ \hline
+Register&Thread \& Warp&Thread&Fastest\\
+Shared&Block&Block&Fast\\
+Global&Kernel \& Host&Program&Slow\\
+\hline\end{tabular}
+\end{table}
+In the next subsection, we describe the DP algorithm, which we build upon.
 
 
 \section{Literature review}
