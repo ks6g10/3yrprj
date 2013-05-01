@@ -47,32 +47,19 @@
  }; 
  
  \addplot[ mark = x,blue,smooth,nodes near coords,nodes near coords align={below}] coordinates  
-{( 20, 1 )
- ( 21, 2 )
- ( 22, 3 )
- ( 23, 6 )
- ( 24, 18 )
- ( 25, 56 )
- ( 26, 175 )
- ( 27, 539 )
- ( 28, 1656)
- ( 29, 5060)
+{( 20, 0.08 )
+ ( 21, 0.2 )
+ ( 22, 0.5 )
+ ( 23, 1.2 )
+ ( 24, 3 )
+ ( 25, 8 )
+ ( 26, 22 )
+ ( 27, 63 )
+ ( 28, 184)
+ ( 29, 541)
  }; 
 
- \addplot[ mark = x,green,smooth,nodes near coords] coordinates  
-{( 20, 1 )
- ( 21, 2 )
- ( 22, 3 )
- ( 23, 10 )
- ( 24, 32 )
- ( 25, 105 )
- ( 26, 333 )
- ( 27, 1037 )
- ( 28, 3218)
- ( 29, 10182)
- }; 
-
-\legend{CPU,CPU extrapolated,GPU Splitt-Sharing,GPU}
+\legend{CPU,CPU extrapolated,GPU-CSG}
 
 \end{axis}
 \end{tikzpicture}
