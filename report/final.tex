@@ -275,8 +275,9 @@ which consists of generating pairwise disjoint subsets from a given set, and the
 %\caption{Calculate the }asd
 \subsection{Algorithm}
 
-\begin{algorithm*}[!t]
-\caption{The GPU-CSG Algorithm\label{gpudp}}
+%\begin{algorithm}[]
+\textbf{The GPU-CSG Algorithm\label{gpudp}} \\
+
 \textbf{Input}
 
 $f$\hfill The array which holds the values
@@ -285,164 +286,78 @@ $C_0$\hfill The first coalition structure to do evaluation on
 
 $\Psi$\hfill The maximum number of splittings
 
-$\Omega$ \hfill The full coalition structure
-
 \textbf{Constants}
 
-$\lambda$ \hfill How many splittings should be evaluated per thread
+$\lambda = \lceil\Psi/32\rceil$ \hfill How many splittings should be evaluated per thread
 
-$\alpha$ \hfill The total number of coalition structures that are being evaluated
-
-$\beta$ \hfill The number of coalition structures that are evaluated per batch
-
-\textbf{Variables} 
-
-$\Upsilon$ \hfill A shared array containing warps maximum values
-
-$\upsilon$ \hfill A local array containing one of the threads value
-
-$\Delta$ \hfill Holds all the coalition structures that will be evaluated
+$\alpha = 2$ \hfill The total number of coalition structures that are being evaluated
 
 $tid = threadIdx.x$ \hfill The thread index inside the block
 
-$laneId = threadIdx.x \% 32$ \hfill The thread index inside the warp
+$laneId = tid \% 32$ \hfill The thread index inside the warp
 
-$\psi := \lambda*(tid+blockdim.x*blockIdx.x)$ \hfill Initial subset construction index
+$warpId = tid / 32$ \hfill The warp index inside the block
+
+\textbf{Variables} 
+
+$shift$ \hfill A shared array containing the left shift values for each coalition
+
+$S$ \hfill The current splitting
+
+$Max$ \hfill The maximum value
+
+$\Delta$ \hfill A shared array containing the coalition structures that will be evaluated 
+
+
+$\psi := \lambda*laneId$ \hfill Initial subset construction index
+
+
 
 \textbf{Start of algorithm}
 \begin{algorithmic}[1]
 \IF{$tid = 0$}
   \STATE $\Delta_0 := C_0$ \hfill Thread 0 sets the first coalition from input
   \FOR {$i := 1$ to $\alpha$}
-    \STATE $\Delta_i := nextCoalition(\Delta_{i-1})$ \hfill Generate the next coalitions to evaluate
+    \STATE $\Delta_{i,0} := nextCoalition(\Delta_{i-1,1})$ \hfill Generate the next coalitions to evaluate
+    \STATE $\Delta_{i,1} := nextCoalition(\Delta_{i-1,0})$ \hfill Generate the next coalitions to evaluate
   \ENDFOR \hfill Checkpoint 1
 \ENDIF
 \STATE $syncthreads()$ \hfill Synchronise the threads inside the block 
-\IF{$laneId < \alpha$}
-  \STATE $initShift(\Delta_{tid},tid)$ \hfill First few threads of each warp initialises the shift array
+\IF{$laneId < 2$}
+  \STATE $initShift(\Delta_{warpId,laneId},tid)$ \hfill First two threads of each warp initialises the shift array
 \ENDIF
 \hfill Checkpoint 2
-\FOR{$x := 0$ to $\alpha$}\label{lst:line:bigfetch}
-  \STATE Set all values in $\upsilon$ to 0 \hfill Reset the values to 0
-
-  \IF{$\psi \geq \Psi$}
-    \STATE goto line \ref{lst:line:reductionstart} \hfill The threads subset index is larger than the number of splittings
-  \ENDIF
-\hfill Checkpoint 3
-  \FOR{$z := 0$ to $\beta$}
-    \IF{$\Delta_{z+x} \geq \Omega$}\label{lst:line:gotoif}
-      \STATE goto line \ref{lst:line:reductionstart} \hfill The coalition is outside the range of the calculation
-    \ENDIF
-    \STATE $S := initialSplit(\psi,\Delta_{z+x})$ \hfill Generate the $\psi$th splitting from a coalition 
-    \STATE $\upsilon_{0,z} := f(\Delta_{z+x}\backslash S)+f(S)$ \hfill Fetch the splittings value
-    \STATE $S := nextSplit(S)$ \hfill Generate the next splitting of the coalition
-    \STATE $\upsilon_{1,z} := f(\Delta_{z+x}\backslash S)+f(S)$ \hfill Fetch the splittings value
-    \STATE $z := z + 1$ \hfill Increment counter and move on the next coalition
-  \ENDFOR
-\hfill Checkpoint 4
-\STATE $syncthread()$
-  \FOR{$z:=0$ to $\beta$}\label{lst:line:reductionstart}
+  \STATE Set all values in Max to 0 \hfill Reset the values to 0
+  \STATE $S_0 = initialSplit(\psi,\Delta_{warpId,0})$  \hfill Get the first splitting, coalition one
+  \STATE $S_1 = initialSplit(\psi,\Delta_{warpId,1})$ \hfill  Get the first splitting, coalition two
+  \STATE \algorithmicif{$\psi \geq \Psi$} \algorithmicthen\space return void \algorithmicendif \space \hfill Subset index is larger than the number of splittings
   
-    \IF{$\upsilon_{1,z} > \upsilon_{0,z}$}\label{lst:line:checkif}
-      \STATE $\upsilon_{0,z} := \upsilon_{1,z}$ \hfill Sets the biggest value
-    \ENDIF
-    
-    \STATE $\upsilon_{0,z} := warpReduction(\upsilon_{0,z})$ \hfill Finds maximum value in scope of warp
+\hfill Checkpoint 3
+ \FOR{$z := 0$ to $\lambda$}
 
-    \IF{$tid \% 32 = 0$}
-      \STATE $i := tid / 32$ \hfill Which nth warp does the thread belong to
-      \STATE $\Upsilon_{i,z} := \upsilon_{0,z}$ \hfill First thread in each warp writes maximum value
+    \IF{$|\Delta_{warpId,0} \cap \Delta_{warpId,1}| = |\Delta_{warpId,1}| -1$}
+      \STATE $Tmp_0 := Tmp_1 := f(S_0)$
+    \ELSE
+      \STATE $Tmp_0 := f(S_0)$
+      \STATE $Tmp_1 := f(S_1)$
     \ENDIF
-  \ENDFOR   \hfill Checkpoint 5
-  \STATE $blockReduction()$\label{lst:line:blockReduction} \hfill Finds maximum value in scope of block
-  \hfill Checkpoint 6
-  \IF{$tid = 0$}
-  \STATE $atomicUpdate()$\label{lst:line:reductionend} \hfill First thread does an atomic update on global memory
-  \ENDIF  \hfill Checkpoint 7
-  \STATE $x := x + \beta$
+    \STATE $Tmp_0 := Tmp_0 + f(\Delta_{warpId,0}\backslash S_0)$ \hfill Fetch the splittings value
+    \STATE $Tmp_1 := Tmp_1 + f(\Delta_{warpId,1}\backslash S_1)$ \hfill Fetch the splittings value
+    \STATE $S_0 := nextSplit(S_0)$ \hfill Generate the next splitting of the coalition
+    \STATE $S_1 := nextSplit(S_1)$ \hfill Generate the next splitting of the coalition
+   \STATE \algorithmicif{\space$Max_0 < Tmp_0$} \algorithmicthen\space $ Max_0 := Tmp_0$ \algorithmicendif \hfill Sets the biggest value 
+  \STATE  \algorithmicif{\space$Max_1 < Tmp_1$} \algorithmicthen\space $ Max_1 := Tmp_1$ \algorithmicendif \hfill Sets the biggest value 
 \ENDFOR
+\STATE $Max_0 := warpReduction(Max_0)$ \hfill Finds maximum value in scope of warp
+\STATE $Max_1 := warpReduction(Max_1)$ \hfill Finds maximum value in scope of warp
+\IF{$laneId = 0$}
+\STATE  \algorithmicif{\space$f(\Delta_{warpId,0}) < Max_0$} \algorithmicthen\space $f(\Delta_{warpId,0}) := Max_0$ \algorithmicendif 
+\STATE  \algorithmicif{\space$f(\Delta_{warpId,1}) < Max_1$} \algorithmicthen\space $f(\Delta_{warpId,1}) := Max_1$ \algorithmicendif 
+\ENDIF
 \RETURN $f$
 \end{algorithmic}
-\end{algorithm*}
+%\end{algorithm}
 
-
-
-\textbf{Input}
-
-$f$\hfill The array which holds the bids
-
-$O$\hfill The step array that holds set configurations
-
-$ \Phi $ \hfill A reference to an maximum value bucket unique for each kernel
-
-$C$\hfill The set to do subset construction on
-
-$\Psi$\hfill The maximum subset construction index
-
-
-\textbf{Variables} 
-
-$\lambda$ \hfill How many bids should be evaluated per thread
-
-$\Upsilon$ \hfill A shared array containing threads maximum bid values
-
-$\Delta$ \hfill A shared array containing threads maximum bid subsets
-
-$\upsilon$ \hfill A local array containing one of the threads bid value
-
-$C'$ \hfill A local array containing one of the threads bid subsets
-
-$bid = blockIdx.x$ \hfill Which block the threads belong to
-
-$bdim = blockdim.x$ \hfill How many threads inside the block
-
-$tid = threadIdx.x$ \hfill The thread index inside the block
-
-$\psi := \lambda*(tid+bdim*bid)$ \hfill Initial subset construction index
-
-\textbf{Start of algorithm}
-\begin{algorithmic}[1]
-\STATE $\Delta _{tid} := \Upsilon _{tid} := 0$ \hfill Initialize values to zero
-\IF{$\psi \leq \Psi$} 
-\FOR {$i := 1$ to $\lambda$}
-\STATE $C'_{i} := (\neg C+\psi) \bigcap C$ \label{lst:line:subset} \hfill Integer subset construction
-\IF{$ \vert C'_{i} \vert \leq \dfrac{\vert C\vert }{2} \wedge \psi \leq \Psi$}
-\STATE $\upsilon _{i} := f[C/C'_{i}]+f[C'_{i}]$ \hfill Set the split subset coalition value
-\ENDIF 
-
-\IF {$\upsilon _{i} > \Upsilon _{tid}$} 
-\STATE $\Upsilon _{tid} := \upsilon _{i}$  \hfill Set value if $\upsilon _{tid}$ is greatest so far
-\STATE $\Delta _{tid} := C'_{i}$ \hfill Set subset if $\upsilon _{tid}$ is greatest so far
-\ENDIF
-\STATE $\psi := \psi + 1$ \hfill Increment by one
-\ENDFOR
-\ENDIF
-
-\STATE $syncthreads$ \hfill make sure all threads have finished
-\FOR {$i := bdim >> 1$ to $0$} \label{lst:line:mid}
-\IF{$tid < i$} \label{lst:line:midmid}
-\IF{$\Upsilon _{tid} \leq \Upsilon _{tid+i}$} \label{lst:line:midmidmid}
-\STATE $\Delta _{tid} := \Delta _{tid+i}$ 
-\STATE $\Upsilon _{tid} := \Upsilon _{tid+i}$
-\ENDIF
-\ENDIF
-\STATE $syncthreads$ \hfill make sure all threads have finished
-\STATE $i := i >> 1$ \hfill bit-shift i once to the right \label{lst:line:midlast}
-\ENDFOR \label{lst:line:midend}
-\IF{$tid == 0$} \label{lst:line:last}
-\STATE\algorithmicif{$\Upsilon _0 == 0$} \algorithmicthen\ {$ exit$}
-\algorithmicend\ \algorithmicif \hfill exit if the bid is zero
-\STATE\algorithmicif{$f_C > \Upsilon _0$} \algorithmicthen\ {$ exit$} 
-\algorithmicend\ \algorithmicif \hfill exit if the bid is less than for C
-\IF{$atomicMax(\Phi,\Upsilon _0) < \Upsilon _0$}  \label{lst:line:lastmid}
-\STATE $O_C = \Delta _0$ \hfill Sets the current optimal step in global memory
-\STATE $f_C = \Upsilon _0$ \hfill Sets the current optimal value in global memory
-\STATE $threadfence$ \hfill make sure all threads see the changes
-\ENDIF 
-
-\ENDIF \label{lst:line:lastend}
-\RETURN $O,f$
-\end{algorithmic}
 %\end{algorithm}
 Line~\ref{lst:line:subset} represent how the subset construction is made, it starts by taking the inverse of the integer $C$, 
 add together the subset construction index $\psi$, and finally apply a bit-wise AND with $C$ to get a guaranteed subset of $C$.
@@ -504,7 +419,6 @@ As the Cabob algorithm uses a branch by branch evaluation heuristic that are ind
 Such algorithm would be more than suitable to be implemented to run concurrently. \\
 Due to the promising results gained, a further more robust testing facility will be programmed to ensure the absolute correctness of my algorithm.
 If the results stays promising a paper will be written to try and publish the results.
-
 
 \bibliographystyle{plain}
 \bibliography{ref}

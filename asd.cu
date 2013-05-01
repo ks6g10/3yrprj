@@ -132,7 +132,7 @@ void printfo(dint MAXVAL) {
 #define WARPSIZE (32)
 //0
 #define MIN_BLOCKS_PER_MP 4
-#define NAGENTS (27)
+#define NAGENTS (20)
 //32  
 #define NSTREAMS (16)
 //2
@@ -191,7 +191,7 @@ __launch_bounds__(blockSize,MIN_BLOCKS_PER_MP)
 	const unsigned int warpId = tid/32;
 	const unsigned int specsplittings = (splittings/32)+!!(splittings&31);
 //(laneId < splittings)*(splittings/32)+(laneId < (splittings%32));,COMBS(29),(!!(COMBS(29)%32))+(COMBS(29)/32)
-	const unsigned int initsplit = tid*specsplittings;//+(laneId >= (splittings%32))*(splittings%32);
+	const unsigned int initsplit = laneId*specsplittings;//+(laneId >= (splittings%32))*(splittings%32);
 	
 	// const unsigned int initsplit = tid*specsplittings;
 	unsigned int leafsplit[2];
