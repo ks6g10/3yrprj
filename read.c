@@ -346,7 +346,6 @@ void allocate_all_bids(FILE * fp,
 		score = ((double)numbids_count[x])/avg;
 		}
 		conf->score[x] = score;
-		printf("id\n");
 	}
 	return ;	
 }
@@ -522,14 +521,14 @@ int is_conflict(struct configuration * conf,
 		  unsigned int (* allocation)) {
 	int x = 0;
 	int ret = 0;
-//	printf("hello id %u\n",id);
+	printf("hello id %u\n",id);
 	
 
 	for(x=0;(x<conf->words);x++)  {
-		if((allocation[x] & conf->allocation[id*2+x]) !=0) {
-			ret = 1;
-			return ret;
-		}
+		ret = (allocation[x] & conf->allocation[id*conf->words+x]); 
+		
+		if(ret){return ret;}
+		
 	}
 
 	return (ret);
@@ -616,6 +615,7 @@ void calc_best(struct configuration * conf) {
 
 	for(x = 1; x< conf->goods;x++) {
 		bin_index[x] = bin_count[x-1]+bin_index[x-1];
+		printf("x %d bin_index %u\n",x,bin_index[x]);
 	}
 	printf("hello\n");
 	int good = 0;//order[1][0]; //initiate at the lowest order good;
@@ -627,37 +627,45 @@ void calc_best(struct configuration * conf) {
 
 	lbl_continue:
 		;
-
+		getchar();
+		printf("allocation %u\n",allocation[0]);
 		// which word the good is located in
 		int word_index = good/WORDSIZE; 
 		// which bit position in the word the good represent
 		int bit_index = good % WORDSIZE;
 		int index = 0;
 		while((allocation[word_index] & (1 << bit_index)) && (good < goods)) {
+			printf("good %u not compat\n",good);
 			good++;
 			word_index = good/WORDSIZE;
-			bit_index = good % WORDSIZE;
+			bit_index = good % WORDSIZE;			
 		}
 
 		if(!(good < goods)) {
+			printf("backtrack 2\n");
 			goto backtrack;
 		};
-
+		int is_conflict = 0;
 		do{
+			is_conflict = 0;
 			//this means we have past the singleton
 			if(count[good] >= bin_count[good]) {
 				//hence reset this value right here ma'm
-				count[good] = 0;
+				//count[good] = 0;
+				printf("backtrack\n");
 				goto backtrack;
 			}
 			//printf("good %u count %u max %u\n",good,count[good], bin_count[good]);
 			index = count[good];
 			index_to_allocate = index+bin_index[good];			
 			count[good] +=1;
+			for(x=0;x<words;x++) {
+				is_conflict |= (allocation[x] & conf->allocation[x+index_to_allocate*words]);
+				printf("intersection %u, alloc %u, bid %u\n",(allocation[x] & conf->allocation[x+index_to_allocate*words]),allocation[x] , conf->allocation[x+index_to_allocate*words]);
+			}
+
 			
-		}while(is_conflict(conf,
-				   index_to_allocate,
-				   allocation) ||
+		}while(is_conflict ||
 		       is_dummy_conflict(conf->dummies[index_to_allocate],
 					 allocation_dummy,
 					 allocation_id_index));
@@ -665,11 +673,11 @@ void calc_best(struct configuration * conf) {
 		
 		//allocate bid
 		for(x=0;x<words;x++) {
-			allocation[x] |= conf->allocation[x+index_to_allocate*2];
+			allocation[x] |= conf->allocation[x+index_to_allocate*words];
 		}
 //		printf("allocating id %u\n",id_to_allocate);
  
-		printf("alloc good %u,id %u offer %0.3lf\n",good,index_to_allocate,conf->offer[index_to_allocate]);
+		printf("alloc good %u,index %u offer %0.3lf\n",good,index_to_allocate,conf->offer[index_to_allocate]);
 		allocation_value += conf->offer[index_to_allocate];// bid_value;
 
 		if(allocation_value > max) {
@@ -716,13 +724,14 @@ void calc_best(struct configuration * conf) {
 			/* 	count[x] =0; */
 			/* } */
 			
-			printf("dealloc index %u bin %u aloc_index %u,bin count %u\n",
+			printf("dealloc index %u bin %u aloc_index %u,bin count %u/%u\n",
 			       index_to_dealloc,
 			       good,
 			       allocation_id_index,
-			       count[good]);
+			       count[good],
+			       bin_count[good]);
 			for(x=0;x<words;x++) {
-				allocation[x] &= ~(conf->allocation[index_to_dealloc*2+x]);
+				allocation[x] &= ~(conf->allocation[index_to_dealloc*words+x]);
 			}
 			if(count[good] >= bin_count[good]) {			
 				if(good == 0) {
@@ -783,10 +792,10 @@ int main(int argc, char *argv[])   {
 	allocate_all_bids(fp,conf,have_singleton,bin_count);
 	fclose(fp);
 	for(x=0;x < conf->bids;x++) {
-		printf("id %u, offer %.3f, bin %u\n",conf->id[x],conf->offer[x],conf->bin[x]);
+		printf("x %d id %u, offer %.3f, bin %u\n",x,conf->id[x],conf->offer[x],conf->bin[x]);
 
 	}	
-	
+	printf("words %u wordsize %u\n",conf->words,WORDSIZE);
 	/* unsigned int ** order;// = get_bin_order(bins,conf,bin_count); */
 	/* printf("\nrow 0\t"); */
 	/* for(x=0;x<conf->goods;x++) { */

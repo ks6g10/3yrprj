@@ -49,7 +49,7 @@
 
 %%% Macro definitions for Commonly used symbols
 \newcommand{\etas}{\ensuremath{\eta_{\mathrm{s}}}}
-\newcommand{\tdegree}{A project progress report submitted for the award of\\}
+\newcommand{\tdegree}{A project report submitted for the award of\\}
 \newcommand{\degree}{\tdegree MEng Computer Science\\*}
 \newcommand{\texam}{Second examiner: }
 \newcommand{\exam}{\texam Dr Srinandan Dasmahapatra}
@@ -74,54 +74,54 @@ University of Southampton\\*}
 
 \begin{document}
 
-\author{Kim Svensson}
-\date{\today}
-\title{Combinatorial optimization of NP-hard problems using dynamic GPU
-programming}
-
-\makeatletter
-\begin{titlepage}
-\begin{changemargin}{-2cm}{-2cm}
-\begin{center}
-\LARGE\school %
-
-\LARGE
-\vfill
-\@author \\*
-\@date \\*
-\doublespacing
-\@title \\*
-\vfill
-\singlespacing
-\supervisor \\*
-\exam \\*
-\vfill
-\degree
-\end{center} 
-\end{changemargin}
-\end{titlepage}
-\makeatother
+% \author{Kim Svensson}
+% \date{\today}
+% \title{Combinatorial optimization of NP-hard problems using dynamic GPU
+% programming}
+% 
+% \makeatletter
+% \begin{titlepage}
+% \begin{changemargin}{-2cm}{-2cm}
+% \begin{center}
+% \LARGE\school %
+% 
+% \LARGE
+% \vfill
+% \@author \\*
+% \@date \\*
+% \doublespacing
+% \@title \\*
+% \vfill
+% \singlespacing
+% \supervisor \\*
+% \exam \\*
+% \vfill
+% \degree
+% \end{center} 
+% \end{changemargin}
+% \end{titlepage}
+% \makeatother
 
 \pagenumbering{arabic}
-\begin{abstract}
-We develop the first parallel algorithm for Coalition Structure Generation
-(CSG), which is central to many multi-agent systems applications. Our approach
-involves distributing the key steps of a dynamic programming approach to CSG
-across computational nodes on a Graphics Processing Unit (GPU) such that each of
-the thousands of threads of computation can be used to perform small
-computations that speed up the overall process. In so doing, we solve important
-challenges that arise in solving combinatorial optimisation problems on GPUs
-such as the efficient allocation of memory and computational threads to every
-step of the algorithm. In our empirical evaluations on a standard GPU,  our
-results show an improvement of orders of magnitude over current dynamic
-programming approaches with an ever increasing divergence between the CPU and
-GPU-based algorithms in terms of growth. Thus, our algorithm is able to solve
-the CSG problem for 29 agents in just under 10 minutes as opposed to three
-days for the current state of the art dynamic programming algorithms.
-
-\end{abstract}
-\tableofcontents
-\newpage
+% \begin{abstract}
+% We develop the first parallel algorithm for Coalition Structure Generation
+% (CSG), which is central to many multi-agent systems applications. Our approach
+% involves distributing the key steps of a dynamic programming approach to CSG
+% across computational nodes on a Graphics Processing Unit (GPU) such that each of
+% the thousands of threads of computation can be used to perform small
+% computations that speed up the overall process. In so doing, we solve important
+% challenges that arise in solving combinatorial optimisation problems on GPUs
+% such as the efficient allocation of memory and computational threads to every
+% step of the algorithm. In our empirical evaluations on a standard GPU,  our
+% results show an improvement of orders of magnitude over current dynamic
+% programming approaches with an ever increasing divergence between the CPU and
+% GPU-based algorithms in terms of growth. Thus, our algorithm is able to solve
+% the CSG problem for 29 agents in just under 10 minutes as opposed to three
+% days for the current state of the art dynamic programming algorithms.
+% 
+% \end{abstract}
+% \tableofcontents
+% \newpage
 
 \section{Introduction}
 \noindent Coalition formation is one of the key coordination mechanisms in
@@ -951,9 +951,6 @@ which is expected to grow with the number of agents. The reason it would grow is
 due to the implementations not being linearly parallel in logarithmic time where
 the GPU implementation having a smaller growth.
 
-
-
-
 \subsection{Progress}
 
 My progress went well with only an extended goal of implementing an algorithm for another problem was left out as shown in figure \label{actual} denoted by the red color,
@@ -978,29 +975,29 @@ order to speed up the computations performed by a dynamic program for the CSG
 problem. In so doing, it is able to outperform the DP algorithm by up to 551
 times, reducing the time taken to solve the problem for 29 agents to just under
 10 minutes as compared to 83 hours previously.
-
-\bibliographystyle{plain}
-\bibliography{ref}
-\section{Appendix}
-\begin{figure}[htp]
-\centering
-\includegraphics[width=\linewidth]{sem1.jpg}
-\caption{Semester 1}
-\end{figure}
-\begin{figure}[htp]
-\centering
-\includegraphics[width=\linewidth]{sem2.jpg}
-\caption{Semester 2}
-\end{figure}
-\begin{figure}[htp]
-\centering
-\includegraphics[width=\linewidth]{sem2act.jpg}
-\caption{Semester 2, actual progress,\label{actual}}
-\end{figure}
-\begin{figure}[htp]
-\centering
-\includegraphics[width=\linewidth]{risk.jpg}
-\caption{Risk assessment}
-\end{figure}
+% 
+% \bibliographystyle{plain}
+% \bibliography{ref}
+% \section{Appendix}
+% \begin{figure}[htp]
+% \centering
+% \includegraphics[width=\linewidth]{sem1.jpg}
+% \caption{Semester 1}
+% \end{figure}
+% \begin{figure}[htp]
+% \centering
+% \includegraphics[width=\linewidth]{sem2.jpg}
+% \caption{Semester 2}
+% \end{figure}
+% \begin{figure}[htp]
+% \centering
+% \includegraphics[width=\linewidth]{sem2act.jpg}
+% \caption{Semester 2, actual progress,\label{actual}}
+% \end{figure}
+% \begin{figure}[htp]
+% \centering
+% \includegraphics[width=\linewidth]{risk.jpg}
+% \caption{Risk assessment}
+% \end{figure}
 
 \end{document}
