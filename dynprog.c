@@ -191,6 +191,66 @@ void printfo(dint MAXVAL) {
 /*n 15 t 9 n 16 t 42*/
 
 uint64_t no,yes;
+
+void max3(dint conf1,dint conf2,dint idp, unsigned int doidp) {
+     register dint card = cardinality(conf)/2;
+     register dint combinations = (1 << cardinality(conf)-1)-1;
+     register dint max = bids[conf];
+     register dint set = conf;
+     register dint tmp = 0;
+     register dint subset = 0;
+     register const dint inverse = ~conf;
+     register dint i;
+     O[conf] = set;
+     int do_collision = (cardinality(conf1 & conf2) ==( cardinality(conf1)-1));
+     subset = ((inverse+1)+subset)&(conf1&conf2);
+     for(i = 0;i<combinations; i++) {
+	     setcard = cardinality(subset);
+
+     }
+     if(doidp) {
+	     for(i = 1;i<=combinations; i++) {
+			  subset = ((inverse+1)+subset)&conf;
+
+			  register unsigned int setcard = cardinality(subset);
+			  register unsigned int tmpset = setdiff(conf,subset);
+			  register unsigned int tmpcard = cardinality(tmpset);
+	  //  if(setcard > card) {
+		  //  no++;
+	  //	  continue;
+	  //  }
+			  if(setcard < tmpcard) {
+				  setcard = tmpcard;
+			  }
+			  
+			  if(setcard < idp) {
+				  continue;
+			  }
+			  // yes++;	
+	  
+			  tmp = f[tmpset] + f[subset];
+			  if(max < tmp) {
+				  max = tmp;
+				  set = subset;
+			  }
+		  }
+     }
+     else {
+	     for(i = 1;i<=combinations; i++) {
+		     subset = ((inverse+1)+subset)&conf;
+		     tmp = f[setdiff(conf,subset)] + f[subset];
+		     
+		     if(max < tmp) {
+			     max = tmp;
+			     set = subset;
+		     }
+	  
+	     }
+     }
+     f[conf] = max;
+     O[conf] = set;
+}
+
 void max2(dint conf,dint idp, unsigned int doidp) {
      register dint card = cardinality(conf)/2;
      register dint combinations = (1 << cardinality(conf)-1)-1;

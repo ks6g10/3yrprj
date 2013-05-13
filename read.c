@@ -4,74 +4,34 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
-#define WORDSIZE (sizeof(int_fast32_t)*8)
+#define WORDSIZE (sizeof(unsigned int)*8)
 
-union asd {
-	unsigned int as;
-	char ds[3];
-};
 
-struct bid_ptr {
-	unsigned int index;
-	double value;
-	unsigned int dummy;
-};
 
-struct bid2 {
-	double offer;
-	double average;
-	unsigned int bin;
-	unsigned int id;
-	unsigned int dummy;
-};
 //typedef unsigned int int_fast32_t;
 
 struct configuration {
 	unsigned int * allocation;
 	unsigned int * bin;
 	unsigned int * id;
+	// each bids dummy, if any else is set to 0
 	unsigned int * dummies;
 	unsigned int * bin_to_offset;
 	unsigned int * bin_count;
 	float * offer;
 	float * score;
 	float * average;
+	// the allocation dummy	
 	unsigned int goods;
 	unsigned int words;
 	unsigned int bids;
 	unsigned int dummy;
 	unsigned int singletons;
-};
-
-struct bid_bin {
-	unsigned int size;
-	unsigned int good;
-	double average;
-	double score;
-	struct bid2 * bids;
-};
-
-struct root_bid {
-	unsigned int goods;
-	struct bid_bin * bins;
-};
-
-/* struct configuration { */
-/* 	unsigned int goods; */
-/* 	unsigned int bids; */
-/* 	unsigned int dummy; */
-/* 	unsigned int words; */
-/* 	unsigned int singletons; */
-/* }; */
-
-struct linked_bids {
-	struct bid2 * this;
-	struct linked_bids * next;
-};
-
-struct allocation {
-	struct linked_bids * root;
-
+	unsigned int * curr_allocation;
+	unsigned int * allocation_id;
+	unsigned int * allocation_dummy;
+	unsigned int allocation_id_index; 
+	float allocation_value;
 };
 
 
@@ -144,6 +104,14 @@ unsigned int next_index(unsigned int a_index) {
 	
 }
 
+
+void print_binary(unsigned int * allocation,unsigned int goods) {
+	int x;
+	for(x=goods-1;x>=0;x--) {
+		printf("%u", !!(*allocation & (1 << x) ) );
+	}
+	printf("\n");
+}
 
 
 
@@ -293,9 +261,13 @@ void allocate_all_bids(FILE * fp,
 		while(*head != '#' && *head != '\0') {
 			if(*head == '\t') {
 				good = strtol(tail,&head,10);
+				
 				//sscanf(tail,"\t%u\t",tmp2);
 				if(good < conf->goods) {
-					tmp_allocation[(good/WORDSIZE)] |= (1 << good);
+					tmp_allocation[(good/WORDSIZE)] += (1 << good);
+					if(id == 13) {
+					printf("good %u ",tmp_allocation[0]);
+				}
 					goods[goods_count] = good;	
 				} else {
 					dummy = good;
@@ -317,7 +289,7 @@ void allocate_all_bids(FILE * fp,
 		conf->dummies[index] = dummy;
 		conf->id[index] = id;
 		for(x = 0;x<conf->words;x++) {
-			conf->allocation[index*2+x] = tmp_allocation[x];
+			conf->allocation[index*conf->words+x] = tmp_allocation[x];
 		}
 //		printf("id %d bin %u count %u value %.3lf\n",bid_count,bin_for_bid,tmp_count[bin_for_bid],0);
 		bin_index[goods[0]]++;
@@ -328,8 +300,11 @@ void allocate_all_bids(FILE * fp,
 			int index = bin_index[x];
 			int y;
 			for(y = 0;y<conf->words;y++) {
-				conf->allocation[index*2+y] = 0;
+				conf->allocation[index*conf->words+y] = 0;
 			}
+			int word_index = x/WORDSIZE;
+			int bit_index = x % WORDSIZE;			
+			conf->allocation[index*conf->words+word_index] = (1<<bit_index);
 			conf->average[index] = 0;
 			conf->bin[index] = x;
 			conf->offer[index] = 0;
@@ -350,166 +325,6 @@ void allocate_all_bids(FILE * fp,
 	return ;	
 }
 
-struct bid_bin * allocate_bid_bin(FILE * fp,
-				  unsigned int * bin_count,				  
-				  struct configuration * conf,				
-				  unsigned int (* bid_conf)[conf->words],
-				  unsigned int * have_singelton){
-				  
-	struct bid_bin * bins = malloc(sizeof(struct bid_bin)*conf->goods);	
-	char * head, * tail,*line; 
-	unsigned long total_goods_count[conf->goods];
-	unsigned int numbids_count[conf->goods];
-	unsigned int goods[conf->goods];	
-	unsigned int tmp_count[conf->goods];	
-	size_t len =0;
-	ssize_t read;
-	int x;
-	for(x = 0; x< conf->goods;x++) { 
-		tmp_count[x] = 0;
-		bins[x].bids = malloc((sizeof(struct bid2))*bin_count[x]);
-		total_goods_count[x] = 0;
-		bins[x].average = 0;
-		numbids_count[x] = 0;
-	}
-	while ((read = getline(&line, &len, fp)) != -1) {		
-		if(!isdigit(line[0])) {continue;}
-		head = tail = line;
-		while(*head != '\t') {head++;}
-
-
-		while(*head != '\t' && *head != '\0') {
-			head++;
-		}
-		int id = strtol(tail,&head,10);
-		tail = head;
-		head++;
-		//get offer or value
-		while(*head != '\t' && *head != '\0') {
-			head++;
-		}
-		double value = strtod(tail,&head);
-		tail = head;
-		head++;
-		
-		unsigned int dummy_good = 0; 
-		unsigned int goods_count = 0;
-		unsigned int bin_for_bid = 0;
-		unsigned int good = 0;
-		unsigned int tmp_conf[conf->words];
-		for(x = 0;x<conf->words;x++) {
-			tmp_conf[x] = 0;
-		}
-		//reset the temporary goods array, used to determin the score
-		goods_count = 0;
-		for(x = 0;x<conf->goods;x++) {
-			goods[x] = 0;
-		}
-
-		while(*head != '#' && *head != '\0') {
-			if(*head == '\t') {
-				good = strtol(tail,&head,10);
-				//sscanf(tail,"\t%u\t",tmp2);
-				if(good < conf->goods) {
-					tmp_conf[good/32] |= (1 << good);
-					goods[goods_count] = good;
-				} else {
-					dummy_good = good;
-				}
-				tail = head;
-				goods_count++;
-				if(goods_count == 1) {					
-					bin_for_bid = good;
-				}
-			}
-			head++;
-		}
-		
-		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].offer = value;
-		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].id = id;
-		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].dummy = dummy_good;
-		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].bin = bin_for_bid;
-		double tmp_average = value/((double)goods_count);
-		bins[bin_for_bid].bids[tmp_count[bin_for_bid]].average = tmp_average;
-		if(tmp_average > bins[bin_for_bid].average) {
-			bins[bin_for_bid].average = tmp_average;
-		}
-
-		for(x=0;x< conf->words;x++) {
-			bid_conf[id][x] = 0;
-		}
-
-		for(x = 0;x < conf->words; x++) {
-			bid_conf[id][x] = tmp_conf[x];
-//			bins[bin_for_bid].bids[tmp_count[bin_for_bid]].conf[x] = tmp_conf[x];
-		}
-		for(x=0;x<goods_count;x++) {
-			total_goods_count[goods[x]] += goods_count;
-			numbids_count[goods[x]]++;
-		}
-		tmp_count[bin_for_bid] +=1;
-		printf("id %d bin %u count %u value %.3lf\n",id,bin_for_bid,tmp_count[bin_for_bid],value);
-	}
-	int singleton_count = conf->bids-conf->singletons;
-	int y;
-	for(x =0;x< conf->goods;x++) {
-		if(!have_singelton[x]) {
-			bins[x].bids[tmp_count[x]].offer = 0;
-			bins[x].bids[tmp_count[x]].id = singleton_count;
-			bins[x].bids[tmp_count[x]].dummy = 0;
-			bins[x].bids[tmp_count[x]].average = 0;
-			bins[x].bids[tmp_count[x]].bin = x;
-			total_goods_count[x] +=1; //add one more to the score stat
-			numbids_count[x] +=1; // also add one more to the number of bids to the score stat
-			for(y=0;y< conf->words;y++) {
-				bid_conf[singleton_count][y] = 0;
-			}
-			int tmp_index = x/32;
-			int tmp_bit = x%32;
-			bid_conf[singleton_count][tmp_index] = (1<<tmp_bit);
-			singleton_count++; // next singleton bid will have an consecutive bid id
-		}
-		double score =0;
-		double avg;
-		if(numbids_count[x]) {
-		avg = ((double)total_goods_count[x])/((double)numbids_count[x]);
-		score = ((double)numbids_count[x])/avg;
-		}
-		bins[x].score = score;
-	}
-	return bins;
-}
-
-unsigned int ** get_bin_order(struct bid_bin * bins,struct configuration * conf,unsigned int * bin_count) {
-	unsigned int ** order = malloc(sizeof(int *)*2);	
-	order[0] = malloc(sizeof(int)*conf->goods);
-	order[1] = malloc(sizeof(int)*conf->goods);
-	int x;
-	for(x=0;x<conf->goods;x++) {
-		//	score[x] = bins[x].score;
-		order[0][x] = conf->goods;
-	}
-	
-	for(x = 0;x<conf->goods;x++) {
-		order[0][x] = x;
-		order[1][x] = x;
-		/* max_index = conf->goods; */
-		/* max = 999999999999; */
-		/* for(y=0;y<conf->goods;y++){ */
-		/* 	if(score[y] < max && bin_count[y] >0) { */
-		/* 		max_index = y;					 */
-		/* 		max = score[y]; */
-		/* 	} */
-			
-		/* } */
-		/* if(max_index < conf->goods) { */
-		/* 	score[max_index] = 99999999999999999;	 */
-		/* 	order[0][max_index] = x; */
-		/* 	order[1][x] = max_index; */
-		/* } */
-	}
-	return order;
-}
 
 //wordsize in bits
 #define WORD (32)
@@ -517,41 +332,30 @@ unsigned int ** get_bin_order(struct bid_bin * bins,struct configuration * conf,
 #define INDEX (1)
 
 int is_conflict(struct configuration * conf,
-		unsigned int id,		  
-		  unsigned int (* allocation)) {
+		unsigned int index_to_allocate) {
 	int x = 0;
 	int ret = 0;
-	printf("hello id %u\n",id);
-	
-
-	for(x=0;(x<conf->words);x++)  {
-		ret = (allocation[x] & conf->allocation[id*conf->words+x]); 
-		
-		if(ret){return ret;}
-		
+	int id = index_to_allocate;
+	//check if the allocation is conflicting
+	for(x=0;x < conf->words;x++)  {
+		ret |= (conf->curr_allocation[x] & conf->allocation[id*conf->words+x]);		
 	}
-
-	return (ret);
-}
-
-int is_dummy_conflict(unsigned int dummy,
-		unsigned int (* dummies),
-		unsigned int size) {
-	int x;
-	int ret = 0;
+	int size = conf->allocation_id_index;
+	unsigned int dummy = conf->dummies[index_to_allocate];
 	//special case if there is no dummy good
 	if(dummy ==0) {return ret;}
-
+	
+	//check if the dummy bids are conflicting	
 	for(x=0;x<size;x++) {
-		if(dummy == dummies[x]) {
+		if(dummy == conf->allocation_dummy[x]) {
 			ret = 1;
 			break;
 		}
 	}
 	return ret;
+	
+
 }
-
-
 
 void print_debug(struct configuration * conf,
 		 unsigned int (* allocation_count), 
@@ -570,41 +374,59 @@ void print_debug(struct configuration * conf,
 
 }
 
-double get_estimate (struct configuration * conf,
-		     struct bid_bin * bins,
-		     unsigned int (* allocation)) {
-
-	double estimate = 0;
-	int x;
-	for(x = 0;x < conf->goods;x++) {
-		int bit = x % WORD;
-		int index = x / WORD;
-		if(!(allocation[index] & (1<<bit))) {
-			estimate += bins[x].average;
-		}
-		
-	}
-	return estimate;
-}
 
 #define _BID(X) (bins[X].bids[count[X]])
 #define BID (_BID(good))
+int dealloc_id(struct configuration * conf) {
+	conf->allocation_id_index--;
+	unsigned int allocation_id_index = conf->allocation_id_index;
+	unsigned int index_to_deallocate = conf->allocation_id[allocation_id_index];
+	int x;
+	for(x =0; x < conf->words;x++) {
+		int index = index_to_deallocate*conf->words+x;
+		conf->curr_allocation[x] &= ~(conf->allocation[index]);
+	}
+	conf->allocation_value -= conf->offer[index_to_deallocate];
+	conf->allocation_dummy[conf->allocation_id_index] = 0;//conf->dummies[index_to_deallocate];
+//	int good = 
+	return conf->bin[index_to_deallocate];
+//	conf->bin_count[good]++;
+
+}
+
+void alloc_id(unsigned int index_to_allocate,struct configuration * conf) {
+
+	int x;
+	for(x =0; x < conf->words;x++) {
+		int index = index_to_allocate*conf->words+x;
+		conf->curr_allocation[x] |= conf->allocation[index];
+	}
+	conf->allocation_value += conf->offer[index_to_allocate];
+	conf->allocation_id[conf->allocation_id_index] = index_to_allocate;
+	conf->allocation_dummy[conf->allocation_id_index] = conf->dummies[index_to_allocate];
+	
+	conf->allocation_id_index++;
+}
+
+
+
+
 void calc_best(struct configuration * conf) {
 	const unsigned int goods = conf->goods;
 	const unsigned int words = conf->words;
 	unsigned int count[goods]; 
 	unsigned int * bin_count = conf->bin_count;
-	unsigned int allocation[conf->words];
+	unsigned int * allocation = conf->curr_allocation = malloc(sizeof(int) *conf->words);
 	//0 = bin, 1 index
-	unsigned int allocation_id[2][goods];
-	unsigned int allocation_id_index = 0;
-	unsigned int allocation_dummy[goods];
+	conf->allocation_id = malloc(sizeof(int) *conf->words);
+	conf->allocation_id_index = 0;
+	unsigned int * allocation_dummy = conf->allocation_dummy = malloc(sizeof(int) *conf->words);
 	double max = 0;
 	int x;	
 	//initilize to 0	
 	for(x = 0; x < goods; x++){
 		count[x] = 0;
-		allocation_dummy[x] = 0;     
+		conf->allocation_dummy[x] = 0;     
 	}
 	for(x = 0;x < words;x++) {
 		allocation[x] = 0;
@@ -619,16 +441,15 @@ void calc_best(struct configuration * conf) {
 	}
 	printf("hello\n");
 	int good = 0;//order[1][0]; //initiate at the lowest order good;
-	int index_to_allocate;// = BID.id;
-	double allocation_value =0;// BID.offer;
+	int index_to_allocate =0;// = BID.id;
+	conf->allocation_value =0;// BID.offer;
 	
 
 	while(1) {
 
 	lbl_continue:
 		;
-		getchar();
-		printf("allocation %u\n",allocation[0]);
+//		getchar();
 		// which word the good is located in
 		int word_index = good/WORDSIZE; 
 		// which bit position in the word the good represent
@@ -641,99 +462,65 @@ void calc_best(struct configuration * conf) {
 			bit_index = good % WORDSIZE;			
 		}
 
-		if(!(good < goods)) {
+		if((good >= goods)) {
 			printf("backtrack 2\n");
 			goto backtrack;
 		};
-		int is_conflict = 0;
-		do{
-			is_conflict = 0;
+		
+		do{	      
 			//this means we have past the singleton
 			if(count[good] >= bin_count[good]) {
 				//hence reset this value right here ma'm
-				//count[good] = 0;
-				printf("backtrack\n");
+				printf("backtracking good %u id %u %u\n",
+				       good,
+				       conf->allocation_id[conf->allocation_id_index]);
 				goto backtrack;
 			}
 			//printf("good %u count %u max %u\n",good,count[good], bin_count[good]);
 			index = count[good];
 			index_to_allocate = index+bin_index[good];			
 			count[good] +=1;
-			for(x=0;x<words;x++) {
-				is_conflict |= (allocation[x] & conf->allocation[x+index_to_allocate*words]);
-				printf("intersection %u, alloc %u, bid %u\n",(allocation[x] & conf->allocation[x+index_to_allocate*words]),allocation[x] , conf->allocation[x+index_to_allocate*words]);
-			}
-
+			/* for(x=0;x<words;x++) { */
+			/* 	is_conflict |= (allocation[x] & conf->allocation[x+index_to_allocate*words]); */
+			/* 	printf("intersection %u, alloc %u, bid %u\n", */
+			/* 	       (allocation[x] & conf->allocation[x+index_to_allocate*words]), */
+			/* 	       allocation[x], */
+			/* 	       conf->allocation[x+index_to_allocate*words]); */
+			/* } */
 			
-		}while(is_conflict ||
-		       is_dummy_conflict(conf->dummies[index_to_allocate],
-					 allocation_dummy,
-					 allocation_id_index));
+		}while(is_conflict(conf,index_to_allocate));
 		
 		
-		//allocate bid
-		for(x=0;x<words;x++) {
-			allocation[x] |= conf->allocation[x+index_to_allocate*words];
-		}
-//		printf("allocating id %u\n",id_to_allocate);
- 
-		printf("alloc good %u,index %u offer %0.3lf\n",good,index_to_allocate,conf->offer[index_to_allocate]);
-		allocation_value += conf->offer[index_to_allocate];// bid_value;
-
-		if(allocation_value > max) {
-			max = allocation_value;
+		alloc_id(index_to_allocate,conf);
+		printf("allocated id %u\n",conf->id[index_to_allocate]);
+		print_binary(allocation,goods);
+		if(conf->allocation_value > max) {
+			max = conf->allocation_value;
 			printf("New max of %.3lf \n",max);
-						for(x=0;x<goods;x++) {
+			for(x=0;x<goods;x++) {
 				printf("%u ",count[x]);
 			}
 			printf("\n");
-		}
-		//if(good == 5)
-		if(good == 0) {
+		}			
 
-
-			printf("Good 0 count %u\n",index);
-
-		}
-//		printf("alloc %u max %u\n",count[5], bin_count[5]);
-		allocation_dummy[allocation_id_index] = conf->dummies[index_to_allocate];
-		//sets which allocation we added with reference to the bin and the index in the bin
-		allocation_id[INDEX][allocation_id_index] = index;//count[good];//&(BID);
-		allocation_id[BIN][allocation_id_index] = good;
-		//how many allocation we have, decrement when we backtrack
-		allocation_id_index++;
 		goto lbl_continue;
 	backtrack:
 		;
 		int backtrack;
 		do {
 
-			backtrack = 0;
-			allocation_id_index--;
-			allocation_dummy[allocation_id_index] = 0;
-			int index = allocation_id[INDEX][allocation_id_index];			
-			good = allocation_id[BIN][allocation_id_index];
-			int index_to_dealloc = bin_index[good]+index;
-			allocation_value -= conf->offer[index_to_dealloc];
-//			id_to_allocate = bins[good].bids[index].id;
-//allocation_id[allocation_id_index]->id;
-//			good = allocation_id[allocation_id_index]->bin;
-			//allocation_id[allocation_id_index] = NULL;
-//			printf("dealloc good %u,id %u\n",good,id_to_allocate);
-			/* for(x=good+1;x<goods;x++) { */
-			/* 	count[x] =0; */
-			/* } */
+			backtrack = 0;			
+			int good = dealloc_id(conf);
 			
-			printf("dealloc index %u bin %u aloc_index %u,bin count %u/%u\n",
-			       index_to_dealloc,
-			       good,
-			       allocation_id_index,
-			       count[good],
-			       bin_count[good]);
-			for(x=0;x<words;x++) {
-				allocation[x] &= ~(conf->allocation[index_to_dealloc*words+x]);
-			}
-			if(count[good] >= bin_count[good]) {			
+			/* printf("dealloc index %u bin %u aloc_index %u,bin count %u/%u\n", */
+			/*        index_to_dealloc, */
+			/*        good, */
+			/*        conf->allocation_id_index, */
+			/*        count[good], */
+			/*        bin_count[good]); */
+
+			if(count[good] >= conf->bin_count[good]) {
+				printf("good %u\n",good);
 				if(good == 0) {
 					printf("New max of %.3lf \n",max);
 					return;
@@ -746,14 +533,7 @@ void calc_best(struct configuration * conf) {
 
 
 		}while(backtrack);
-//			printf("dealloc more\n");
-
-//		goto backtrack;		
-//		goto lbl_continue;
-		;
 	}
-
-
 }
 
 
@@ -792,32 +572,16 @@ int main(int argc, char *argv[])   {
 	allocate_all_bids(fp,conf,have_singleton,bin_count);
 	fclose(fp);
 	for(x=0;x < conf->bids;x++) {
-		printf("x %d id %u, offer %.3f, bin %u\n",x,conf->id[x],conf->offer[x],conf->bin[x]);
+		printf("x %d id %u, offer %.3f, bin %u, alloc %u\n",
+		       x,
+		       conf->id[x],
+		       conf->offer[x],
+		       conf->bin[x],
+		       conf->allocation[x]);
 
 	}	
-	printf("words %u wordsize %u\n",conf->words,WORDSIZE);
-	/* unsigned int ** order;// = get_bin_order(bins,conf,bin_count); */
-	/* printf("\nrow 0\t"); */
-	/* for(x=0;x<conf->goods;x++) { */
-	/* 	printf("%u\t",order[0][x]); */
-	/* } */
+	printf("words %u wordsize %lu\n",conf->words,WORDSIZE);
 
-	/* printf("\nrow 1\t"); */
-	/* for(x=0;x<conf->goods;x++) { */
-	/* 	printf("%u\t",order[1][x]); */
-	/* } */
-	/* printf("\n"); */
-
-	/* for(x=0;x<conf->goods;x++) { */
-	/* 	double score = conf->score[x]; */
-	/* 	//printf("bin %d score %.3lf order %u count %u average %.3lf\n",x,score,order[0][x],bin_count[x],bins[x].average); */
-	/* 	int y; */
-	/* 	for(y =0; y < bin_count[x];y++) { */
-	/* 		/\* unsigned int id = bins[x].bids[y].id; *\/ */
-	/* 		/\* printf("Bin %d index %d id %u val %.03lf\n",x,y,id,bins[x].bids[y].offer); *\/ */
-	/* 	} */
-	/* } */
-//	return;
 	calc_best(conf);
 	printf("Bye\n");
 exit(EXIT_SUCCESS);
