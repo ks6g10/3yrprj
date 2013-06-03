@@ -4,6 +4,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
+ 	
+
+
 #include <assert.h>
 #define WORDSIZE (sizeof(unsigned int)*8)
 #include <limits.h>
@@ -33,8 +36,8 @@ struct configuration {
 	// each bids dummy, if any else is set to 0
 	unsigned int * dummies;
 	unsigned int * bin_count;
+	unsigned int * max_offset;
 	float * offer;
-	float * score;
 	float * average;
 	// the allocation dummy	
 	unsigned int goods;
@@ -244,7 +247,8 @@ void allocate_all_bids(FILE * fp,
 	conf->bin = malloc(sizeof(unsigned int)*conf->bids);
 	conf->offer = malloc(sizeof(float)*conf->bids);
 	conf->average = malloc(sizeof(float)*conf->bids);
-	conf->score = malloc(sizeof(float)*conf->goods);
+	conf->max_offset = malloc(sizeof(unsigned int)*conf->goods);
+	
 	conf->bin_count = bin_count;
 	
 	char * head = NULL;
@@ -314,9 +318,6 @@ void allocate_all_bids(FILE * fp,
 				//sscanf(tail,"\t%u\t",tmp2);
 				if(good < conf->goods) {
 					tmp_allocation[(good/WORDSIZE)] += (1 << good);
-					if(id == 13) {
-					printf("good %u ",tmp_allocation[0]);
-				}
 					goods[goods_count] = good;	
 				} else {
 					dummy = good;
@@ -327,7 +328,10 @@ void allocate_all_bids(FILE * fp,
 			head++;
 			
 		}
-		curr->average  = (float) offer/(goods_count - (dummy > 0));
+		if(dummy > 0) {
+			goods_count--;
+		}
+		curr->average  = (float) offer/(goods_count);
 		for(x=0;x<goods_count;x++) {
 			total_goods_count[goods[x]] += goods_count;
 			numbids_count[goods[x]]++;
@@ -356,7 +360,7 @@ void allocate_all_bids(FILE * fp,
 			int word_index = x/WORDSIZE;
 			int bit_index = x % WORDSIZE;			
 			curr->alloc.a[word_index] = (1<< bit_index);
-			curr->offer = curr->average = 0;
+			curr->offer = curr->average = 0.0f;
 			curr->dummy = 0;
 			curr->bin = x;
 			curr->id = singleton_count;
@@ -378,13 +382,11 @@ void allocate_all_bids(FILE * fp,
 			min = score;
 			min_pos = x;
 		}
-		conf->score[x] = score;
 	}
 	unsigned int bid_to_bit[conf->goods];
 
 	for(x=0;x<conf->goods;x++) {
-		bid_to_bit[x] = 0;
-		printf("good %d score %.3f\n",x,conf->score[x]);
+		bid_to_bit[x] = 0;	       
 	}
 	printf("min %.3f pos %d\n",min,min_pos);
 	int bid_bit_count = -1;
@@ -427,19 +429,10 @@ void allocate_all_bids(FILE * fp,
 	}
 	curr = root;
 	conf->bin_count[bid_bit_count] = bid_count;
+	conf->max_offset[bid_bit_count] = bid_count -1;
 	min_pos = get_next_best_good(conf,curr);
 	printf("min pos %u\n",min_pos);	
 	}
-	printf("translation\n");
-	printf("bid\t");	       
-	for(x=0;x<conf->goods;x++) {
-		printf("%u\t",x);
-	}
-	printf("\nbit\t");	       
-	for(x=0;x<conf->goods;x++) {
-		printf("%u\t",bid_to_bit[x]);
-	}
-	printf("\n");
 	new_curr = new_root;
 	while(new_curr) {
 		struct allocation tmp;
@@ -482,55 +475,61 @@ void allocate_all_bids(FILE * fp,
 	new_curr = new_root;
 	x = 0;
 
-	/* struct bid * lhead, * ltail; */
-	/* lhead = ltail = new_root; */
-	/* while(ltail) { */
-	/* 	int good = ltail->bin; */
-	/* 	lhead = ltail->next; */
-	/* 	while(lhead && lhead->bin == good) { */
-	/* 		if(lhead->average > ltail->average) { */
-	/* 			if(lhead->prev == ltail) { */
 
-	/* 				if(ltail->prev) */
-	/* 					ltail->prev->next = lhead; */
-	/* 				else */
-	/* 					new_root = lhead; */
-	/* 				if(lhead->next) */
-	/* 					lhead->next->prev = ltail; */
-	/* 				lhead->prev = ltail->prev; */
-	/* 				ltail->next = lhead->next; */
-	/* 				lhead->next = ltail; */
-	/* 				ltail->prev = lhead; */
+	struct bid * lhead, * ltail;
+	lhead = ltail = new_root;
+	while(ltail) {
+		int good = ltail->bin;
+		lhead = ltail->next;
+		while(lhead && lhead->bin == good) {
+			if(lhead->average > ltail->average) {
+				if(lhead->prev == ltail) {
 
-	/* 			} else { */
+					if(ltail->prev)
+						ltail->prev->next = lhead;
+					else
+						new_root = lhead;
+					if(lhead->next)
+						lhead->next->prev = ltail;
+					lhead->prev = ltail->prev;
+					ltail->next = lhead->next;
+					lhead->next = ltail;
+					ltail->prev = lhead;
+					struct bid * tmp = lhead;
+					lhead= ltail;
+					ltail = tmp;
+				} else {
 					
-	/* 			struct bid *ltailprev,*ltailnext; */
-	/* 			assert(ltail->next != lhead); */
-	/* 			assert(lhead->prev != ltail); */
-	/* 			assert(lhead->next != ltail); */
-	/* 			ltailnext = ltail->next; */
-	/* 			ltailprev = ltail->prev; */
-	/* 			if(ltail->prev) */
-	/* 				ltail->prev->next = lhead; */
-	/* 			else */
-	/* 				new_root = lhead; */
-	/* 			if(ltail->next) */
-	/* 				ltail->next->prev = lhead; */
-	/* 			if(lhead->prev) */
-	/* 				lhead->prev->next = ltail; */
-	/* 			if(lhead->next) */
-	/* 				lhead->next->prev = ltail; */
-	/* 			ltail->next = lhead->next; */
-	/* 			ltail->prev = lhead->prev; */
-	/* 			lhead->next = ltailnext;				 */
-	/* 			lhead->prev = ltailprev;								 */
-	/* 			} */
-	/* 		} */
-	/* 		printf("hello %u\n",lhead->id); */
-	/* 		lhead = lhead->next; */
-	/* 	} */
-	/* 	ltail = ltail->next; */
-	/* } */
+				struct bid *ltailprev,*ltailnext;
+				assert(ltail->next != lhead);
+				assert(lhead->prev != ltail);
+				assert(lhead->next != ltail);
+				assert(ltail->prev != lhead);
+				ltailnext = ltail->next;
+				ltailprev = ltail->prev;
+				if(ltail->prev)
+					ltail->prev->next = lhead;
+				else
+					new_root = lhead;
+				if(ltail->next)
+					ltail->next->prev = lhead;
+				if(lhead->prev)
+					lhead->prev->next = ltail;
+				if(lhead->next)
+					lhead->next->prev = ltail;
+				ltail->next = lhead->next;
+				ltail->prev = lhead->prev;
+				lhead->next = ltailnext;
+				lhead->prev = ltailprev;
+				struct bid * tmp = lhead;
+				lhead= ltail;
+				ltail = tmp;
+				}
+			}
+			lhead = lhead->next;
+		}
+		ltail = ltail->next;
+	}
 	new_curr = new_root;
 
 	while(new_curr) {
@@ -541,7 +540,6 @@ void allocate_all_bids(FILE * fp,
 			assert(conf->allocation[index].a[y] == new_curr->alloc.a[y]);
 		}
 		conf->bin[index] = new_curr->bin;
-		printf("bin %u alloc %u\n",new_curr->bin,conf->allocation[index].a[conf->bin[index]/WORDSIZE]);
 		assert(conf->allocation[index].a[conf->bin[index]/WORDSIZE] & (1<< conf->bin[index]));
 		assert(x >= bin_index2[conf->bin[index]]);
 		assert(x < bin_count[conf->bin[index]]+bin_index2[conf->bin[index]]);
@@ -581,14 +579,53 @@ void print_debug(struct configuration * conf,
 
 }
 
-float h(struct configuration * conf,struct allocation * curr_allocation) {
-	
-	return 0.0;
+float h(struct configuration * conf,struct allocation  *  curr_allocation,int good,unsigned int * bin_index, unsigned int t) {
+	int y,x;
+	float value = 0.0f;
+	assert(curr_allocation->a[0] == t);
+	const int words = conf->words;
+	for(y=0;y<conf->goods;y++){
+		float partial_val = 0.0f;
+		if((curr_allocation->a[y/WORDSIZE] & (1<< y%WORDSIZE)) == 0) {
+			int count = 0;
+			unsigned int status;
+			int max_offset = conf->max_offset[y];
+			for(status = 1;status != 0  && count <= max_offset ;count++) {
+
+				status = 0;
+				assert((curr_allocation->a[y/WORDSIZE] & (1<< y%WORDSIZE)) == 0);
+				int index = count+bin_index[y]; 
+
+				if(conf->dummies[index]) {
+					for(x=0;x<conf->allocation_id_index;x++) {
+						status |= (conf->allocation_dummy[x] == conf->dummies[index]);
+					}
+				}
+				
+				if(status) continue;
+				for(x=0;x<words;x++) {				
+					status |= (conf->allocation[index].a[x]) & (curr_allocation->a[x]); 
+//					printf("status %u\n",status);
+					printf("conf %u alloc %u\n",conf->allocation[index].a[x],curr_allocation->a[x]);
+				}
+				if(!status) {
+					printf("hello\n");
+					partial_val = conf->average[index];
+					break;
+				}
+				//			assert(count[good] <= conf->max_offset[good]);
+			}
+
+
+		}
+		value += partial_val;
+	}
+	return value;
 }
 
 
 void calc_best2(struct configuration * conf) {
-	struct allocation curr_allocation;	
+	struct allocation * curr_allocation = malloc(sizeof(struct allocation));	
 	const unsigned int goods = conf->goods;
 	const unsigned int words = conf->words;
 	int x;
@@ -601,7 +638,7 @@ void calc_best2(struct configuration * conf) {
 	conf->allocation_dummy = malloc(sizeof(int) *conf->goods);
 	
 	for(x=0;x<words;x++) {
-		curr_allocation.a[x] = 0;
+		curr_allocation->a[x] = 0;
 	}
 	for(x= 0; x < goods; x++) {
 		count[x] = 0;
@@ -613,13 +650,14 @@ void calc_best2(struct configuration * conf) {
 	bin_index[0] = 0;
 	for(x = 1; x< conf->goods;x++) {
 		bin_index[x] = bin_count[x-1]+bin_index[x-1];
+		assert(conf->bin[bin_index[x]] == x);
 	}
 	printf("count %d max %u a\n",count[good],bin_count[good]);
 while(allocate || dealloc) {
 
 	while(allocate) {
 		// whilst the good have already been allocated
-		while( (curr_allocation.a[good/WORDSIZE] & (1<< good%WORDSIZE) )  && 
+		while( (curr_allocation->a[good/WORDSIZE] & (1<< good%WORDSIZE) )  && 
 		       good < goods) 
 		{
 			good++;
@@ -630,42 +668,43 @@ while(allocate || dealloc) {
 			dealloc = 1;
 			break;
 		}
-		assert(count[good] < conf->bin_count[good]);
-		int status = 1;
-		//printf("%u\n",(conf->allocation[98].a[0]) & (curr_allocation.a[0]));
-		// test if bid is allocatable, should not fail as we have have dummy bids
-		for(;status != 0 ;count[good]++) {
 
+		int max_offset = conf->max_offset[good];
+		int status = 1;
+		//printf("%u\n",(conf->allocation[98].a[0]) & (curr_allocation->a[0]));
+		// test if bid is allocatable, should not fail as we have have dummy bids
+		for(;status != 0  && count[good] <= max_offset ;count[good]++) {
+
+			//if(count[good] > conf->max_offset[good]){ break;}
 			status = 0;
-			int index = count[good]+bin_index[good];
+			assert((curr_allocation->a[good/WORDSIZE] & (1<< good%WORDSIZE)) == 0);
+			int index = count[good]+bin_index[good]; 
+			assert(good == conf->bin[index]);
 			if(conf->dummies[index]) {
 				for(x=0;x<conf->allocation_id_index;x++) {
-					status |= 
-						(conf->allocation_dummy[x] 
-						   == conf->dummies[index]);
+					status |= (conf->allocation_dummy[x] == conf->dummies[index]);
 				}
+			}
 
-			}
-			printf("good %u\n",good);			
 			if(status) continue;
-			for(x=0;x<words;x++) {
-				printf("hello index %u\n",index);
-//				printf("curr %u test %u intersection %u\n",
-//				       curr_allocation.a[x],
-//				       (conf->allocation[index].a[x]),
-//					(conf->allocation[index].a[x] & curr_allocation.a[x])); 
-				status |= (conf->allocation[index].a[x]) & (curr_allocation.a[x]); 
+			for(x=0;x<words;x++) {				
+				status |= (conf->allocation[index].a[x]) & (curr_allocation->a[x]); 
 			}
-			assert(count[good] <= conf->bin_count[good]);
+			assert(count[good] <= conf->max_offset[good]);
 		}
-		//	printf("good %u count %d max %u a\n",good,count[good],bin_count[good]);
-		//	printf("allocating\n");
-		//	getchar();
+		if(count[good] > max_offset){
+			assert(conf->bin[(count[good]+bin_index[good])] != good);
+			count[good] = 0;
+			allocate = 0;
+			dealloc = 1;
+			//	printf("dealloc max good %u\n",good);
+			break;
+		}
 		//as we incremented it one more, reduce by one
 		int which_bid_index = (count[good]-1)+bin_index[good]; 
 		assert(which_bid_index < conf->bids);
 		for(x=0;x<words;x++) {
-			curr_allocation.a[x] |= conf->allocation[which_bid_index].a[x];
+			curr_allocation->a[x] |= conf->allocation[which_bid_index].a[x];
 		}
 
 		val += conf->offer[which_bid_index];
@@ -685,22 +724,31 @@ while(allocate || dealloc) {
 			}
 			printf("\n");
 		}
+		printf("befor alloc %u\n",curr_allocation->a[0]);
+		float tmp = h(conf,curr_allocation,good,bin_index,curr_allocation->a[0]);
+		if(val+tmp <= max) {
+			printf("val %.3f tmp %.3f + %.3f max %.3f\n",val,tmp,val+tmp,max);
+//			count[good] = 0;
+			allocate = 0;
+			dealloc = 1;
+//				printf("dealloc max good %u\n",good);
+			break;
+		}
 	}
 
 	while(dealloc) {
-		//printf("de-allocating\n");
-		//	getchar();
 		dealloc = 0;
 		allocate = 1;
 		conf->allocation_id_index--;
+		//printf("index %u\n",conf->allocation_id_index);
 		int dealloc_index = conf->allocation_id[conf->allocation_id_index];
 		val -= conf->offer[dealloc_index];
 		for(x=0;x<words;x++) {
-			curr_allocation.a[x] &= ~(conf->allocation[dealloc_index].a[x]);
+			curr_allocation->a[x] &= ~(conf->allocation[dealloc_index].a[x]);
 		}
 		int dealloc_good = conf->bin[dealloc_index];
 		
-		if(count[dealloc_good] >= conf->bin_count[dealloc_good]) {
+		if(count[dealloc_good] >= conf->max_offset[dealloc_good]) {
 			//	printf("re-de-alloc good %u\n",dealloc_good);
 			count[dealloc_good] = 0;
 			dealloc = 1;
@@ -717,12 +765,23 @@ while(allocate || dealloc) {
 		} else {
 			good = 0;
 		}
+		/* printf("de-allocating good %u\n",dealloc_good); */
+		/* int u; */
+		/* for(u=0;u<conf->goods;u++) { */
+		/* 	if(u == dealloc_good) { */
+		/* 		printf("%u/%u<-\t",count[u],conf->bin_count[u]); */
+		/* 	} else { */
+		/* 		printf("%u/%u\t",count[u],conf->bin_count[u]); */
+		/* 	} */
+		/* } */
+		/* printf("\n"); */
+		//getchar();
 
 	}
 
-        }
+}
 printf("max %.3f\n",max);
-
+free(curr_allocation);
 }
 
 int main(int argc, char *argv[])   {
@@ -772,6 +831,18 @@ int main(int argc, char *argv[])   {
 	printf("words %u wordsize %lu\n",conf->words,WORDSIZE);
 
 	calc_best2(conf);
+	free(conf->allocation);
+	free(conf->bin);
+	free(conf->id);
+	free(conf->dummies);
+	free(conf->bin_count);
+	free(conf->max_offset);
+	free(conf->offer);
+	free(conf->average);
+	free(conf->curr_allocation);
+	free(conf->allocation_id);
+	free(conf->allocation_dummy);
+	free(conf);
 	printf("Bye\n");
 exit(EXIT_SUCCESS);
 }
