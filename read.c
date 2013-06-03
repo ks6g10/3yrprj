@@ -630,6 +630,7 @@ while(allocate || dealloc) {
 			dealloc = 1;
 			break;
 		}
+		assert(count[good] < conf->bin_count[good]);
 		int status = 1;
 		//printf("%u\n",(conf->allocation[98].a[0]) & (curr_allocation.a[0]));
 		// test if bid is allocatable, should not fail as we have have dummy bids
