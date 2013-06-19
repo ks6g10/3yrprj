@@ -3,14 +3,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
- 	
-
-
+#include <sys/types.h>
 #include <assert.h>
-#define WORDSIZE (sizeof(unsigned int)*8)
 #include <limits.h>
 #include <float.h>
-
+#define WORDSIZE (sizeof(unsigned int)*8)
 
 //typedef unsigned int int_fast32_t;
 
@@ -455,11 +452,13 @@ void allocate_all_bids(FILE * fp,
 		/* printf("%u bin %u\n",new_curr->id,bit_to_bid[new_curr->bin]); */
 		new_curr = new_curr->next;
 	}
-	printf("total bids %u",conf->bids); 
+	printf("total bids %u\n",conf->bids); 
 
 	for(x=0;x<conf->goods;x++) {
-		printf("x %d count %u\n",x,conf->bin_count[x]);
+		printf("%d %u\n",x,conf->bin_count[x]);
 	}
+	exit(0);
+	
 	
 
 //	exit(0);
@@ -625,7 +624,7 @@ float h(struct configuration * conf,struct allocation  *  curr_allocation,int go
 }
 
 #define DEBUG (0)
-#define H (0)
+#define H (1)
 void calc_best2(struct configuration * conf) {
 	struct allocation * curr_allocation = malloc(sizeof(struct allocation));	
 	const unsigned int goods = conf->goods;
